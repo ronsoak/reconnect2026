@@ -1,0 +1,33 @@
+# Makes Requirements File 
+pip freeze > requirements.txt
+pip install -r requirements.txt
+
+# Setup 
+django-admin startproject <TopLevel>
+python3 manage.py startapp <SubLevel>
+
+# Commands
+python3 manage.py makemigrations
+python3 manage.py migrate
+python3 manage.py runserver
+
+
+
+#nukes the db 
+python manage.py flush
+
+# Forces the app to redo the migrations from scratch for an app.
+python manage.py makemigrations website
+
+# Make super user 
+python3 manage.py createsuperuser
+
+python manage.py inspectdb
+
+# PIP Commands 
+-- Updates Pip
+python -m pip install --upgrade pip 
+
+#GIT
+git stash - stores any out of sync changes
+git stash drop 
