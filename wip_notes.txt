@@ -12,9 +12,13 @@ python3 manage.py migrate
 python3 manage.py runserver
 
 
-
 #nukes the db 
 python manage.py flush
+
+# also nukes db 
+rm db.sqlite3
+
+# IF YOU NUKE DB YOU NEED TO RECREATE USER
 
 # Forces the app to redo the migrations from scratch for an app.
 python manage.py makemigrations website
