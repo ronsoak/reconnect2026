@@ -39,3 +39,7 @@ class SitesAdmin(admin.ModelAdmin):
     form = SitesAdminForm
 
 admin.site.register(Sites, SitesAdmin)
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Articles
+# ===== ===== ===== ===== ===== ===== ===== ===== 

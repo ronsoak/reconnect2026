@@ -2,7 +2,8 @@
 # Imports
 # ===== ===== ===== ===== 
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError      # Needed for clean validations i.e Category
+from django.db.models import F                          # needed for math
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Website Logic Model
@@ -57,10 +58,7 @@ class Sites(models.Model):
         verbose_name = "Sites"
         verbose_name_plural = "Sites"
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_site_url')]
-        indexes = [ # come back to this
-            models.Index(fields=['hidden'], name='hidden_site_idx'),
-            models.Index(fields=['url'], name='url_idx')
-        ]
+        #indexes = [] #come back to this
     # Methods
     def clean(self):
         super().clean()
@@ -77,3 +75,34 @@ class Sites(models.Model):
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Articles 
 # ===== ===== ===== ===== ===== ===== ===== =====
+class Articles(models.Model):
+    # Fields
+    title       = models.CharField(max_length=256,blank=False,null=False,help_text="", verbose_name="Article Title")
+    url         = models.URLField(blank=False,null=False, help_text="", verbose_name="Article URL")
+    image_url   = models.CharField(max_length=512,blank=False,null=False,help_text="", verbose_name="Image Reference")
+    site        = models.ForeignKey(Sites, on_delete=models.CASCADE)
+    published   = models.DateField(null=True, blank=True, help_text="The date the article was published", verbose_name="Published Date")
+    created     = models.DateTimeField(auto_now_add=True,null=True, blank=True, help_text="The date the article was created in the site", verbose_name="Created Date") 
+    run_id      = models.IntegerField(default=0, help_text="The id of the run that this article was part of", verbose_name="Run Id")
+    boost       = models.FloatField(default=0,blank=False,help_text="Boosts the article artificially",verbose_name="Boost Count")
+    clicks      = models.FloatField(default=0,blank=False,help_text="Count of link clicks",verbose_name="Click Count")
+    modifier    = models.FloatField(default=1,blank=False,help_text="",verbose_name="Modifier Score")
+    rank        = models.GeneratedField(
+                    expression=((F("clicks")+ F("boost")) * F("modifier")),
+                    output_field=models.IntegerField(default=0,blank=False,help_text="Rank in the feed", verbose_name="Rank Score"),
+                    db_persist=True,
+                )
+    hidden      = models.BooleanField(default=False, help_text="The article is hidden", verbose_name="Article Hidden")
+    site_hide   = models.BooleanField(default=False, help_text="The parent site is hidden", verbose_name="Site Hidden")
+    bluesky     = models.BooleanField(default=False, help_text="The article has been posted to Bluesky", verbose_name="Article Posted to Bluesky")
+    # Metadata
+    class Meta:
+        db_table = "articles"
+        ordering = ['created']
+        verbose_name = "Articles"
+        verbose_name_plural = "Articles"
+        constraints = [models.UniqueConstraint(fields=["url"], name='unique_url')]
+        #indexes = [] # come back to this
+    # Methods 
+    def __str__(self):
+        return self.title
