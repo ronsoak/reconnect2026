@@ -1,9 +1,11 @@
 # ===== ===== ===== ===== 
 # Imports
 # ===== ===== ===== ===== 
-from django.db import models
 from django.core.exceptions import ValidationError      # Needed for clean validations i.e Category
-from django.db.models import F                          # needed for math
+from django.db import models                            # Brings in models concept
+from django.db import transaction                       # Needed for save overide
+from django.db.models import F                          # Needed for math
+from django.db.models import Q, UniqueConstraint        # Needed to limit logging run id value
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Website Logic Model
@@ -44,12 +46,13 @@ class Sites(models.Model):
     site_type       = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'SITE_TYPE'}, related_name='site_type', verbose_name="Type", help_text="Select a type for this site",  null=True)
     category        = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'CATEGORY'}, related_name='site_category', verbose_name="Category", help_text="Select a category for this site")
     tags            = models.ManyToManyField('Logic',limit_choices_to={'logic_type': 'TAG'},related_name='site_tag',verbose_name="Tags",help_text="Select tags for this site")
-    bluesky         = models.CharField(max_length=256,blank=False,null=False,help_text="Bluesky Handle", verbose_name="Bluesky")
+    bluesky         = models.CharField(max_length=256,blank=False,null=False,help_text="Bluesky Handle incl @", verbose_name="Bluesky")
     modifier        = models.FloatField(default=2, blank=False, help_text="Rank Modifier", verbose_name="Modifier Value")
     last_article    = models.IntegerField(default=0, help_text="Days since last article", verbose_name="Last Article")
+    batch_num       = models.IntegerField(default=0, help_text="Ingest Batch Number", verbose_name="Batch Number")
     #default_image  = models.
     hidden          = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
-    rss_error       = models.BooleanField(default=False, help_text="Has this site had RSS issues?", verbose_name="RSS Error")
+    load_error      = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
     description     = models.TextField(max_length=2000, blank=False,null=False,help_text="Explanation of the site", verbose_name="Site Description")
     # Metadata
     class Meta:
@@ -63,12 +66,23 @@ class Sites(models.Model):
     def clean(self):
         super().clean()
         # Ensure tags belong to the selected category
+        if not self.pk:  # Skip validation if the instance is not saved yet
+            return
         if self.category:
             invalid_tags = self.tags.exclude(parent=self.category)
             if invalid_tags.exists():
                 raise ValidationError({
                     'tags': f"The following tags are not under the selected category '{self.category}': {', '.join(tag.value for tag in invalid_tags)}"
                 })
+
+    def save(self, *args, **kwargs):
+        # Save the instance first to ensure it has an ID
+        if not self.pk:
+            super().save(*args, **kwargs)  # Save the instance to generate the ID
+        else:
+            with transaction.atomic():
+                super().save(*args, **kwargs)  # Save the instance again if needed
+
     def __str__(self):
         return self.name
 
@@ -106,3 +120,41 @@ class Articles(models.Model):
     # Methods 
     def __str__(self):
         return self.title
+    
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Logging
+# ===== ===== ===== ===== ===== ===== ===== =====
+class Logging(models.Model):
+    # Drop down selection
+    LOG_CHOICES = [
+        ('INGEST_COMPLETE','Ingest Complete'),
+        ('INGEST_ERROR', 'Ingest Error'),
+        ('INGEST_RUN_ID', 'Ingest Run Number'),
+        ('AGE_TASK', 'Age Task Result'),
+        ('BATCH_TASK', 'Batch Sites Task Result'),
+        ('HIDE_ARTICLES_TASK', 'Hide Articles Task Result'),
+        ('HIDE_SITES_TASK', 'Hide Sites Task Result'),
+        ('LAST_ARTICLE_TASK', 'Last Articles Task Result'),
+        ('FILTER_ARTICLE_TASK', 'Filter Articles Task Result'),
+    ]
+    # Fields
+    log_type = models.CharField(max_length=20, choices=LOG_CHOICES, help_text="Category of Log", verbose_name="Log Type")
+    created  = models.DateTimeField(auto_now_add=True, null=True, blank=True, help_text="The date the log occured", verbose_name="Created Date")
+    value    = models.TextField(max_length=9000, blank=False, null=False, help_text="Value of the log", verbose_name="Logging Output")
+    # Metadata
+    class Meta:
+        db_table = "logging"
+        ordering = ['created']
+        verbose_name = "Logging"
+        verbose_name_plural = "Logging"
+        constraints = [
+            # Partial unique index: only enforces uniqueness when log_type == 'INGEST_RUN_ID'
+            UniqueConstraint(
+                fields=['log_type'],
+                condition=Q(log_type='INGEST_RUN_ID'),
+                name='unique_ingest_run_id'
+            )
+        ]
+    # Methods 
+    def __str__(self):
+        return self.log_type

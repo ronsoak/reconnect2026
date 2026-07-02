@@ -2,7 +2,7 @@
 # Imports
 # ===== ===== ===== ===== 
 from django.contrib import admin
-from website.models import Logic, Sites 
+from website.models import Logic, Sites, Articles, Logging
 from django import forms
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
@@ -38,8 +38,61 @@ class SitesAdminForm(forms.ModelForm):
 class SitesAdmin(admin.ModelAdmin):
     form = SitesAdminForm
 
-admin.site.register(Sites, SitesAdmin)
+@admin.register(Sites)
+class SiteAdmin(admin.ModelAdmin):
+    form = SitesAdminForm  # Use the custom form
+    list_display = ('name', 'hidden', 'last_article','site_type','category')
+    list_filter = ['modifier', 'hidden', 'last_article','category',]
+    list_per_page = 500
+    actions = ['hide_site']
+    show_facets = admin.ShowFacets.ALWAYS
+    search_fields = ['name']
+
+    # Methods
+    def get_ordering(self, request):
+        return ['name']
+
+    def hide_site(self, request, queryset):
+        queryset.update(hidden=True)
+    hide_site.short_description = "Hidden"
+
+    def save_model(self, request, obj, form, change):
+        """
+        Save the instance and its Many-to-Many relationships.
+        """
+        # Save the instance first
+        super().save_model(request, obj, form, change)
+        # Save Many-to-Many relationships
+        form.save_m2m()
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Articles
 # ===== ===== ===== ===== ===== ===== ===== ===== 
+@admin.register(Articles)
+class ArticleAdmin(admin.ModelAdmin):
+    list_display=('title','rank','site','published','hidden','site_hide')
+    list_filter=['hidden','site_hide','site']
+    actions = ['mark_as_hidden']
+    show_facets = admin.ShowFacets.ALWAYS
+    search_fields = ['title']
+    # Methods
+    def get_ordering(self, request):
+        return ['-created']
+
+    def mark_as_hidden(self, request, queryset):
+        queryset.update(hidden = True)
+    mark_as_hidden.short_description = "Hidden"
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Ingest Logic
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+@admin.register(Logging)
+class LogicAdmin(admin.ModelAdmin):
+    list_display=('log_type','created','value')
+    list_filter=['log_type']
+    show_facets = admin.ShowFacets.ALWAYS
+    search_fields = ['value']
+    # Methods
+    def get_ordering(self, request):
+        return ['log_type']
+    

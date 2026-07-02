@@ -11,6 +11,12 @@ python3 manage.py makemigrations
 python3 manage.py migrate
 python3 manage.py runserver
 
+# Ingest 
+python manage.py ingest_all 
+python manage.py ingest_all --days 365
+python manage.py ingest_batch 0 1 --days 365
+python manage.py ingest_batch 0 1 {batch_num, run_id}
+
 
 #nukes the db 
 python manage.py flush
@@ -35,3 +41,17 @@ python -m pip install --upgrade pip
 #GIT
 git stash - stores any out of sync changes
 git stash drop 
+
+# Deployment
+    Run requirements 
+    Install from requirements 
+    Set up logic (script)
+    Set up Run ID (it auto set ups)
+
+# Schedules 
+    Batch number (weekly)
+    Ingest_all (several times a day)
+    last_article (daily)
+    hide articles (trigger whena site is hidden)
+    filter artciles (after an ingest run?)
+    Hide_sites (weekly / monthly)
