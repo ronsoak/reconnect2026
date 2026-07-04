@@ -6,6 +6,7 @@ from django.db import models                            # Brings in models conce
 from django.db import transaction                       # Needed for save overide
 from django.db.models import F                          # Needed for math
 from django.db.models import Q, UniqueConstraint        # Needed to limit logging run id value
+from django.utils import timezone                       # needed for time delta 
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Website Logic Model
@@ -158,3 +159,28 @@ class Logging(models.Model):
     # Methods 
     def __str__(self):
         return self.log_type
+    
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Clicks
+# ===== ===== ===== ===== ===== ===== ===== =====
+#
+# Revisit this!
+#
+class Clicks(models.Model):
+    # Fields
+    article     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Article ID")
+    session     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Session ID")
+    date        = models.DateField(default=timezone.now,help_text="",verbose_name="Vote Date")
+    # Metadata
+    class Meta:
+        db_table = "clicks"
+        ordering = ['session']
+        verbose_name = "Clicks"
+        verbose_name_plural = "Clicks"
+        indexes = [
+            models.Index(fields=['session','article'], name='vote_exists_idx'),
+        ]
+    # Methods 
+    def __str__(self):
+        return str(self.pk)

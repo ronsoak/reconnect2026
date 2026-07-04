@@ -1,9 +1,11 @@
 # ===== ===== ===== ===== 
 # Imports
 # ===== ===== ===== ===== 
-from django.contrib import admin
-from website.models import Logic, Sites, Articles, Logging
 from django import forms
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+from website.models import Logic, Sites, Articles, Logging
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Website Logic
@@ -84,7 +86,7 @@ class ArticleAdmin(admin.ModelAdmin):
     mark_as_hidden.short_description = "Hidden"
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
-# Ingest Logic
+# Logging
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 @admin.register(Logging)
 class LogicAdmin(admin.ModelAdmin):
@@ -95,4 +97,8 @@ class LogicAdmin(admin.ModelAdmin):
     # Methods
     def get_ordering(self, request):
         return ['log_type']
-    
+
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Recap View
+# ===== ===== ===== ===== ===== ===== ===== ===== 
