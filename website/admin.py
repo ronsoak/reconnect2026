@@ -97,8 +97,3 @@ class LogicAdmin(admin.ModelAdmin):
     # Methods
     def get_ordering(self, request):
         return ['log_type']
-
-
-# ===== ===== ===== ===== ===== ===== ===== ===== 
-# Recap View
-# ===== ===== ===== ===== ===== ===== ===== ===== 
