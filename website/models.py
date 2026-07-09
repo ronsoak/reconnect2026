@@ -17,7 +17,8 @@ class Logic(models.Model):
         ('KEYWORD','Keyword'),
         ('CATEGORY', 'Category'),
         ('TAG', 'Tag'),
-        ('SITE_TYPE','Type')
+        ('SITE_TYPE','Type'),
+        ('AD_SIZE','Advert_Size'),
     ]
     # Fields
     logic_type  = models.CharField(max_length=20, choices=LOGIC_CHOICES, help_text="Category of Logic", verbose_name="Logic Type")
@@ -53,6 +54,7 @@ class Sites(models.Model):
     batch_num       = models.IntegerField(default=0, help_text="Ingest Batch Number", verbose_name="Batch Number")
     #default_image  = models.
     hidden          = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
+    auto_post       = models.BooleanField(default=True, help_text="Can this sites articles be automatically posted to social media?", verbose_name="Auto Post")
     load_error      = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
     description     = models.TextField(max_length=2000, blank=False,null=False,help_text="Explanation of the site", verbose_name="Site Description")
     # Metadata
@@ -109,11 +111,12 @@ class Articles(models.Model):
                 )
     hidden      = models.BooleanField(default=False, help_text="The article is hidden", verbose_name="Article Hidden")
     site_hide   = models.BooleanField(default=False, help_text="The parent site is hidden", verbose_name="Site Hidden")
+    manual_post = models.BooleanField(default=False, help_text="Post this to Bluesky, if parent site is blocked", verbose_name="Manual Post")
     bluesky     = models.BooleanField(default=False, help_text="The article has been posted to Bluesky", verbose_name="Article Posted to Bluesky")
     # Metadata
     class Meta:
         db_table = "articles"
-        ordering = ['created']
+        ordering = ['-created']
         verbose_name = "Articles"
         verbose_name_plural = "Articles"
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_url')]
@@ -148,6 +151,7 @@ class Logging(models.Model):
         ordering = ['created']
         verbose_name = "Logging"
         verbose_name_plural = "Logging"
+        #indexes = [] # come back to this
         constraints = [
             # Partial unique index: only enforces uniqueness when log_type == 'INGEST_RUN_ID'
             UniqueConstraint(
@@ -162,25 +166,57 @@ class Logging(models.Model):
     
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
-# Clicks
+# Clicks - might need a rework 
 # ===== ===== ===== ===== ===== ===== ===== =====
-#
-# Revisit this!
-#
 class Clicks(models.Model):
     # Fields
     article     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Article ID")
-    session     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Session ID")
+    site        = models.ForeignKey(Sites, on_delete=models.CASCADE,null=True)
     date        = models.DateField(default=timezone.now,help_text="",verbose_name="Vote Date")
     # Metadata
     class Meta:
         db_table = "clicks"
-        ordering = ['session']
+        ordering = ['date']
         verbose_name = "Clicks"
         verbose_name_plural = "Clicks"
-        indexes = [
-            models.Index(fields=['session','article'], name='vote_exists_idx'),
-        ]
+        #indexes = [] # come back to this
+
+    # Methods 
+    def __str__(self):
+        return str(self.pk)
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Analytics - might need some field testing 
+# ===== ===== ===== ===== ===== ===== ===== =====
+# class Analytics(models.Model):
+#     # Fields
+#     article 
+#     site 
+#     month
+#     clicks 
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Adverts
+# ===== ===== ===== ===== ===== ===== ===== =====
+class Adverts(models.Model):
+    # Fields 
+    title       = models.CharField(max_length=256,blank=False,null=False,help_text="Title of Advert, not shown", verbose_name="Advert Title")
+    message     = models.CharField(max_length=256,blank=False,null=False,help_text="Message shown in advert", verbose_name="Advert Message")
+    site_name   = models.CharField(max_length=256,blank=True,null=True,help_text="The name of the site, shown to user", verbose_name="Advert Site")
+    site_url    = models.URLField(blank=False,null=False, help_text="The link the advert goes to", verbose_name="Advert URL")
+    # image       =
+    start_date  = models.DateField(null=False, blank=False, help_text="The start date of the advert", verbose_name="Start Date")
+    end_date    = models.DateField(null=False, blank=False, help_text="The end date of the advert", verbose_name="End Date")
+    concurrency = models.IntegerField(default=1, help_text="Maximum amount of times this can appear on a page", verbose_name="Concurrency")
+    advert_size = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'AD_SIZE'}, related_name='advert_size', verbose_name="Advert Size", help_text="The size of this advert",  null=True)
+    # Metadata
+    class Meta:
+        db_table = "adverts"
+        ordering = ['-end_date']
+        verbose_name = "Adverts"
+        verbose_name_plural = "Adverts"
+        #indexes = [] # come back to this
+    
     # Methods 
     def __str__(self):
         return str(self.pk)
