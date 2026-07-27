@@ -17,8 +17,9 @@ class Logic(models.Model):
         ('KEYWORD','Keyword'),
         ('CATEGORY', 'Category'),
         ('TAG', 'Tag'),
-        ('SITE_TYPE','Type'),
-        ('AD_SIZE','Advert_Size'),
+        ('SITE_TYPE','Site Type'),
+        ('AD_SIZE','Advert Size'),
+        ('CLICK_TYPE','Click Type'),
     ]
     # Fields
     logic_type  = models.CharField(max_length=20, choices=LOGIC_CHOICES, help_text="Category of Logic", verbose_name="Logic Type")
@@ -170,6 +171,7 @@ class Logging(models.Model):
 # ===== ===== ===== ===== ===== ===== ===== =====
 class Clicks(models.Model):
     # Fields
+    type        = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'CLICK_TYPE'}, related_name='click_type', verbose_name="Click Type", help_text="The type of click registered",  null=True)
     article     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Article ID")
     site        = models.ForeignKey(Sites, on_delete=models.CASCADE,null=True)
     date        = models.DateField(default=timezone.now,help_text="",verbose_name="Vote Date")
@@ -190,6 +192,7 @@ class Clicks(models.Model):
 # ===== ===== ===== ===== ===== ===== ===== =====
 # class Analytics(models.Model):
 #     # Fields
+#     type 
 #     article 
 #     site 
 #     month

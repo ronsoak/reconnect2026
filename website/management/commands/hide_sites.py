@@ -1,7 +1,7 @@
 # ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== 
 # Hide Sites
 #
-# This script looks for any sites that havn't posted an article in over 6 months and hides them.
+# This script looks for any sites that havn't posted an article in over 9 months and hides them.
 # Any hidden site will trigger a hide articles script. 
 #
 # Command Examples 
@@ -49,7 +49,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any):
-        days: int = options.get("days", 180)
+        days: int = options.get("days", 270)
         dry_run: bool = options.get("dry_run", False)
         limit: int = int(options.get("limit", 0))
 

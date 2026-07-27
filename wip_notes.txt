@@ -57,3 +57,15 @@ git stash drop
     hide articles (trigger whena site is hidden)
     filter artciles (after an ingest run?)
     Hide_sites (weekly / monthly)
+
+
+#Wipe Content 
+from app.models import *
+
+Logic.objects.all().delete()
+Sites.objects.all().delete()
+Article.objects.all().delete()
+Logging.objects.all().delete()
+Clicks.objects.all().delete()
+Adverts.objects.all().delete()
+
