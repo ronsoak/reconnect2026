@@ -11,53 +11,54 @@ from django.utils import timezone                       # needed for time delta
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Website Logic Model
 # ===== ===== ===== ===== ===== ===== ===== ===== 
+from django.db import models
+
 class Logic(models.Model):
-    # Drop down selection
-    LOGIC_CHOICES= [
-        ('KEYWORD','Keyword'),
+    # Drop down choices.
+    LOGIC_CHOICES = [
+        ('KEYWORD', 'Keyword'),
         ('CATEGORY', 'Category'),
         ('TAG', 'Tag'),
-        ('SITE_TYPE','Site Type'),
-        ('AD_SIZE','Advert Size'),
-        ('CLICK_TYPE','Click Type'),
+        ('SITE_TYPE', 'Site Type'),
+        ('AD_SIZE', 'Advert Size'),
+        ('CLICK_TYPE', 'Click Type'),
     ]
     # Fields
-    logic_type  = models.CharField(max_length=20, choices=LOGIC_CHOICES, help_text="Category of Logic", verbose_name="Logic Type")
-    parent      = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE,related_name='children',limit_choices_to={'logic_type': 'CATEGORY'}, help_text="What category does this tag belog to", verbose_name="Parent Category")
-    value       = models.CharField(max_length=512,blank=False,null=False,help_text="Logic Value", verbose_name="Value") 
+    logic_type      = models.CharField(max_length=20,choices=LOGIC_CHOICES,help_text="Category of Logic",verbose_name="Logic Type",)
+    value           = models.CharField(max_length=512,blank=False,null=False,help_text="Logic Value",verbose_name="Value",)
     # Metadata
     class Meta:
-        unique_together = ('value', 'parent')  # Allow same name under different parents
+        unique_together = ('logic_type', 'value')
         db_table = "logic"
-        ordering = ['logic_type']
+        ordering = ['logic_type', 'value']
         verbose_name = "Logic"
         verbose_name_plural = "Logic"
-    
+    # Methods
     def __str__(self):
-        if self.parent:
-            return f"{self.parent.value} > {self.value}"
-        return self.value
+        # show human-readable logic type and the value
+        return f"{self.get_logic_type_display()} > {self.value}"
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Sites 
 # ===== ===== ===== ===== ===== ===== ===== =====
+from django.db import models
+
 class Sites(models.Model):
     # Fields 
-    name            = models.CharField(max_length=256,blank=False,null=False,help_text="Name of the Site", verbose_name="Name")
-    url             = models.URLField(blank=False,null=False, help_text="Top level URL of the Site", verbose_name="Site URL")
-    rss_feed        = models.URLField(blank=False,null=False, help_text="The URL of the Feed", verbose_name="Feed URL")
-    site_type       = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'SITE_TYPE'}, related_name='site_type', verbose_name="Type", help_text="Select a type for this site",  null=True)
-    category        = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'CATEGORY'}, related_name='site_category', verbose_name="Category", help_text="Select a category for this site")
-    tags            = models.ManyToManyField('Logic',limit_choices_to={'logic_type': 'TAG'},related_name='site_tag',verbose_name="Tags",help_text="Select tags for this site")
-    bluesky         = models.CharField(max_length=256,blank=False,null=False,help_text="Bluesky Handle incl @", verbose_name="Bluesky")
-    modifier        = models.FloatField(default=2, blank=False, help_text="Rank Modifier", verbose_name="Modifier Value")
-    last_article    = models.IntegerField(default=0, help_text="Days since last article", verbose_name="Last Article")
-    batch_num       = models.IntegerField(default=0, help_text="Ingest Batch Number", verbose_name="Batch Number")
-    #default_image  = models.
-    hidden          = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
-    auto_post       = models.BooleanField(default=True, help_text="Can this sites articles be automatically posted to social media?", verbose_name="Auto Post")
-    load_error      = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
-    description     = models.TextField(max_length=2000, blank=False,null=False,help_text="Explanation of the site", verbose_name="Site Description")
+    name         = models.CharField(max_length=256, blank=False, null=False, help_text="Name of the Site", verbose_name="Name")
+    url          = models.URLField(blank=False, null=False, help_text="Top level URL of the Site", verbose_name="Site URL")
+    rss_feed     = models.URLField(blank=False, null=False, help_text="The URL of the Feed", verbose_name="Feed URL")
+    site_type    = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'SITE_TYPE'},related_name='site_type',verbose_name="Type",help_text="Select a type for this site",null=True,)
+    category     = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'CATEGORY'},related_name='site_category',verbose_name="Category",help_text="Select a category for this site",)
+    tags         = models.ManyToManyField('Logic',limit_choices_to={'logic_type': 'TAG'},related_name='site_tag',verbose_name="Tags",help_text="Select tags for this site",)
+    bluesky      = models.CharField(max_length=256, blank=False, null=False, help_text="Bluesky Handle incl @", verbose_name="Bluesky")
+    modifier     = models.FloatField(default=2, blank=False, help_text="Rank Modifier", verbose_name="Modifier Value")
+    last_article = models.IntegerField(default=0, help_text="Days since last article", verbose_name="Last Article")
+    batch_num    = models.IntegerField(default=0, help_text="Ingest Batch Number", verbose_name="Batch Number")
+    hidden       = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
+    auto_post    = models.BooleanField(default=True, help_text="Can this site's articles be automatically posted to social media?", verbose_name="Auto Post")
+    load_error   = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
+    description  = models.TextField(max_length=2000, blank=False, null=False, help_text="Explanation of the site", verbose_name="Site Description")
     # Metadata
     class Meta:
         db_table = "sites"
@@ -65,28 +66,7 @@ class Sites(models.Model):
         verbose_name = "Sites"
         verbose_name_plural = "Sites"
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_site_url')]
-        #indexes = [] #come back to this
     # Methods
-    def clean(self):
-        super().clean()
-        # Ensure tags belong to the selected category
-        if not self.pk:  # Skip validation if the instance is not saved yet
-            return
-        if self.category:
-            invalid_tags = self.tags.exclude(parent=self.category)
-            if invalid_tags.exists():
-                raise ValidationError({
-                    'tags': f"The following tags are not under the selected category '{self.category}': {', '.join(tag.value for tag in invalid_tags)}"
-                })
-
-    def save(self, *args, **kwargs):
-        # Save the instance first to ensure it has an ID
-        if not self.pk:
-            super().save(*args, **kwargs)  # Save the instance to generate the ID
-        else:
-            with transaction.atomic():
-                super().save(*args, **kwargs)  # Save the instance again if needed
-
     def __str__(self):
         return self.name
 

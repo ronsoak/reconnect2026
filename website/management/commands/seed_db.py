@@ -18,37 +18,20 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-
         self.stdout.write("Seeding Logic table...")
 
         for logic_type, values in LOGIC.items():
+            for value in values:
+                # Normalize/skip empty values if needed
+                if value is None:
+                    continue
+                value_str = str(value).strip()
+                if not value_str:
+                    continue
 
-            if logic_type == "CATEGORY":
-
-                for category_name, tags in values.items():
-
-                    category, _ = Logic.objects.update_or_create(
-                        logic_type="CATEGORY",
-                        value=category_name,
-                        parent=None,
-                    )
-
-                    for tag in tags:
-
-                        Logic.objects.update_or_create(
-                            logic_type="TAG",
-                            value=tag,
-                            parent=category,
-                        )
-
-            else:
-
-                for value in values:
-
-                    Logic.objects.update_or_create(
-                        logic_type=logic_type,
-                        value=value,
-                        parent=None,
-                    )
+                Logic.objects.update_or_create(
+                    logic_type=logic_type,
+                    value=value_str,
+                )
 
         self.stdout.write(self.style.SUCCESS("Logic table seeded successfully."))

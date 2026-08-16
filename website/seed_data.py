@@ -10,6 +10,12 @@ LOGIC = {
         "Feed Medium",
         "Feed Large",
     ],
+    "CATEGORY": [
+        "Video Games",
+        "Tabletop",
+        "TCG's",
+        "TTRPGs",        
+    ],    
 
     "CLICK_TYPE": [
         "Article",
@@ -30,17 +36,15 @@ LOGIC = {
         "Website",
     ],
 
-    "CATEGORY": {
-        "Video Games": [
-            "News",
-            "Reviews",
-            "Retro",
-            "Indie",
-            "History",
-            "Analytics",
-            "Design",
-            "Industry",
-            "Commentary",
-        ],
-    },
+    "TAG": [
+        "News",
+        "Reviews",
+        "Retro",
+        "Indie",
+        "History",
+        "Analytics",
+        "Design",
+        "Industry",
+        "Commentary",
+    ]
 }

@@ -12,11 +12,13 @@
 # Imports
 # ===== ===== ===== ===== 
 from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.db import IntegrityError, transaction
 from django.db import transaction
 from django.db.models import Max
 from typing import Any, Optional
 from website.models import Sites, Logging, Articles
+import time
 
 # ===== ===== ===== ===== 
 # Command
@@ -42,27 +44,52 @@ class Command(BaseCommand):
         single_batch: Optional[int] = options.get("batch")
 
         # Reserve a new run id atomically so concurrent callers cannot obtain the same run.
-        try:
-            with transaction.atomic():
-                log_entry = Logging.objects.select_for_update().filter(log_type="INGEST_RUN_ID").first()
-                if log_entry is None:
-                    log_entry = Logging.objects.create(log_type="INGEST_RUN_ID", defaults={"value": "0"})  # create initial
-                try:
-                    current_run = int(log_entry.value)
-                except (TypeError, ValueError):
-                    current_run = 0
-                new_run = current_run + 1
-                # Persist the reserved run id
-                log_entry.value = str(new_run)
-                log_entry.save(update_fields=["value"])
-        except Exception as exc:
-            self.stderr.write(f"Failed to reserve INGEST_RUN_ID: {exc}")
-            return 1
+        retry_attempts = 5
+        backoff = 0.1
+        new_run = None
+        current_run = None
 
+        try:
+            for attempt in range(retry_attempts):
+                try:
+                    with transaction.atomic():
+                        # Try to lock an existing row first
+                        qs = Logging.objects.select_for_update().filter(log_type="INGEST_RUN_ID")
+                        log_entry = qs.first()
+                        if log_entry is None:
+                            # No existing row: create-or-get (may raise IntegrityError on race)
+                            log_entry, created = Logging.objects.get_or_create(
+                                log_type="INGEST_RUN_ID",
+                                defaults={"value": "0"},
+                            )
+                            # If created==True, row was created now; otherwise we have the existing row.
+                        # At this point we have a log_entry instance (locked if it existed)
+                        try:
+                            current_run = int(log_entry.value) if log_entry.value is not None else 0
+                        except (TypeError, ValueError):
+                            current_run = 0
+                        new_run = current_run + 1
+                        # Persist the reserved run id
+                        log_entry.value = str(new_run)
+                        log_entry.save(update_fields=["value"])
+                    # success -> break out
+                    break
+                except IntegrityError:
+                    # Race while creating the initial row; retry with exponential backoff
+                    if attempt + 1 >= retry_attempts:
+                        raise
+                    time.sleep(backoff)
+                    backoff *= 2
+            else:
+                # exhausted retries (shouldn't happen because we raise above)
+                raise CommandError("Failed to reserve INGEST_RUN_ID after retries")
+        except Exception as exc:
+            raise CommandError(f"Failed to reserve INGEST_RUN_ID: {exc}") from exc
+
+        # safe prints (strings)
         self.stdout.write(f"Reserved run id {new_run} (previous {current_run}). days={days}")
 
         # Determine batches to run
-        batches = []
         if single_batch is not None:
             batches = [single_batch]
         else:
@@ -70,7 +97,7 @@ class Command(BaseCommand):
             max_batch = agg.get("max_batch")
             if max_batch is None:
                 self.stdout.write("No Sites with batch_num found; nothing to run.")
-                return
+                return  # success / nothing to do
             batches = list(range(0, int(max_batch) + 1))
 
         # Run the batches
@@ -84,7 +111,7 @@ class Command(BaseCommand):
                 any_failure = True
                 err_msg = f"Batch {batch_id} failed for run {new_run}: {exc}"
                 self.stderr.write(err_msg)
-                # Record an error log row for visibility
+                # Record an error log row for visibility (best-effort)
                 try:
                     Logging.objects.create(log_type="INGEST_ERROR", value=err_msg)
                 except Exception as e:
@@ -107,5 +134,8 @@ class Command(BaseCommand):
 
         self.stdout.write(complete_msg)
 
-        # Return non-zero if any batch had an exception
-        return 1 if any_failure else 0
+        # If any batch had an exception, raise CommandError -> non-zero exit code
+        if any_failure:
+            raise CommandError("One or more batches failed during ingest_all")
+        # Otherwise return None (successful)
+        return

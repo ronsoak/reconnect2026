@@ -5,7 +5,7 @@ from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from website.models import Logic, Sites, Articles, Logging, Adverts
+from website.models import Logic, Sites, Articles, Logging, Adverts, Clicks
 from unfold.admin import ModelAdmin                                     # for the Admin theme
 from unfold.contrib.forms.widgets import ArrayWidget, WysiwygWidget     # for the Admin theme
 
@@ -14,8 +14,8 @@ from unfold.contrib.forms.widgets import ArrayWidget, WysiwygWidget     # for th
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 @admin.register(Logic)
 class LogicAdmin(ModelAdmin):
-    list_display=('logic_type','parent','value')
-    list_filter=['logic_type','parent']
+    list_display=('logic_type','value')
+    list_filter=['logic_type',]
     show_facets = admin.ShowFacets.ALWAYS
     search_fields = ['value']
     # Methods
@@ -112,3 +112,17 @@ class AdvertAdmin(ModelAdmin):
     # Methods
     def get_ordering(self, request):
         return ['-end_date']
+    
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Clicks
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+@admin.register(Clicks)
+class ClicksAdmin(ModelAdmin):
+    list_display=('type','article','site','date')
+    list_filter=['type']
+    show_facets = admin.ShowFacets.ALWAYS
+    search_fields = ['type']
+    # Methods
+    def get_ordering(self, request):
+        return ['-date']

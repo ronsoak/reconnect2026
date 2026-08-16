@@ -60,12 +60,18 @@ git stash drop
 
 
 #Wipe Content 
-from app.models import *
-
+python manage.py shell
+from website.models import *
 Logic.objects.all().delete()
 Sites.objects.all().delete()
-Article.objects.all().delete()
+Articles.objects.all().delete()
 Logging.objects.all().delete()
 Clicks.objects.all().delete()
 Adverts.objects.all().delete()
 
+
+# Test Deployment 
+python manage.py seed_db
+python manage.py import_sites website/reconnect2026_test.csv --dry-run
+python manage.py import_sites website/reconnect2026_test.csv
+python manage.py ingest_all --days 999
