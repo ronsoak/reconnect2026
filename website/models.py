@@ -33,6 +33,10 @@ class Logic(models.Model):
         ordering = ['logic_type', 'value']
         verbose_name = "Logic"
         verbose_name_plural = "Logic"
+        indexes = [
+            models.Index(fields=['logic_type']),  # For filtering by logic_type
+            models.Index(fields=['value']),       # For filtering or searching by value
+        ]
     # Methods
     def __str__(self):
         # show human-readable logic type and the value
@@ -45,20 +49,21 @@ from django.db import models
 
 class Sites(models.Model):
     # Fields 
-    name         = models.CharField(max_length=256, blank=False, null=False, help_text="Name of the Site", verbose_name="Name")
-    url          = models.URLField(blank=False, null=False, help_text="Top level URL of the Site", verbose_name="Site URL")
-    rss_feed     = models.URLField(blank=False, null=False, help_text="The URL of the Feed", verbose_name="Feed URL")
-    site_type    = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'SITE_TYPE'},related_name='site_type',verbose_name="Type",help_text="Select a type for this site",null=True,)
-    category     = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'CATEGORY'},related_name='site_category',verbose_name="Category",help_text="Select a category for this site",)
-    tags         = models.ManyToManyField('Logic',limit_choices_to={'logic_type': 'TAG'},related_name='site_tag',verbose_name="Tags",help_text="Select tags for this site",)
-    bluesky      = models.CharField(max_length=256, blank=False, null=False, help_text="Bluesky Handle incl @", verbose_name="Bluesky")
-    modifier     = models.FloatField(default=2, blank=False, help_text="Rank Modifier", verbose_name="Modifier Value")
-    last_article = models.IntegerField(default=0, help_text="Days since last article", verbose_name="Last Article")
-    batch_num    = models.IntegerField(default=0, help_text="Ingest Batch Number", verbose_name="Batch Number")
-    hidden       = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
-    auto_post    = models.BooleanField(default=True, help_text="Can this site's articles be automatically posted to social media?", verbose_name="Auto Post")
-    load_error   = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
-    description  = models.TextField(max_length=2000, blank=False, null=False, help_text="Explanation of the site", verbose_name="Site Description")
+    name            = models.CharField(max_length=256, blank=False, null=False, help_text="Name of the Site", verbose_name="Name")
+    url             = models.URLField(blank=False, null=False, help_text="Top level URL of the Site", verbose_name="Site URL")
+    rss_feed        = models.URLField(blank=False, null=False, help_text="The URL of the Feed", verbose_name="Feed URL")
+    site_type       = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'SITE_TYPE'},related_name='site_type',verbose_name="Type",help_text="Select a type for this site",null=True,)
+    category        = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'CATEGORY'},related_name='site_category',verbose_name="Category",help_text="Select a category for this site",)
+    tags            = models.ManyToManyField('Logic',limit_choices_to={'logic_type': 'TAG'},related_name='site_tag',verbose_name="Tags",help_text="Select tags for this site",)
+    bluesky         = models.CharField(max_length=256, blank=False, null=False, help_text="Bluesky Handle incl @", verbose_name="Bluesky")
+    modifier        = models.FloatField(default=2, blank=False, help_text="Rank Modifier", verbose_name="Modifier Value")
+    last_article    = models.IntegerField(default=0, help_text="Days since last article", verbose_name="Last Article")
+    article_count   = models.IntegerField(default=0, help_text="Count of articles under this site", verbose_name="Article Count")
+    batch_num       = models.IntegerField(default=0, help_text="Ingest Batch Number", verbose_name="Batch Number")
+    hidden          = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
+    auto_post       = models.BooleanField(default=True, help_text="Can this site's articles be automatically posted to social media?", verbose_name="Auto Post")
+    load_error      = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
+    description     = models.TextField(max_length=2000, blank=False, null=False, help_text="Explanation of the site", verbose_name="Site Description")
     # Metadata
     class Meta:
         db_table = "sites"
@@ -66,7 +71,22 @@ class Sites(models.Model):
         verbose_name = "Sites"
         verbose_name_plural = "Sites"
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_site_url')]
+        indexes = [
+            models.Index(fields=['name']),        # For searching or ordering by name
+            models.Index(fields=['url']),         # For filtering or lookups by URL
+            models.Index(fields=['hidden']),      # For filtering by hidden status
+            models.Index(fields=['category']),    # For filtering by category
+            models.Index(fields=['site_type']),   # For filtering by site_type
+        ]
     # Methods
+    def clean(self):
+        """
+        Custom clean method to preprocess the bluesky field.
+        Removes any '@' signs from the bluesky handle.
+        """
+        if self.bluesky:
+            self.bluesky = self.bluesky.replace('@', '')
+
     def __str__(self):
         return self.name
 
@@ -101,7 +121,15 @@ class Articles(models.Model):
         verbose_name = "Articles"
         verbose_name_plural = "Articles"
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_url')]
-        #indexes = [] # come back to this
+        indexes = [
+            models.Index(fields=['title']),       # For searching or filtering by title
+            models.Index(fields=['url']),         # For filtering or lookups by URL
+            models.Index(fields=['site']),        # For filtering by site
+            models.Index(fields=['published']),   # For filtering or ordering by published date
+            models.Index(fields=['created']),     # For ordering by creation date
+            models.Index(fields=['rank']),        # For ordering or filtering by rank
+            models.Index(fields=['hidden']),      # For filtering by hidden status
+        ]
     # Methods 
     def __str__(self):
         return self.title
@@ -121,6 +149,7 @@ class Logging(models.Model):
         ('HIDE_SITES_TASK', 'Hide Sites Task Result'),
         ('LAST_ARTICLE_TASK', 'Last Articles Task Result'),
         ('FILTER_ARTICLE_TASK', 'Filter Articles Task Result'),
+        ('COUNT_ARTICLES', 'Articles Counted'),
     ]
     # Fields
     log_type = models.CharField(max_length=20, choices=LOG_CHOICES, help_text="Category of Log", verbose_name="Log Type")
@@ -129,10 +158,13 @@ class Logging(models.Model):
     # Metadata
     class Meta:
         db_table = "logging"
-        ordering = ['created']
+        ordering = ['-created']
         verbose_name = "Logging"
         verbose_name_plural = "Logging"
-        #indexes = [] # come back to this
+        indexes = [
+            models.Index(fields=['log_type']),    # For filtering by log_type
+            models.Index(fields=['created']),    # For ordering or filtering by created date
+        ]
         constraints = [
             # Partial unique index: only enforces uniqueness when log_type == 'INGEST_RUN_ID'
             UniqueConstraint(
@@ -161,8 +193,12 @@ class Clicks(models.Model):
         ordering = ['date']
         verbose_name = "Clicks"
         verbose_name_plural = "Clicks"
-        #indexes = [] # come back to this
-
+        indexes = [
+            models.Index(fields=['type']),        # For filtering by click type
+            models.Index(fields=['article']),     # For filtering or lookups by article
+            models.Index(fields=['site']),        # For filtering by site
+            models.Index(fields=['date']),        # For ordering or filtering by date
+        ]
     # Methods 
     def __str__(self):
         return str(self.pk)
@@ -198,8 +234,11 @@ class Adverts(models.Model):
         ordering = ['-end_date']
         verbose_name = "Adverts"
         verbose_name_plural = "Adverts"
-        #indexes = [] # come back to this
-    
+        indexes = [
+            models.Index(fields=['start_date']),  # For filtering or ordering by start date
+            models.Index(fields=['end_date']),    # For filtering or ordering by end date
+            models.Index(fields=['advert_size']), # For filtering by advert size
+        ]
     # Methods 
     def __str__(self):
         return str(self.pk)

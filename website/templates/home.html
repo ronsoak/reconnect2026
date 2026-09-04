@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Homepage</title>
+</head>
+<body>
+    <h1>Articles</h1>
+
+    <!-- Dropdown for filtering by site -->
+    <label for="site-filter">Filter by Site:</label>
+    <select id="site-filter">
+        <option value="">All Sites</option>
+    </select>
+
+    <ul id="article-list"></ul>
+
+    <script>
+        // Fetch and populate the site dropdown
+        async function fetchSites() {
+            const response = await fetch('/api/sites/'); // Assuming you have an endpoint for sites
+            const sites = await response.json();
+            const siteFilter = document.getElementById('site-filter');
+            sites.forEach(site => {
+                const option = document.createElement('option');
+                option.value = site.id;
+                option.textContent = site.name;
+                siteFilter.appendChild(option);
+            });
+        }
+
+        // Fetch and display articles based on the selected site
+        async function fetchArticles() {
+            const siteFilter = document.getElementById('site-filter');
+            const selectedSite = siteFilter.value;
+            const response = await fetch(`/api/articles/?site=${selectedSite}`);
+            const data = await response.json();
+            const articleList = document.getElementById('article-list');
+            articleList.innerHTML = '';
+            data.forEach(article => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${article.url}" target="_blank">${article.title}</a> - Published: ${article.published}`;
+                articleList.appendChild(li);
+            });
+        }
+
+        // Event listener for site filter change
+        document.getElementById('site-filter').addEventListener('change', fetchArticles);
+
+        // Initialize the page
+        fetchSites();
+        fetchArticles();
+    </script>
+</body>
+</html>

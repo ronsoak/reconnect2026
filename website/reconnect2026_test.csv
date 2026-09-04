@@ -1,2 +1,3 @@
-name,url,rss_feed,site_type,category,tags,bluesky,modifier,last_article,batch_num,hidden,auto_post,load_error,description,,,,,,,,
-Reconnect Recap,https://reconnectrecap.substack.com,https://reconnectrecap.substack.com/feed,Substack,Video Games,"Commentary; Industry",antranaut,3.0,0,0,FALSE,TRUE,FALSE ,Companion Newsletter for this website. A weekly highlight of all the great articles to appear in the past 7 days. ,,,,,,,,
+name,url,rss_feed,site_type,category,tags,bluesky,modifier,last_article,batch_num,hidden,auto_post,load_error,description
+Reconnect Recap,https://reconnectrecap.substack.com,https://reconnectrecap.substack.com/feed,Substack,Video Games,Commentary; Industry,antranaut,3.0,0,0,FALSE,TRUE,FALSE,Companion Newsletter for this website. A weekly highlight of all the great articles to appear in the past 7 days.
+Time Extension ,https://www.timeextension.com,https://www.timeextension.com/feeds/latest,Website,Video Games,News; Retro; Reviews; ,,1.0,0,0,FALSE,TRUE,FALSE,Time Extension looks to the past

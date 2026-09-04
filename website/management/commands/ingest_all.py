@@ -134,6 +134,15 @@ class Command(BaseCommand):
 
         self.stdout.write(complete_msg)
 
+        #Call the count_articles script in mini mode
+        try:
+            self.stdout.write("Updating article counts for sites...")
+            call_command("count_articles", "--mode", "mini")
+            self.stdout.write("Article counts updated successfully.")
+        except Exception as e:
+            self.stderr.write(f"Failed to update article counts: {e}")
+
+
         # If any batch had an exception, raise CommandError -> non-zero exit code
         if any_failure:
             raise CommandError("One or more batches failed during ingest_all")

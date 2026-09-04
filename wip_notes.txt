@@ -72,6 +72,7 @@ Adverts.objects.all().delete()
 
 # Test Deployment 
 python manage.py seed_db
-python manage.py import_sites website/reconnect2026_test.csv --dry-run
-python manage.py import_sites website/reconnect2026_test.csv
-python manage.py ingest_all --days 999
+python manage.py import_sites --file website/re_sep_m_test.csv --dry-run
+python manage.py import_sites --file website/re_sep_m_test.csv
+python manage.py batch_sites
+python manage.py ingest_all
