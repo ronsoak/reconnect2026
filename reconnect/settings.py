@@ -40,9 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "rest_framework",
-    'django_filters',
-    'website'
+    "rest_framework", # needed for queries
+    'django_filters', # needed for filters on queries
+    'website' # the core app 
 ]
 
 MIDDLEWARE = [

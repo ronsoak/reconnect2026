@@ -35,8 +35,8 @@ class SitesAdmin(ModelAdmin):
 @admin.register(Sites)
 class SiteAdmin(ModelAdmin):
     form = SitesAdminForm  # Use the custom form
-    list_display = ('name', 'hidden', 'last_article', 'site_type', 'category')
-    list_filter = ['modifier', 'hidden', 'last_article', 'category', 'load_error']
+    list_display = ('name', 'hidden','article_count','last_article', 'site_type', 'category')
+    list_filter = ['modifier', 'hidden','article_count','last_article', 'category', 'load_error']
     list_per_page = 500
     actions = ['hide_site']
     show_facets = admin.ShowFacets.ALWAYS
