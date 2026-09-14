@@ -76,3 +76,13 @@ python manage.py import_sites --file website/re_sep_m_test.csv --dry-run
 python manage.py import_sites --file website/re_sep_m_test.csv
 python manage.py batch_sites
 python manage.py ingest_all
+
+
+##### ##### ##### #####
+# Rest API 
+##### ##### ##### #####
+1. Models: Hold the data
+2. Serializers: Convert the model into JSON Object for the front end
+3. Views: Handle the logic for fetching data from DB and returning it as a response
+4. URLs: Maps specific urls to the Views
+5. Webpage: uses javascript to control the query.

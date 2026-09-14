@@ -6,34 +6,94 @@
 <body>
     <h1>Articles</h1>
 
-    <!-- Dropdown for filtering by site -->
-    <label for="site-filter">Filter by Site:</label>
-    <select id="site-filter">
-        <option value="">All Sites</option>
+    <!-- Dropdown for filtering by category -->
+    <label for="category-filter">Filter by Category:</label>
+    <select id="category-filter">
+        <option value="">All Categories</option>
+    </select>
+
+    <!-- Multi-select dropdown for filtering by tags -->
+    <label for="tags-filter">Filter by Tags:</label>
+    <select id="tags-filter" multiple>
     </select>
 
     <ul id="article-list"></ul>
 
     <script>
-        // Fetch and populate the site dropdown
-        async function fetchSites() {
-            const response = await fetch('/api/sites/'); // Assuming you have an endpoint for sites
+        // Fetch and populate the category dropdown
+        async function fetchCategories() {
+            const response = await fetch('/api/sites/'); // Fetch sites from the API
             const sites = await response.json();
-            const siteFilter = document.getElementById('site-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const categories = new Set();
+
+            // Extract unique category_text values from sites
             sites.forEach(site => {
+                if (site.category_text) {
+                    categories.add(site.category_text); // Use category_text instead of category
+                }
+            });
+
+            // Populate the dropdown with categories
+            categories.forEach(category => {
                 const option = document.createElement('option');
-                option.value = site.id;
-                option.textContent = site.name;
-                siteFilter.appendChild(option);
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
             });
         }
 
-        // Fetch and display articles based on the selected site
+        // Fetch and populate the tags multi-select dropdown
+        async function fetchTags() {
+            const response = await fetch('/api/sites/'); // Fetch sites from the API
+            const sites = await response.json();
+            const tagsFilter = document.getElementById('tags-filter');
+            const tags = new Set();
+
+            // Extract unique tags_text values from sites
+            sites.forEach(site => {
+                site.tags_text.forEach(tag => {
+                    tags.add(tag); // Add each tag to the Set
+                });
+            });
+
+            // Populate the multi-select dropdown with tags
+            tags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = tag;
+                tagsFilter.appendChild(option);
+            });
+        }
+
+        // Fetch and display articles based on the selected category and tags
         async function fetchArticles() {
-            const siteFilter = document.getElementById('site-filter');
-            const selectedSite = siteFilter.value;
-            const response = await fetch(`/api/articles/?site=${selectedSite}`);
+            const categoryFilter = document.getElementById('category-filter');
+            const tagsFilter = document.getElementById('tags-filter');
+            const selectedCategory = categoryFilter.value;
+            const selectedTags = Array.from(tagsFilter.selectedOptions).map(option => option.value); // Get selected tags
+
+            let url = '/api/articles/';
+            const params = new URLSearchParams();
+
+            if (selectedCategory) {
+                params.append('site__category__value', selectedCategory); // Add category to query params
+            }
+            if (selectedTags.length > 0) {
+                selectedTags.forEach(tag => params.append('tags', tag)); // Add each tag to query params
+            }
+
+            if (params.toString()) {
+                url += `?${params.toString()}`; // Append query params to URL
+            }
+
+            console.log('Fetching URL:', url); // Debugging: Log the API URL being fetched
+
+            const response = await fetch(url);
             const data = await response.json();
+
+            console.log('Fetched Articles:', data); // Debugging: Log the fetched articles
+
             const articleList = document.getElementById('article-list');
             articleList.innerHTML = '';
             data.forEach(article => {
@@ -43,12 +103,22 @@
             });
         }
 
-        // Event listener for site filter change
-        document.getElementById('site-filter').addEventListener('change', fetchArticles);
+        // Add event listeners and initialize the page
+        document.addEventListener('DOMContentLoaded', function () {
+            const categoryFilter = document.getElementById('category-filter');
+            const tagsFilter = document.getElementById('tags-filter');
 
-        // Initialize the page
-        fetchSites();
-        fetchArticles();
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', fetchArticles);
+            }
+            if (tagsFilter) {
+                tagsFilter.addEventListener('change', fetchArticles);
+            }
+
+            fetchCategories();
+            fetchTags();
+            fetchArticles(); // Fetch articles on page load
+        });
     </script>
 </body>
 </html>
