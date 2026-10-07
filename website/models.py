@@ -63,6 +63,7 @@ class Sites(models.Model):
     hidden          = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
     auto_post       = models.BooleanField(default=True, help_text="Can this site's articles be automatically posted to social media?", verbose_name="Auto Post")
     load_error      = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
+    recap           = models.BooleanField(default=True, help_text="Include this site's articles in the weekly newsletter recap?", verbose_name="Include in Recap")
     description     = models.TextField(max_length=2000, blank=False, null=False, help_text="Explanation of the site", verbose_name="Site Description")
     # Metadata
     class Meta:

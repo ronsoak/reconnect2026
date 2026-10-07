@@ -8,6 +8,9 @@
 #   Dry Run:    python manage.py import_sites --file website/reconnect2026_test.csv --dry-run
 #   1st Error:  python manage.py import_sites --file website/reconnect2026_test.csv --stop-on-first-error
 #
+# Optional column: recap (true/false). If the column is missing or a cell is blank,
+# new sites default to true and existing sites are left unchanged.
+#
 # ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
 import csv
 
@@ -118,6 +121,10 @@ class Command(BaseCommand):
                         "load_error": parse_bool(row["load_error"]),
                         "description": row["description"].strip(),
                     }
+
+                    recap_value = (row.get("recap") or "").strip()
+                    if recap_value:
+                        defaults["recap"] = parse_bool(recap_value)
 
                     existing_site = Sites.objects.filter(url=site_url).first()
                     action = "Update" if existing_site else "Create"

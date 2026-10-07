@@ -286,3 +286,72 @@ class HomePageTests(TestCase):
         self.assertTemplateUsed(response, "base.html")
         self.assertTemplateUsed(response, "components/header.html")
         self.assertTemplateUsed(response, "components/footer.html")
+
+
+class AboutPageTests(TestCase):
+    def test_about_page_renders(self):
+        response = self.client.get("/about/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "about.html")
+
+
+class FilterBarTests(TestCase):
+    def test_multiple_selections_are_marked_checked(self):
+        first = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
+        second = Logic.objects.create(logic_type="CATEGORY", value="Board Games")
+        Logic.objects.create(logic_type="CATEGORY", value="TTRPGs")
+        response = self.client.get(f"/?category={first.pk}&category={second.pk}")
+        self.assertEqual(response.context["selected_categories"], [str(first.pk), str(second.pk)])
+        self.assertContains(response, "checked", count=2)
+
+
+class RecapImportTests(TestCase):
+    columns = ImportSitesCommandTests.columns + ["recap"]
+
+    def setUp(self):
+        self.site_type = Logic.objects.create(logic_type="SITE_TYPE", value="Website")
+        self.category = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
+        self.tag = Logic.objects.create(logic_type="TAG", value="News")
+
+    def run_import(self, recap):
+        row = {
+            "name": "Example Site", "url": "https://example.com",
+            "rss_feed": "https://example.com/feed.xml", "site_type": "Website",
+            "category": "Video Games", "tags": "News", "bluesky": "", "modifier": "2",
+            "batch_num": "0", "last_article": "0", "hidden": "false", "auto_post": "true",
+            "load_error": "false", "description": "Description", "recap": recap,
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file_path = Path(temp_dir) / "sites.csv"
+            with file_path.open("w", newline="", encoding="utf-8") as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=self.columns)
+                writer.writeheader()
+                writer.writerow(row)
+            call_command("import_sites", file=str(file_path), stdout=StringIO())
+
+    def test_new_site_defaults_to_recap(self):
+        self.run_import("")
+        self.assertTrue(Sites.objects.get().recap)
+
+    def test_recap_false_is_imported(self):
+        self.run_import("false")
+        self.assertFalse(Sites.objects.get().recap)
+
+    def test_blank_recap_leaves_existing_value(self):
+        self.run_import("false")
+        self.run_import("")
+        self.assertFalse(Sites.objects.get().recap)
+
+
+class RobotsAndSitemapTests(TestCase):
+    def test_robots_txt(self):
+        response = self.client.get("/robots.txt")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/plain")
+        self.assertContains(response, "Disallow: /backdoor/")
+        self.assertContains(response, "Sitemap: http://testserver/sitemap.xml")
+
+    def test_sitemap_lists_public_pages(self):
+        response = self.client.get("/sitemap.xml")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "http://testserver/about/")

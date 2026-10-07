@@ -1,43 +1,16 @@
-<div class="has-background-white-bis py-3">
+<div class="has-background-white-bis py-4">
   <form method="get" action="{% url 'home' %}" class="container px-4">
-    <div class="columns is-mobile is-multiline is-vcentered">
-      <div class="column is-full-mobile is-narrow-tablet">
-        <div class="field is-horizontal">
-          <label class="label mr-3 mt-2" for="filter-category">Site type</label>
-          <div class="select is-rounded is-fullwidth">
-            <select id="filter-category" name="category">
-              <option value="">All sites</option>
-              {% for item in categories %}<option value="{{ item.pk }}" {% if request.GET.category == item.pk|stringformat:"s" %}selected{% endif %}>{{ item.value }}</option>{% endfor %}
-            </select>
-          </div>
-        </div>
+    <div class="is-flex is-flex-wrap-wrap is-align-items-flex-start is-gap-3">
+      {% include "components/filter_multiselect.html" with label="Site type" name="category" items=categories selected=selected_categories %}
+      {% include "components/filter_multiselect.html" with label="Genre" name="tag" items=tags selected=selected_tags %}
+      <div class="select is-rounded">
+        <select name="feed" aria-label="Feed order">
+          <option value="dynamic">Dynamic</option>
+          <option value="newest" {% if request.GET.feed == "newest" %}selected{% endif %}>Newest</option>
+          <option value="popular" {% if request.GET.feed == "popular" %}selected{% endif %}>Popular</option>
+        </select>
       </div>
-      <div class="column is-full-mobile is-narrow-tablet">
-        <div class="field is-horizontal">
-          <label class="label mr-3 mt-2" for="filter-tag">Genre</label>
-          <div class="select is-rounded is-fullwidth">
-            <select id="filter-tag" name="tag">
-              <option value="">All genres</option>
-              {% for item in tags %}<option value="{{ item.pk }}" {% if request.GET.tag == item.pk|stringformat:"s" %}selected{% endif %}>{{ item.value }}</option>{% endfor %}
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="column is-full-mobile is-narrow-tablet">
-        <div class="field is-horizontal">
-          <label class="label mr-3 mt-2" for="filter-feed">Dynamic</label>
-          <div class="select is-rounded is-fullwidth">
-            <select id="filter-feed" name="feed">
-              <option value="dynamic">Dynamic</option>
-              <option value="newest" {% if request.GET.feed == "newest" %}selected{% endif %}>Newest</option>
-              <option value="popular" {% if request.GET.feed == "popular" %}selected{% endif %}>Popular</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="column is-narrow">
-        <button class="button is-link is-rounded" type="submit">Apply</button>
-      </div>
+      <button class="button is-link is-rounded" type="submit">Apply</button>
     </div>
   </form>
 </div>

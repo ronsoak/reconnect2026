@@ -1,0 +1,16 @@
+{# Multiple choice filter. Expects: label, name, items (Logic rows), selected (list of selected pk strings) #}
+<details class="filter-multiselect">
+  <summary class="button is-rounded">
+    {{ label }}{% if selected %}&nbsp;({{ selected|length }}){% endif %}
+  </summary>
+  <div class="box mt-2">
+    {% for item in items %}
+      <label class="checkbox is-block mb-2">
+        <input type="checkbox" name="{{ name }}" value="{{ item.pk }}" {% if item.pk|stringformat:"s" in selected %}checked{% endif %}>
+        {{ item.value }}
+      </label>
+    {% empty %}
+      <p class="has-text-grey">Nothing to choose yet</p>
+    {% endfor %}
+  </div>
+</details>

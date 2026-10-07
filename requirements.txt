@@ -1,0 +1,9 @@
+Django==6.0.6
+django-filter==26.1
+django-unfold==0.99.1
+djangorestframework==3.18.0
+feedparser==6.0.12
+interruptingcow==0.8
+linkpreview==0.12.1
+python-decouple==3.8
+requests==2.34.2
