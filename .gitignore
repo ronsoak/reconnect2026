@@ -38,3 +38,5 @@ htmlcov/
 # Other
 agents.md
 SKILL.md 
+/helper_image*
+/helper_image/*

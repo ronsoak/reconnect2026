@@ -1,0 +1,21 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Reconnect{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/bulma.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="site-body">
+  {% include "components/header.html" %}
+  <main class="section site-main pt-5">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  {% include "components/footer.html" %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

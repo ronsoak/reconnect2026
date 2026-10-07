@@ -1,0 +1,15 @@
+/* Keeps the footer at the bottom of short pages */
+.site-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.site-main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+.has-text-inherit {
+  color: inherit;
+}

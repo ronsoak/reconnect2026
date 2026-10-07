@@ -1,0 +1,13 @@
+{# Hamburger menu using the Bulma hoverable dropdown. Add an entry per page as it is built. #}
+<div class="dropdown is-right is-hoverable">
+  <div class="dropdown-trigger">
+    <button class="button is-white" aria-haspopup="true" aria-label="Open menu">
+      <span class="icon">&#9776;</span>
+    </button>
+  </div>
+  <div class="dropdown-menu" role="menu">
+    <div class="dropdown-content">
+      <a href="{% url 'home' %}" class="dropdown-item">Home</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<header class="site-header">
+  <div class="container px-4 pt-3">
+    <div class="level is-mobile mb-3">
+      <div class="level-left">
+        <a href="{% url 'home' %}" class="has-text-link-dark">
+          <p class="title is-3 mb-0">Reconnect</p>
+          <p class="subtitle is-6 has-text-grey mb-0">Discover games writing</p>
+        </a>
+      </div>
+      <div class="level-right">
+        {% include "components/menu.html" %}
+      </div>
+    </div>
+    {% include "components/search_bar.html" %}
+  </div>
+  {% include "components/filter_bar.html" %}
+</header>

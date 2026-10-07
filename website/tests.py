@@ -277,3 +277,12 @@ class ImportArticlesCommandTests(TestCase):
         self.article.refresh_from_db()
         self.assertEqual(self.article.title, "Original Title")
         self.assertEqual(self.article.clicks, 7)
+
+
+class HomePageTests(TestCase):
+    def test_home_renders_base_layout(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "base.html")
+        self.assertTemplateUsed(response, "components/header.html")
+        self.assertTemplateUsed(response, "components/footer.html")
