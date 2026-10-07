@@ -36,3 +36,7 @@ htmlcov/
 # Django migrations
 */migrations/
 !*/migrations/__init__.py
+
+# Other
+agents.md
+SKILL.md 
