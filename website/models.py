@@ -52,8 +52,8 @@ class Sites(models.Model):
     name            = models.CharField(max_length=256, blank=False, null=False, help_text="Name of the Site", verbose_name="Name")
     url             = models.URLField(blank=False, null=False, help_text="Top level URL of the Site", verbose_name="Site URL")
     rss_feed        = models.URLField(blank=False, null=False, help_text="The URL of the Feed", verbose_name="Feed URL")
-    site_type       = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'SITE_TYPE'},related_name='site_type',verbose_name="Type",help_text="Select a type for this site",null=True,)
-    category        = models.ForeignKey('Logic',on_delete=models.CASCADE,limit_choices_to={'logic_type': 'CATEGORY'},related_name='site_category',verbose_name="Category",help_text="Select a category for this site",)
+    site_type       = models.ForeignKey('Logic',on_delete=models.PROTECT,limit_choices_to={'logic_type': 'SITE_TYPE'},related_name='site_type',verbose_name="Type",help_text="Select a type for this site",null=True,)
+    category        = models.ForeignKey('Logic',on_delete=models.PROTECT,limit_choices_to={'logic_type': 'CATEGORY'},related_name='site_category',verbose_name="Category",help_text="Select a category for this site",)
     tags            = models.ManyToManyField('Logic',limit_choices_to={'logic_type': 'TAG'},related_name='site_tag',verbose_name="Tags",help_text="Select tags for this site",)
     bluesky         = models.CharField(max_length=256, blank=True, null=False, help_text="Bluesky Handle", verbose_name="Bluesky")
     modifier        = models.FloatField(default=2, blank=True, help_text="Rank Modifier", verbose_name="Modifier Value")
@@ -98,7 +98,7 @@ class Articles(models.Model):
     title       = models.CharField(max_length=256,blank=False,null=False,help_text="", verbose_name="Article Title")
     url         = models.URLField(blank=False,null=False, help_text="", verbose_name="Article URL")
     image_url   = models.CharField(max_length=512,blank=False,null=False,help_text="", verbose_name="Image Reference")
-    site        = models.ForeignKey(Sites, on_delete=models.CASCADE)
+    site        = models.ForeignKey(Sites, on_delete=models.PROTECT)
     published   = models.DateField(null=True, blank=True, help_text="The date the article was published", verbose_name="Published Date")
     created     = models.DateTimeField(auto_now_add=True,null=True, blank=True, help_text="The date the article was created in the site", verbose_name="Created Date") 
     run_id      = models.IntegerField(default=0, help_text="The id of the run that this article was part of", verbose_name="Run Id")
@@ -183,9 +183,9 @@ class Logging(models.Model):
 # ===== ===== ===== ===== ===== ===== ===== =====
 class Clicks(models.Model):
     # Fields
-    type        = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'CLICK_TYPE'}, related_name='click_type', verbose_name="Click Type", help_text="The type of click registered",  null=True)
+    type        = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'CLICK_TYPE'}, related_name='click_type', verbose_name="Click Type", help_text="The type of click registered",  null=True)
     article     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Article ID")
-    site        = models.ForeignKey(Sites, on_delete=models.CASCADE,null=True)
+    site        = models.ForeignKey(Sites, on_delete=models.PROTECT,null=True)
     date        = models.DateField(default=timezone.now,help_text="",verbose_name="Vote Date")
     # Metadata
     class Meta:
@@ -227,7 +227,7 @@ class Adverts(models.Model):
     start_date  = models.DateField(null=False, blank=False, help_text="The start date of the advert", verbose_name="Start Date")
     end_date    = models.DateField(null=False, blank=False, help_text="The end date of the advert", verbose_name="End Date")
     concurrency = models.IntegerField(default=1, help_text="Maximum amount of times this can appear on a page", verbose_name="Concurrency")
-    advert_size = models.ForeignKey('Logic', on_delete=models.CASCADE, limit_choices_to={'logic_type': 'AD_SIZE'}, related_name='advert_size', verbose_name="Advert Size", help_text="The size of this advert",  null=True)
+    advert_size = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'AD_SIZE'}, related_name='advert_size', verbose_name="Advert Size", help_text="The size of this advert",  null=True)
     # Metadata
     class Meta:
         db_table = "adverts"

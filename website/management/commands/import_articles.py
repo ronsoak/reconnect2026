@@ -43,32 +43,32 @@ def detect_field_to_match(model, candidate_fields=("name", "title", "site", "sit
 
 
 def parse_bool(value: Any) -> bool:
-    if value is None:
-        return False
     v = str(value).strip().lower()
     if v in ("1", "true", "t", "yes", "y", "on"):
         return True
     if v in ("0", "false", "f", "no", "n", "off", ""):
         return False
-    return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
 
 
 def parse_int(value: Any, default: int = 0) -> int:
-    try:
-        if value is None or str(value).strip() == "":
-            return default
-        return int(float(str(value).strip()))
-    except Exception:
+    normalized = "" if value is None else str(value).strip()
+    if not normalized:
         return default
+    try:
+        return int(normalized)
+    except ValueError as exc:
+        raise ValueError(f"Invalid integer value: {value!r}") from exc
 
 
 def parse_float(value: Any, default: float = 0.0) -> float:
-    try:
-        if value is None or str(value).strip() == "":
-            return default
-        return float(str(value).strip())
-    except Exception:
+    normalized = "" if value is None else str(value).strip()
+    if not normalized:
         return default
+    try:
+        return float(normalized)
+    except ValueError as exc:
+        raise ValueError(f"Invalid numeric value: {value!r}") from exc
 
 
 def parse_date(value: Any) -> Optional[datetime.date]:
@@ -172,15 +172,21 @@ class Command(BaseCommand):
 
                 image_url = row.get("image_url") or row.get("image") or row.get("imageurl") or ""
                 published = parse_date(row.get("published") or row.get("publish_date") or None)
-                run_id = parse_int(row.get("run_id"), default=0)
-                boost = parse_float(row.get("boost"), default=0.0)
-                clicks = parse_float(row.get("clicks"), default=0.0)
-                modifier = parse_float(row.get("modifier"), default=1.0)
-                # boolean flags
-                hidden = parse_bool(row.get("hidden"))
-                site_hide = parse_bool(row.get("site_hide"))
-                manual_post = parse_bool(row.get("manual_post"))
-                bluesky = parse_bool(row.get("bluesky"))
+                optional_fields = {
+                    "run_id": parse_int,
+                    "boost": parse_float,
+                    "clicks": parse_float,
+                    "modifier": parse_float,
+                    "hidden": parse_bool,
+                    "site_hide": parse_bool,
+                    "manual_post": parse_bool,
+                    "bluesky": parse_bool,
+                }
+                parsed_optional_fields = {}
+                for field, parser in optional_fields.items():
+                    value = row.get(field)
+                    if value is not None and value.strip():
+                        parsed_optional_fields[field] = parser(value)
                 created_field = None
                 created_raw = row.get("created")
                 if created_raw:
@@ -216,16 +222,9 @@ class Command(BaseCommand):
                     "title": title,
                     "image_url": image_url,
                     "published": published,
-                    "run_id": run_id,
-                    "boost": boost,
-                    "clicks": clicks,
-                    "modifier": modifier,
-                    "hidden": hidden,
-                    "site_hide": site_hide,
-                    "manual_post": manual_post,
-                    "bluesky": bluesky,
                     "site": site_obj,
                 }
+                defaults.update(parsed_optional_fields)
                 if created_field is not None:
                     defaults["created"] = created_field
 
@@ -260,3 +259,7 @@ class Command(BaseCommand):
             self.stdout.write(f"  Created: {created}")
             self.stdout.write(f"  Updated: {updated}")
         self.stdout.write(f"  Errors: {errors}")
+        if errors:
+            raise CommandError(
+                f"Import completed with {errors} row error(s); see errors above."
+            )
