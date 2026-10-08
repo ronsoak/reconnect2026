@@ -180,14 +180,13 @@ class Logging(models.Model):
     
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
-# Clicks - 
+# Clicks
 # ===== ===== ===== ===== ===== ===== ===== =====
 class Clicks(models.Model):
     # Fields
     type        = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'CLICK_TYPE'}, related_name='click_type', verbose_name="Click Type", help_text="The type of click registered",  null=True)
     article     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Article ID")
     site        = models.ForeignKey(Sites, on_delete=models.PROTECT,null=True)
-    clicks      = models.FloatField(default=0,blank=False,help_text="Count of link clicks",verbose_name="Click Count")
     date        = models.DateField(default=timezone.now,help_text="",verbose_name="Vote Date")
     # Metadata
     class Meta:
@@ -229,6 +228,7 @@ class Adverts(models.Model):
     start_date  = models.DateField(null=False, blank=False, help_text="The start date of the advert", verbose_name="Start Date")
     end_date    = models.DateField(null=False, blank=False, help_text="The end date of the advert", verbose_name="End Date")
     concurrency = models.IntegerField(default=1, help_text="Maximum amount of times this can appear on a page", verbose_name="Concurrency")
+    clicks      = models.FloatField(default=0, blank=False, help_text="Count of link clicks", verbose_name="Click Count")
     advert_size = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'AD_SIZE'}, related_name='advert_size', verbose_name="Advert Size", help_text="The size of this advert")
     # Metadata
     class Meta:

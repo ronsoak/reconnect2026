@@ -7,10 +7,11 @@ from django.db.models import F
 from django.http import HttpResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
 from .feed import build_dynamic_feed, build_ordered_feed, search_articles
-from .models import Articles, Clicks, Logic
+from .models import Adverts, Articles, Clicks, Logic
 
 
 FILTER_COOKIE = "reconnect_filters"
@@ -133,6 +134,35 @@ def read_recent_clicks(request, now):
         return {}
 
 
+def count_click(request, key, record):
+    """
+    Runs record() (which saves the click) unless this browser already counted `key` in the last
+    24 hours. Returns the cookie value to save, or None when nothing was counted.
+    """
+    now = int(time.time())
+    recent = read_recent_clicks(request, now)
+    if key in recent:
+        return None
+    with transaction.atomic():
+        record()
+    recent[key] = now
+    newest = dict(sorted(recent.items(), key=lambda item: item[1])[-CLICK_COOKIE_MAX_ENTRIES:])
+    return signing.dumps(newest, salt=CLICK_COOKIE)
+
+
+def redirect_with_click_cookie(url, cookie_value):
+    response = HttpResponseRedirect(url)
+    if cookie_value:
+        response.set_cookie(
+            CLICK_COOKIE, cookie_value, max_age=CLICK_WINDOW_SECONDS, httponly=True, samesite="Lax"
+        )
+    return response
+
+
+def click_type(value):
+    return Logic.objects.filter(logic_type="CLICK_TYPE", value=value).first()
+
+
 def go_article(request, pk):
     """
     Counts a click on an article, then sends the visitor on to it.
@@ -141,26 +171,35 @@ def go_article(request, pk):
     Example: /go/123/
     """
     article = get_object_or_404(Articles.objects.select_related("site"), pk=pk, hidden=False, site_hide=False)
-    now = int(time.time())
-    recent = read_recent_clicks(request, now)
 
-    counted = str(article.pk) not in recent
-    if counted:
-        with transaction.atomic():
-            # F() adds to the stored value, so simultaneous clicks are not lost
-            Articles.objects.filter(pk=article.pk).update(clicks=F("clicks") + 1)
-            click_type = Logic.objects.filter(logic_type="CLICK_TYPE", value="Article").first()
-            Clicks.objects.create(type=click_type, article=str(article.pk), site=article.site)
-        recent[str(article.pk)] = now
+    def record():
+        # F() adds to the stored value, so simultaneous clicks are not lost
+        Articles.objects.filter(pk=article.pk).update(clicks=F("clicks") + 1)
+        Clicks.objects.create(type=click_type("Article"), article=str(article.pk), site=article.site)
 
-    response = HttpResponseRedirect(article.url)
-    if counted:
-        newest = dict(sorted(recent.items(), key=lambda item: item[1])[-CLICK_COOKIE_MAX_ENTRIES:])
-        response.set_cookie(
-            CLICK_COOKIE, signing.dumps(newest, salt=CLICK_COOKIE),
-            max_age=CLICK_WINDOW_SECONDS, httponly=True, samesite="Lax",
-        )
-    return response
+    cookie_value = count_click(request, str(article.pk), record)
+    return redirect_with_click_cookie(article.url, cookie_value)
+
+
+def go_advert(request, pk):
+    """
+    Counts a click on an advert, then sends the visitor to the advertiser.
+    Same rules as articles: once per advert per browser every 24 hours, recorded in the Clicks
+    model with the Advert type (its article column holds the advert id). Adverts that are
+    not running today still redirect, so an old open page keeps working, but are not counted.
+    Example: /go/ad/4/
+    """
+    advert = get_object_or_404(Adverts, pk=pk)
+    today = timezone.localdate()
+    if not advert.start_date <= today <= advert.end_date:
+        return HttpResponseRedirect(advert.site_url)
+
+    def record():
+        Adverts.objects.filter(pk=advert.pk).update(clicks=F("clicks") + 1)
+        Clicks.objects.create(type=click_type("Advert"), article=str(advert.pk))
+
+    cookie_value = count_click(request, f"ad{advert.pk}", record)
+    return redirect_with_click_cookie(advert.site_url, cookie_value)
 
 
 def about(request):

@@ -71,7 +71,7 @@ class HomeFeedTests(TestCase):
         response = self.client.get("/")
         self.assertTemplateUsed(response, "components/advert_card.html")
         self.assertContains(response, "Try this blog")
-        self.assertContains(response, 'href="https://blog.example.com"')
+        self.assertContains(response, 'href="/go/ad/')
 
 
 class FilterCookieTests(TestCase):
