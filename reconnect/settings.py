@@ -126,7 +126,9 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / "media"
+# Uploaded files. On Railway attach a Volume and set MEDIA_ROOT to its mount path
+# (e.g. MEDIA_ROOT=/data/media), otherwise uploads are lost on every deploy.
+MEDIA_ROOT = config("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 
 # API: public, read-only, JSON only, with a basic per-visitor limit
 REST_FRAMEWORK = {

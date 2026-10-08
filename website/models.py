@@ -225,7 +225,7 @@ class Adverts(models.Model):
     message     = models.CharField(max_length=256,blank=False,null=False,help_text="Message shown in advert", verbose_name="Advert Message")
     site_name   = models.CharField(max_length=256,blank=True,null=True,help_text="The name of the site, shown to user", verbose_name="Advert Site")
     site_url    = models.URLField(blank=False,null=False, help_text="The link the advert goes to", verbose_name="Advert URL")
-    # image       =
+    image       = models.ImageField(upload_to="adverts/", blank=True, help_text="Optional image shown on the advert card", verbose_name="Advert Image")
     start_date  = models.DateField(null=False, blank=False, help_text="The start date of the advert", verbose_name="Start Date")
     end_date    = models.DateField(null=False, blank=False, help_text="The end date of the advert", verbose_name="End Date")
     concurrency = models.IntegerField(default=1, help_text="Maximum amount of times this can appear on a page", verbose_name="Concurrency")

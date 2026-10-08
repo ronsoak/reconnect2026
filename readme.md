@@ -167,4 +167,14 @@ Each script has its own usage examples at the top of its file. Add `--dry-run` w
 3. Run `python manage.py migrate --noinput`.
 4. Run `python manage.py seed_db`, then the import scripts.
 
+### Uploaded images (advert images)
+
+Railway wipes the container's disk on every deploy, so uploads must live on a Volume:
+
+1. In Railway, add a Volume to the service and mount it at `/data`.
+2. Set the environment variable `MEDIA_ROOT=/data/media`.
+3. Upload advert images in the admin as normal. They are saved to the volume and served from `/media/`.
+
+Locally, with no `MEDIA_ROOT` set, uploads go to the `media/` folder next to `manage.py`. Back up the volume as well as the database.
+
 `reconnect/settings.py` is still a development configuration (`DEBUG`, `ALLOWED_HOSTS`, SQLite). Harden it before going live.

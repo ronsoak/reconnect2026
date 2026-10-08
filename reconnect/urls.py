@@ -15,11 +15,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
-from django.conf.urls.static import static
+from django.views.static import serve
+
+def serve_media(request, path):
+    return serve(request, path, document_root=settings.MEDIA_ROOT)
+
 
 urlpatterns = [
     path('backdoor/', admin.site.urls),
-    path('', include('website.urls')), 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('', include('website.urls')),
+    # Serves uploads (advert images) in production too, as the volume is read by Django itself
+    re_path(r'^media/(?P<path>.*)$', serve_media),
+]

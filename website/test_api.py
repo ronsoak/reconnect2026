@@ -64,7 +64,7 @@ class ApiTests(TestCase):
         )
         cards = self.client.get("/api/feed/?feed=newest").json()["cards"]
         advert = next(c for c in cards if c["kind"] == "advert")
-        self.assertEqual(set(advert["item"]), {"id", "message", "site_name", "site_url"})
+        self.assertEqual(set(advert["item"]), {"id", "message", "site_name", "site_url", "image"})
 
     def test_bad_feed_and_junk_ids(self):
         self.assertEqual(self.client.get("/api/feed/?feed=nope").status_code, 400)

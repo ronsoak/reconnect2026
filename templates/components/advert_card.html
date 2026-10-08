@@ -2,7 +2,9 @@
 {% with advert=card.item %}
 <article class="card feed-card feed-card--{{ card.size }} has-background-warning-light">
   <a href="{{ advert.site_url }}" target="_blank" rel="noopener noreferrer sponsored" class="feed-card__link">
-    <div class="feed-card__image has-background-warning-light"></div>
+    <div class="feed-card__image has-background-warning-light">
+      {% if advert.image %}<img src="{{ advert.image.url }}" alt="" loading="lazy">{% endif %}
+    </div>
     <div class="card-content p-3">
       <span class="tag is-warning is-rounded mb-2">Advert</span>
       <p class="title is-6 feed-card__title">{{ advert.message }}</p>

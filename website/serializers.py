@@ -30,7 +30,12 @@ class ArticleSerializer(serializers.ModelSerializer):
 class AdvertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Adverts
-        fields = ["id", "message", "site_name", "site_url"]
+        fields = ["id", "message", "site_name", "site_url", "image"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["image"] = instance.image.url if instance.image else ""
+        return data
 
 
 class CardSerializer(serializers.Serializer):
