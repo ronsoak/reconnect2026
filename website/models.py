@@ -228,7 +228,7 @@ class Adverts(models.Model):
     start_date  = models.DateField(null=False, blank=False, help_text="The start date of the advert", verbose_name="Start Date")
     end_date    = models.DateField(null=False, blank=False, help_text="The end date of the advert", verbose_name="End Date")
     concurrency = models.IntegerField(default=1, help_text="Maximum amount of times this can appear on a page", verbose_name="Concurrency")
-    advert_size = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'AD_SIZE'}, related_name='advert_size', verbose_name="Advert Size", help_text="The size of this advert",  null=True)
+    advert_size = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'AD_SIZE'}, related_name='advert_size', verbose_name="Advert Size", help_text="The size of this advert")
     # Metadata
     class Meta:
         db_table = "adverts"

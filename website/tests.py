@@ -6,9 +6,10 @@ from io import StringIO
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
+from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
 
-from website.models import Articles, Logic, Sites
+from website.models import Adverts, Articles, Logic, Sites
 
 
 class ImportSitesCommandTests(TestCase):
@@ -355,3 +356,22 @@ class RobotsAndSitemapTests(TestCase):
         response = self.client.get("/sitemap.xml")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "http://testserver/about/")
+
+
+class AdvertSizeRequiredTests(TestCase):
+    advert_fields = {
+        "title": "Test advert",
+        "message": "Hello",
+        "site_url": "https://example.com",
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+    }
+
+    def test_advert_without_size_is_rejected_by_the_database(self):
+        with self.assertRaises(IntegrityError):
+            Adverts.objects.create(**self.advert_fields)
+
+    def test_advert_with_size_is_saved(self):
+        size = Logic.objects.create(logic_type="AD_SIZE", value="Feed Small")
+        advert = Adverts.objects.create(advert_size=size, **self.advert_fields)
+        self.assertEqual(advert.advert_size, size)
