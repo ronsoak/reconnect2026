@@ -119,7 +119,7 @@ def visible_articles(category_ids=None, tag_ids=None):
 def pick_newest(pool, count):
     """Newest first by published date. Articles sharing a date go by run_id, lowest first."""
     return list(
-        pool.select_related("site").order_by("-published", "run_id", "pk")[:count]
+        pool.select_related("site__category").order_by("-published", "run_id", "pk")[:count]
     )
 
 
@@ -133,7 +133,7 @@ def pick_random(pool, count, exclude_ids, today, rng):
         .values_list("pk", flat=True)
     )
     chosen_ids = rng.sample(candidate_ids, min(count, len(candidate_ids)))
-    return list(Articles.objects.filter(pk__in=chosen_ids).select_related("site"))
+    return list(Articles.objects.filter(pk__in=chosen_ids).select_related("site__category"))
 
 
 def pick_popular(pool, count, exclude_ids, rng):
@@ -144,7 +144,7 @@ def pick_popular(pool, count, exclude_ids, rng):
     pool_size = max(POPULAR_POOL_SIZE, count)
     candidates = list(
         pool.exclude(pk__in=exclude_ids)
-        .select_related("site")
+        .select_related("site__category")
         .order_by("-rank", "-published", "run_id", "pk")[:pool_size]
     )
     return rng.sample(candidates, min(count, len(candidates)))

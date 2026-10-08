@@ -1,0 +1,14 @@
+{# The card grid. Expects: cards (a list of FeedCard objects) #}
+{% if cards %}
+  <div class="feed-grid">
+    {% for card in cards %}
+      {% if card.is_advert %}
+        {% include "components/advert_card.html" %}
+      {% else %}
+        {% include "components/article_card.html" %}
+      {% endif %}
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="has-text-centered has-text-grey py-6">No articles match these filters.</p>
+{% endif %}
