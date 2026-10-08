@@ -160,6 +160,7 @@ Each script has its own usage examples at the top of its file. Add `--dry-run` w
 | `filter_articles` | Hides articles that match keywords in the Logic model |
 | `age_articles` | Lowers article rank so popular articles do not stay on top |
 | `aggregate_clicks` | Totals last month's clicks into the Analytics model (`--month 2026-09`, `--month current`, `--dry-run`). Run it before purging clicks |
+| `purge_clicks` | Deletes the month of Clicks that is four months old (keeps about 90 days). Refuses unless Analytics already matches. `--dry-run`, `--month`, `--force` |
 
 ## Deploying
 
