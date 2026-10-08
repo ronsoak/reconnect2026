@@ -1,0 +1,10 @@
+{# Feed switcher. Expects active_feed ("dynamic", "newest" or "popular") #}
+<div class="container px-4 mt-4">
+  <div class="tabs is-toggle is-small">
+    <ul>
+      <li {% if active_feed == "dynamic" %}class="is-active"{% endif %}><a href="{% url 'home' %}">Dynamic</a></li>
+      <li title="Coming soon"><a class="has-text-grey-light" aria-disabled="true">Newest</a></li>
+      <li title="Coming soon"><a class="has-text-grey-light" aria-disabled="true">Popular</a></li>
+    </ul>
+  </div>
+</div>

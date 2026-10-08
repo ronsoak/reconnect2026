@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+  {% include "components/feed_tabs.html" %}
   {% include "components/feed_grid.html" %}
+  {% if active_feed == "dynamic" %}{% include "components/refresh_button.html" %}{% endif %}
 {% endblock %}

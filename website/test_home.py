@@ -72,3 +72,53 @@ class HomeFeedTests(TestCase):
         self.assertTemplateUsed(response, "components/advert_card.html")
         self.assertContains(response, "Try this blog")
         self.assertContains(response, 'href="https://blog.example.com"')
+
+
+class FilterCookieTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.video = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
+        cls.cards = Logic.objects.create(logic_type="CATEGORY", value="Card Games")
+
+    def test_applied_filters_are_saved_for_a_year(self):
+        response = self.client.get(f"/?apply=1&category={self.video.pk}&category={self.cards.pk}")
+        cookie = response.cookies["reconnect_filters"]
+        self.assertEqual(cookie["max-age"], 60 * 60 * 24 * 365)
+        self.assertIn(f"category={self.video.pk}", cookie.value)
+
+    def test_saved_filters_are_used_when_url_has_none(self):
+        self.client.get(f"/?apply=1&category={self.video.pk}")
+        response = self.client.get("/")
+        self.assertEqual(response.context["selected_categories"], [str(self.video.pk)])
+
+    def test_url_wins_over_cookie(self):
+        self.client.get(f"/?apply=1&category={self.video.pk}")
+        response = self.client.get(f"/?apply=1&category={self.cards.pk}")
+        self.assertEqual(response.context["selected_categories"], [str(self.cards.pk)])
+
+    def test_apply_with_nothing_selected_clears_choices(self):
+        self.client.get(f"/?apply=1&category={self.video.pk}")
+        response = self.client.get("/?apply=1")
+        self.assertEqual(response.context["selected_categories"], [])
+        self.assertEqual(self.client.get("/").context["selected_categories"], [])
+
+    def test_reset_clears_cookie_and_redirects(self):
+        self.client.get(f"/?apply=1&category={self.video.pk}")
+        response = self.client.get("/?reset=1")
+        self.assertRedirects(response, "/")
+        self.assertEqual(response.cookies["reconnect_filters"].value, "")
+        self.assertEqual(self.client.get("/").context["selected_categories"], [])
+
+    def test_junk_cookie_values_are_ignored(self):
+        self.client.cookies["reconnect_filters"] = "category=abc&category=%27%3B&tag=9"
+        response = self.client.get("/")
+        self.assertEqual(response.context["selected_categories"], [])
+        self.assertEqual(response.context["selected_tags"], ["9"])
+
+    def test_refresh_button_only_on_dynamic_feed(self):
+        self.assertContains(self.client.get("/"), "refresh-button")
+        self.assertNotContains(self.client.get("/about/"), "refresh-button")
+
+    def test_filters_also_apply_to_other_pages(self):
+        self.client.get(f"/?apply=1&category={self.video.pk}")
+        self.assertEqual(self.client.get("/about/").context["selected_categories"], [str(self.video.pk)])

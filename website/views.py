@@ -1,36 +1,71 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, QueryDict
+from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
 
 from .feed import build_dynamic_feed
 from .models import Logic
 
 
-def selected_ids(request, name):
-    """Whole-number ids from a repeated parameter. Anything else is ignored."""
-    return [value for value in request.GET.getlist(name) if value.isascii() and value.isdigit()]
+FILTER_COOKIE = "reconnect_filters"
+FILTER_COOKIE_MAX_AGE = 60 * 60 * 24 * 365  # 12 months
+
+
+def current_filters(request):
+    """
+    The category and tag ids to use for this request, plus whether they came from the URL.
+    The URL wins (Apply submits it). With nothing in the URL the saved cookie is used.
+    Choices are repeated parameters, e.g. /?category=1&category=2&tag=5
+    """
+    if "apply" in request.GET or "category" in request.GET or "tag" in request.GET:
+        source, from_url = request.GET, True
+    else:
+        source, from_url = QueryDict(request.COOKIES.get(FILTER_COOKIE, "")), False
+    categories = [v for v in source.getlist("category") if v.isascii() and v.isdigit()]
+    tags = [v for v in source.getlist("tag") if v.isascii() and v.isdigit()]
+    return categories, tags, from_url
 
 
 def filter_context(request):
-    """
-    Options and current selections for the header filters.
-    Multiple choices are sent as repeated parameters, e.g. /?category=1&category=2&tag=5
-    """
+    """Options and current selections for the header filters."""
+    categories, tags, _ = current_filters(request)
     return {
         "categories": Logic.objects.filter(logic_type="CATEGORY"),
         "tags": Logic.objects.filter(logic_type="TAG"),
-        "selected_categories": selected_ids(request, "category"),
-        "selected_tags": selected_ids(request, "tag"),
+        "selected_categories": categories,
+        "selected_tags": tags,
     }
 
 
+@never_cache
 def home(request):
+    """
+    Dynamic feed. Refreshing the page gives a new random batch.
+    /?reset=1 clears the saved filters.
+    """
+    if "reset" in request.GET:
+        response = redirect("home")
+        response.delete_cookie(FILTER_COOKIE)
+        return response
+
     context = filter_context(request)
     context["cards"] = build_dynamic_feed(
         category_ids=[int(value) for value in context["selected_categories"]],
         tag_ids=[int(value) for value in context["selected_tags"]],
     )
-    return render(request, "home.html", context)
+    context["active_feed"] = "dynamic"
+    response = render(request, "home.html", context)
+
+    # Remember filters the user has just applied
+    _, _, from_url = current_filters(request)
+    if from_url:
+        saved = QueryDict(mutable=True)
+        saved.setlist("category", context["selected_categories"])
+        saved.setlist("tag", context["selected_tags"])
+        response.set_cookie(
+            FILTER_COOKIE, saved.urlencode(), max_age=FILTER_COOKIE_MAX_AGE, samesite="Lax"
+        )
+    return response
 
 
 def about(request):

@@ -1,16 +1,12 @@
+{# Category and tag filters. Apply saves them for 12 months, Reset clears them #}
 <div class="has-background-white-bis py-4">
   <form method="get" action="{% url 'home' %}" class="container px-4">
+    <input type="hidden" name="apply" value="1">
     <div class="is-flex is-flex-wrap-wrap is-align-items-flex-start is-gap-3">
       {% include "components/filter_multiselect.html" with label="Site type" name="category" items=categories selected=selected_categories %}
       {% include "components/filter_multiselect.html" with label="Genre" name="tag" items=tags selected=selected_tags %}
-      <div class="select is-rounded">
-        <select name="feed" aria-label="Feed order">
-          <option value="dynamic">Dynamic</option>
-          <option value="newest" {% if request.GET.feed == "newest" %}selected{% endif %}>Newest</option>
-          <option value="popular" {% if request.GET.feed == "popular" %}selected{% endif %}>Popular</option>
-        </select>
-      </div>
       <button class="button is-link is-rounded" type="submit">Apply</button>
+      <a class="button is-rounded" href="{% url 'home' %}?reset=1">Reset</a>
     </div>
   </form>
 </div>
