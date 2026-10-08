@@ -9,6 +9,6 @@
       {% endif %}
     {% endfor %}
   </div>
-{% else %}
+{% elif not hide_empty %}
   <p class="has-text-centered has-text-grey py-6">No articles match these filters.</p>
 {% endif %}

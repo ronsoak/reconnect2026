@@ -1,5 +1,5 @@
-<form method="get" action="{% url 'home' %}" role="search" class="mb-4">
+<form method="get" action="{% url 'search' %}" role="search" class="mb-4">
   <input class="input is-medium is-rounded" type="search" name="q"
          placeholder="Search articles, games, topics, and more..."
-         aria-label="Search articles" value="{{ request.GET.q }}">
+         aria-label="Search articles" value="{{ query|default:'' }}">
 </form>

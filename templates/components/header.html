@@ -13,5 +13,5 @@
     </div>
     {% include "components/search_bar.html" %}
   </div>
-  {% include "components/filter_bar.html" %}
+  {% if not hide_filters %}{% include "components/filter_bar.html" %}{% endif %}
 </header>

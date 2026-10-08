@@ -196,3 +196,66 @@ class OrderedFeedTests(TestCase):
     def test_no_refresh_button_on_newest_or_popular(self):
         self.assertNotContains(self.client.get("/newest/"), "refresh-button")
         self.assertNotContains(self.client.get("/popular/"), "refresh-button")
+
+
+class SearchTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cat = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
+        cls.site = Sites.objects.create(
+            name="Pixel Press", url="https://p.example.com", rss_feed="https://p.example.com/feed",
+            category=cat, description="x",
+        )
+        cls.hidden_site = Sites.objects.create(
+            name="Secret Zelda", url="https://s.example.com", rss_feed="https://s.example.com/feed",
+            category=cat, description="x", hidden=True,
+        )
+        today = timezone.localdate()
+        make = lambda title, site, days=0, **kw: Articles.objects.create(
+            title=title, url=f"https://x.example.com/{title}", image_url="", site=site,
+            published=today - timedelta(days=days), **kw)
+        cls.both = make("Zelda dragons", cls.site, 5)
+        cls.zelda = make("ZELDA review", cls.site, 1)
+        cls.dragon = make("Dragons everywhere", cls.site, 0)
+        cls.by_site = make("Unrelated", cls.site, 9)
+        make("Zelda hidden article", cls.site, 0, hidden=True)
+        make("Zelda in hidden site", cls.hidden_site, 0)
+
+    def titles(self, query):
+        return [c.item.title for c in self.client.get("/search/", {"q": query}).context["cards"]]
+
+    def test_case_insensitive_partial_term_match_ranked_by_matches(self):
+        self.assertEqual(self.titles("zelda dragons"),
+                         ["Zelda dragons", "Dragons everywhere", "ZELDA review"])
+
+    def test_matches_site_name(self):
+        self.assertIn("Unrelated", self.titles("pixel"))
+
+    def test_hidden_articles_and_sites_excluded(self):
+        titles = self.titles("zelda")
+        self.assertNotIn("Zelda hidden article", titles)
+        self.assertNotIn("Zelda in hidden site", titles)
+
+    def test_filters_do_not_apply(self):
+        self.client.get("/?apply=1&category=999")
+        self.assertIn("Zelda dragons", self.titles("zelda"))
+
+    def test_empty_query_and_no_results(self):
+        self.assertContains(self.client.get("/search/"), "Type something")
+        self.assertContains(self.client.get("/search/?q=nothingmatches"), "No articles found")
+
+    def test_results_are_small_cards_without_adverts_or_filter_bar(self):
+        response = self.client.get("/search/?q=zelda")
+        self.assertTrue(all(c.size == "small" and not c.is_advert for c in response.context["cards"]))
+        self.assertNotContains(response, 'name="apply"')
+
+    def test_pagination_keeps_the_search_text(self):
+        from website import feed
+        cards, page, _ = feed.search_articles("zelda", page=1, page_size=1)
+        self.assertEqual(len(cards), 1)
+        self.assertEqual(page.paginator.num_pages, 2)
+        response = self.client.get("/search/?q=zelda%20dragons&page=1")
+        self.assertNotContains(response, "Next</a>")
+
+    def test_odd_input_is_safe(self):
+        self.assertEqual(self.client.get("/search/?q=%25_%27%22&page=abc").status_code, 200)

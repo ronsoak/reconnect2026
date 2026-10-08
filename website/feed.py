@@ -23,6 +23,7 @@ from datetime import timedelta
 from typing import Any
 
 from django.core.paginator import Paginator
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.utils import timezone
 
 from .models import Adverts, Articles, Sites
@@ -324,3 +325,41 @@ def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size
 
     article_cards = build_article_cards(articles, rng)
     return insert_adverts(article_cards, advert_slots, at_end, rng), page_obj
+
+
+# ===== ===== ===== ===== ===== =====
+# Search
+# ===== ===== ===== ===== ===== =====
+SEARCH_PAGE_SIZE = 250
+SEARCH_MAX_TERMS = 10
+
+
+def search_articles(query, page=1, page_size=SEARCH_PAGE_SIZE):
+    """
+    Visible articles whose title or site name contains any of the search terms (case insensitive).
+
+    An article only has to match some of the terms. Articles matching more terms come first,
+    then the newest. Filters do not apply here. No adverts are included.
+    Returns (cards, paginator_page, terms); every card is the small size.
+    """
+    terms = (query or "").split()[:SEARCH_MAX_TERMS]
+    if not terms:
+        return [], None, []
+
+    matches = Q()
+    score = Value(0, output_field=IntegerField())
+    for term in terms:
+        term_match = Q(title__icontains=term) | Q(site__name__icontains=term)
+        matches |= term_match
+        score = score + Case(When(term_match, then=1), default=0, output_field=IntegerField())
+
+    results = (
+        Articles.objects.filter(hidden=False, site_hide=False, site__hidden=False)
+        .filter(matches)
+        .annotate(match_score=score)
+        .select_related("site__category")
+        .order_by("-match_score", "-published", "run_id", "pk")
+    )
+    page_obj = Paginator(results, page_size).get_page(page)
+    cards = [FeedCard("article", article, "small") for article in page_obj.object_list]
+    return cards, page_obj, terms

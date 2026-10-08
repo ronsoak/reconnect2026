@@ -1,8 +1,8 @@
-{# Previous / next links. Expects: page_obj. Saved filters travel in the cookie, so only the page number is needed #}
+{# Previous / next links. Expects: page_obj. Saved filters travel in the cookie. Optional extra_query adds more parameters, e.g. the search text #}
 {% if page_obj and page_obj.paginator.num_pages > 1 %}
   <nav class="pagination is-centered is-rounded my-5" role="navigation" aria-label="pagination">
-    {% if page_obj.has_previous %}<a class="pagination-previous" href="?page={{ page_obj.previous_page_number }}">Previous</a>{% else %}<span class="pagination-previous" aria-disabled="true" style="pointer-events:none;opacity:.5">Previous</span>{% endif %}
-    {% if page_obj.has_next %}<a class="pagination-next" href="?page={{ page_obj.next_page_number }}">Next</a>{% else %}<span class="pagination-next" aria-disabled="true" style="pointer-events:none;opacity:.5">Next</span>{% endif %}
+    {% if page_obj.has_previous %}<a class="pagination-previous" href="?page={{ page_obj.previous_page_number }}{{ extra_query }}">Previous</a>{% else %}<span class="pagination-previous" aria-disabled="true" style="pointer-events:none;opacity:.5">Previous</span>{% endif %}
+    {% if page_obj.has_next %}<a class="pagination-next" href="?page={{ page_obj.next_page_number }}{{ extra_query }}">Next</a>{% else %}<span class="pagination-next" aria-disabled="true" style="pointer-events:none;opacity:.5">Next</span>{% endif %}
     <ul class="pagination-list">
       <li><span class="pagination-link is-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
     </ul>

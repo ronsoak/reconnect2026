@@ -1,9 +1,11 @@
+from urllib.parse import urlencode
+
 from django.http import HttpResponse, QueryDict
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 
-from .feed import build_dynamic_feed, build_ordered_feed
+from .feed import build_dynamic_feed, build_ordered_feed, search_articles
 from .models import Logic
 
 
@@ -97,6 +99,19 @@ def newest(request):
 
 def popular(request):
     return ordered_feed(request, "popular")
+
+
+def search(request):
+    """Search results at /search/?q=. Filters are not applied and there are no adverts."""
+    query = request.GET.get("q", "").strip()[:200]
+    context = filter_context(request)
+    context["query"] = query
+    context["hide_filters"] = True
+    context["cards"], context["page_obj"], context["terms"] = search_articles(
+        query, page=request.GET.get("page", 1)
+    )
+    context["query_string"] = "&" + urlencode({"q": query})
+    return render(request, "search.html", context)
 
 
 def about(request):
