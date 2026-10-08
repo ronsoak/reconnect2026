@@ -122,3 +122,77 @@ class FilterCookieTests(TestCase):
     def test_filters_also_apply_to_other_pages(self):
         self.client.get(f"/?apply=1&category={self.video.pk}")
         self.assertEqual(self.client.get("/about/").context["selected_categories"], [str(self.video.pk)])
+
+
+class OrderedFeedTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.video = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
+        cls.cards = Logic.objects.create(logic_type="CATEGORY", value="Card Games")
+        cls.small = Logic.objects.create(logic_type="AD_SIZE", value="Feed Small")
+        cls.video_site = Sites.objects.create(
+            name="Video Site", url="https://video.example.com",
+            rss_feed="https://video.example.com/feed", category=cls.video, description="x",
+        )
+        cls.card_site = Sites.objects.create(
+            name="Card Site", url="https://cards.example.com",
+            rss_feed="https://cards.example.com/feed", category=cls.cards, description="x",
+        )
+        today = timezone.localdate()
+        # 120 video articles, article 0 the newest. Article 119 has the most clicks.
+        Articles.objects.bulk_create([
+            Articles(
+                title=f"Video {i}", url=f"https://video.example.com/{i}", image_url="",
+                site=cls.video_site, published=today - timedelta(days=i), clicks=i,
+            )
+            for i in range(120)
+        ])
+        Articles.objects.create(
+            title="Card only", url="https://cards.example.com/1", image_url="",
+            site=cls.card_site, published=today - timedelta(days=500),
+        )
+
+    def titles(self, response):
+        return [c.item.title for c in response.context["cards"] if not c.is_advert]
+
+    def test_newest_is_ordered_by_date_and_paginated(self):
+        response = self.client.get("/newest/")
+        titles = self.titles(response)
+        self.assertEqual(len(titles), 100)
+        self.assertEqual(titles[:3], ["Video 0", "Video 1", "Video 2"])
+        page_two = self.titles(self.client.get("/newest/?page=2"))
+        self.assertEqual(page_two[0], "Video 100")
+        self.assertEqual(len(page_two), 21)
+        self.assertContains(response, "Page 1 of 2")
+
+    def test_popular_is_ordered_by_rank(self):
+        titles = self.titles(self.client.get("/popular/"))
+        self.assertEqual(titles[:2], ["Video 119", "Video 118"])
+
+    def test_adverts_take_slots_on_every_page(self):
+        today = timezone.localdate()
+        Adverts.objects.create(
+            title="Ad", message="Try this blog", site_name="Blog", site_url="https://blog.example.com",
+            start_date=today - timedelta(days=1), end_date=today + timedelta(days=1),
+            concurrency=2, advert_size=self.small,
+        )
+        cards = self.client.get("/newest/").context["cards"]
+        self.assertEqual(len(cards), 100)
+        self.assertEqual(sum(c.is_advert for c in cards), 2)
+        self.assertTrue(all(not c.is_advert for c in cards[:5]))
+
+    def test_filters_apply_and_tabs_are_linked(self):
+        response = self.client.get(f"/newest/?apply=1&category={self.cards.pk}")
+        self.assertEqual(self.titles(response), ["Card only"])
+        self.assertContains(response, 'href="/popular/"')
+
+    def test_bad_page_numbers_fall_back_safely(self):
+        self.assertEqual(self.client.get("/newest/?page=abc").status_code, 200)
+        self.assertEqual(self.client.get("/newest/?page=999").status_code, 200)
+
+    def test_reset_stays_on_the_same_page(self):
+        self.assertRedirects(self.client.get("/popular/?reset=1"), "/popular/")
+
+    def test_no_refresh_button_on_newest_or_popular(self):
+        self.assertNotContains(self.client.get("/newest/"), "refresh-button")
+        self.assertNotContains(self.client.get("/popular/"), "refresh-button")

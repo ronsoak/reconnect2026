@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 
-from .feed import build_dynamic_feed
+from .feed import build_dynamic_feed, build_ordered_feed
 from .models import Logic
 
 
@@ -37,26 +37,8 @@ def filter_context(request):
     }
 
 
-@never_cache
-def home(request):
-    """
-    Dynamic feed. Refreshing the page gives a new random batch.
-    /?reset=1 clears the saved filters.
-    """
-    if "reset" in request.GET:
-        response = redirect("home")
-        response.delete_cookie(FILTER_COOKIE)
-        return response
-
-    context = filter_context(request)
-    context["cards"] = build_dynamic_feed(
-        category_ids=[int(value) for value in context["selected_categories"]],
-        tag_ids=[int(value) for value in context["selected_tags"]],
-    )
-    context["active_feed"] = "dynamic"
-    response = render(request, "home.html", context)
-
-    # Remember filters the user has just applied
+def remember_filters(response, context, request):
+    """Saves filters the user has just applied (12 months)."""
     _, _, from_url = current_filters(request)
     if from_url:
         saved = QueryDict(mutable=True)
@@ -66,6 +48,55 @@ def home(request):
             FILTER_COOKIE, saved.urlencode(), max_age=FILTER_COOKIE_MAX_AGE, samesite="Lax"
         )
     return response
+
+
+def filter_ids(context):
+    return (
+        [int(value) for value in context["selected_categories"]],
+        [int(value) for value in context["selected_tags"]],
+    )
+
+
+@never_cache
+def home(request):
+    """
+    Dynamic feed. Refreshing the page gives a new random batch.
+    ?reset=1 clears the saved filters.
+    """
+    if "reset" in request.GET:
+        response = redirect(request.path)
+        response.delete_cookie(FILTER_COOKIE)
+        return response
+
+    context = filter_context(request)
+    category_ids, tag_ids = filter_ids(context)
+    context["cards"] = build_dynamic_feed(category_ids=category_ids, tag_ids=tag_ids)
+    context["active_feed"] = "dynamic"
+    return remember_filters(render(request, "home.html", context), context, request)
+
+
+def ordered_feed(request, order):
+    """Shared by the Newest and Popular pages. ?page=2 shows older or lower ranked articles."""
+    if "reset" in request.GET:
+        response = redirect(request.path)
+        response.delete_cookie(FILTER_COOKIE)
+        return response
+
+    context = filter_context(request)
+    category_ids, tag_ids = filter_ids(context)
+    context["cards"], context["page_obj"] = build_ordered_feed(
+        order, category_ids=category_ids, tag_ids=tag_ids, page=request.GET.get("page", 1)
+    )
+    context["active_feed"] = order
+    return remember_filters(render(request, "home.html", context), context, request)
+
+
+def newest(request):
+    return ordered_feed(request, "newest")
+
+
+def popular(request):
+    return ordered_feed(request, "popular")
 
 
 def about(request):

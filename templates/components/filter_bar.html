@@ -1,12 +1,13 @@
 {# Category and tag filters. Apply saves them for 12 months, Reset clears them #}
 <div class="has-background-white-bis py-4">
-  <form method="get" action="{% url 'home' %}" class="container px-4">
+  <form method="get" action="{% if active_feed == 'newest' %}{% url 'newest' %}{% elif active_feed == 'popular' %}{% url 'popular' %}{% else %}{% url 'home' %}{% endif %}" class="container px-4">
     <input type="hidden" name="apply" value="1">
     <div class="is-flex is-flex-wrap-wrap is-align-items-flex-start is-gap-3">
       {% include "components/filter_multiselect.html" with label="Site type" name="category" items=categories selected=selected_categories %}
       {% include "components/filter_multiselect.html" with label="Genre" name="tag" items=tags selected=selected_tags %}
       <button class="button is-link is-rounded" type="submit">Apply</button>
-      <a class="button is-rounded" href="{% url 'home' %}?reset=1">Reset</a>
+      <a class="button is-rounded" href="{% if active_feed %}{{ request.path }}{% else %}{% url 'home' %}{% endif %}?reset=1">Reset</a>
+      <div class="ml-auto">{% include "components/feed_tabs.html" %}</div>
     </div>
   </form>
 </div>

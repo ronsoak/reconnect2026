@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
+from django.core.paginator import Paginator
 from django.utils import timezone
 
 from .models import Adverts, Articles, Sites
@@ -283,3 +284,43 @@ def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=FEED_SIZE, tod
     rng.shuffle(articles)
     article_cards = build_article_cards(articles, rng)
     return insert_adverts(article_cards, advert_slots, at_end, rng)
+
+
+# ===== ===== ===== ===== ===== =====
+# Newest and Popular feeds (paginated)
+# ===== ===== ===== ===== ===== =====
+def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size=FEED_SIZE, today=None, rng=None):
+    """
+    One page of the Newest ("newest") or Popular ("popular") feed.
+
+    Returns (cards, paginator_page). Adverts are part of every page, so each page holds
+    page_size cards in total: the adverts' slots come out of the article count, the same as
+    the dynamic feed. Newest is by published date (run_id lowest first for ties), popular is by rank.
+    """
+    rng = rng or random.Random()
+    today = today or timezone.localdate()
+
+    live_adverts = get_live_adverts(today)
+    advert_slots = expand_advert_slots(live_adverts)
+    if advert_slots and page_size - len(advert_slots) < min_articles_for_adverts(len(advert_slots)):
+        advert_slots = []
+    articles_per_page = max(page_size - len(advert_slots), 1)
+
+    if order == "popular":
+        ordering = ("-rank", "-published", "run_id", "pk")
+    else:
+        ordering = ("-published", "run_id", "pk")
+    pool = visible_articles(category_ids, tag_ids).select_related("site__category").order_by(*ordering)
+
+    paginator = Paginator(pool, articles_per_page)
+    page_obj = paginator.get_page(page)
+    articles = list(page_obj.object_list)
+
+    # Too few articles on the last page to follow the spacing rules: one advert at the end.
+    at_end = False
+    if advert_slots and len(articles) < min_articles_for_adverts(len(advert_slots)):
+        advert_slots = [live_adverts[0]]
+        at_end = True
+
+    article_cards = build_article_cards(articles, rng)
+    return insert_adverts(article_cards, advert_slots, at_end, rng), page_obj
