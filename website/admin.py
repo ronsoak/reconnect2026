@@ -71,7 +71,7 @@ class ArticleAdmin(ModelAdmin):
     search_fields = ['title']
     # Methods
     def get_ordering(self, request):
-        return ['-created']
+        return ['-published']
 
     def mark_as_hidden(self, request, queryset):
         queryset.update(hidden = True)

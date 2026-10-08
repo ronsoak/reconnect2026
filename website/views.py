@@ -1,12 +1,16 @@
+import time
 from urllib.parse import urlencode
 
-from django.http import HttpResponse, QueryDict
-from django.shortcuts import redirect, render
+from django.core import signing
+from django.db import transaction
+from django.db.models import F
+from django.http import HttpResponse, HttpResponseRedirect, QueryDict
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 
 from .feed import build_dynamic_feed, build_ordered_feed, search_articles
-from .models import Logic
+from .models import Articles, Clicks, Logic
 
 
 FILTER_COOKIE = "reconnect_filters"
@@ -114,6 +118,51 @@ def search(request):
     return render(request, "search.html", context)
 
 
+# Article clicks. A signed cookie remembers which articles this browser has counted and when.
+CLICK_COOKIE = "reconnect_clicks"
+CLICK_WINDOW_SECONDS = 60 * 60 * 24  # one counted click per article per 24 hours
+CLICK_COOKIE_MAX_ENTRIES = 100  # keeps the cookie small
+
+
+def read_recent_clicks(request, now):
+    """Article id -> time of last counted click, for clicks inside the 24 hour window."""
+    try:
+        recent = signing.loads(request.COOKIES.get(CLICK_COOKIE, ""), salt=CLICK_COOKIE)
+        return {str(k): v for k, v in recent.items() if now - v < CLICK_WINDOW_SECONDS}
+    except (signing.BadSignature, AttributeError, TypeError):
+        return {}
+
+
+def go_article(request, pk):
+    """
+    Counts a click on an article, then sends the visitor on to it.
+    The click is added to the article and recorded in the Clicks model, at most once
+    per article per browser every 24 hours. Repeat clicks still go through, they just aren't counted.
+    Example: /go/123/
+    """
+    article = get_object_or_404(Articles.objects.select_related("site"), pk=pk, hidden=False, site_hide=False)
+    now = int(time.time())
+    recent = read_recent_clicks(request, now)
+
+    counted = str(article.pk) not in recent
+    if counted:
+        with transaction.atomic():
+            # F() adds to the stored value, so simultaneous clicks are not lost
+            Articles.objects.filter(pk=article.pk).update(clicks=F("clicks") + 1)
+            click_type = Logic.objects.filter(logic_type="CLICK_TYPE", value="Article").first()
+            Clicks.objects.create(type=click_type, article=str(article.pk), site=article.site)
+        recent[str(article.pk)] = now
+
+    response = HttpResponseRedirect(article.url)
+    if counted:
+        newest = dict(sorted(recent.items(), key=lambda item: item[1])[-CLICK_COOKIE_MAX_ENTRIES:])
+        response.set_cookie(
+            CLICK_COOKIE, signing.dumps(newest, salt=CLICK_COOKIE),
+            max_age=CLICK_WINDOW_SECONDS, httponly=True, samesite="Lax",
+        )
+    return response
+
+
 def about(request):
     return render(request, "about.html", filter_context(request))
 
@@ -123,6 +172,7 @@ def robots_txt(request):
     lines = [
         "User-agent: *",
         "Disallow: /backdoor/",
+        "Disallow: /go/",
         "",
         f"Sitemap: {request.build_absolute_uri(reverse('django.contrib.sitemaps.views.sitemap'))}",
     ]

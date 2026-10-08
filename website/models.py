@@ -180,13 +180,14 @@ class Logging(models.Model):
     
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
-# Clicks - might need a rework 
+# Clicks - 
 # ===== ===== ===== ===== ===== ===== ===== =====
 class Clicks(models.Model):
     # Fields
     type        = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'CLICK_TYPE'}, related_name='click_type', verbose_name="Click Type", help_text="The type of click registered",  null=True)
     article     = models.CharField(max_length=128,blank=False,null=False,help_text="", verbose_name="Article ID")
     site        = models.ForeignKey(Sites, on_delete=models.PROTECT,null=True)
+    clicks      = models.FloatField(default=0,blank=False,help_text="Count of link clicks",verbose_name="Click Count")
     date        = models.DateField(default=timezone.now,help_text="",verbose_name="Vote Date")
     # Metadata
     class Meta:
