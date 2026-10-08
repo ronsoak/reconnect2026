@@ -5,7 +5,7 @@ from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from website.models import Logic, Sites, Articles, Logging, Adverts, Clicks
+from website.models import Logic, Sites, Articles, Logging, Adverts, Clicks, Analytics
 from unfold.admin import ModelAdmin                                     # for the Admin theme
 from unfold.contrib.forms.widgets import ArrayWidget, WysiwygWidget     # for the Admin theme
 
@@ -116,3 +116,16 @@ class ClicksAdmin(ModelAdmin):
     # Methods
     def get_ordering(self, request):
         return ['-date']
+
+# ===== ===== ===== ===== ===== ===== ===== ===== 
+# Analytics
+# ===== ===== ===== ===== ===== ===== ===== =====
+@admin.register(Analytics)
+class AnalyticsAdmin(ModelAdmin):
+    list_display=('month','type','object_id','site','clicks')
+    list_filter=['type','month']
+    show_facets = admin.ShowFacets.ALWAYS
+    search_fields = ['object_id']
+    # Methods
+    def get_ordering(self, request):
+        return ['-month', '-clicks']

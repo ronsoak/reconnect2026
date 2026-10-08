@@ -151,6 +151,7 @@ class Logging(models.Model):
         ('LAST_ARTICLE_TASK', 'Last Articles Task Result'),
         ('FILTER_ARTICLE_TASK', 'Filter Articles Task Result'),
         ('COUNT_ARTICLES', 'Articles Counted'),
+        ('ANALYTICS_TASK', 'Analytics Task Result'),
     ]
     # Fields
     log_type = models.CharField(max_length=20, choices=LOG_CHOICES, help_text="Category of Log", verbose_name="Log Type")
@@ -205,15 +206,37 @@ class Clicks(models.Model):
         return str(self.pk)
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
-# Analytics - might need some field testing 
+# Analytics 
 # ===== ===== ===== ===== ===== ===== ===== =====
-# class Analytics(models.Model):
-#     # Fields
-#     type 
-#     article 
-#     site 
-#     month
-#     clicks 
+class Analytics(models.Model):
+    """
+    Permanent monthly click totals, one row per article or advert per month.
+    Filled from the Clicks model by the aggregate_clicks script, which lets Clicks be purged.
+    A month with no clicks has no row.
+    """
+    # Fields
+    type        = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'CLICK_TYPE'}, related_name='analytics_type', verbose_name="Click Type", help_text="Article or Advert")
+    object_id   = models.PositiveIntegerField(help_text="The id of the article or advert, depending on the type", verbose_name="Object ID")
+    site        = models.ForeignKey(Sites, on_delete=models.PROTECT, null=True, blank=True, help_text="The article's site (blank for adverts)")
+    month       = models.DateField(help_text="Always the first day of the month, e.g. 2026-09-01", verbose_name="Month")
+    clicks      = models.PositiveIntegerField(default=0, help_text="Counted clicks in this month", verbose_name="Click Count")
+    # Metadata
+    class Meta:
+        db_table = "analytics"
+        ordering = ['-month', 'type', 'object_id']
+        verbose_name = "Analytics"
+        verbose_name_plural = "Analytics"
+        constraints = [
+            models.UniqueConstraint(fields=['type', 'object_id', 'month'], name='unique_analytics_month'),
+        ]
+        indexes = [
+            models.Index(fields=['type', 'object_id', 'month']),  # One article or advert over time
+            models.Index(fields=['month']),                       # Everything in a month
+            models.Index(fields=['site', 'month']),               # A site over time
+        ]
+    # Methods
+    def __str__(self):
+        return f"{self.type_id}:{self.object_id} {self.month:%Y-%m}"
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Adverts

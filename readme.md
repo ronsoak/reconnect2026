@@ -159,6 +159,7 @@ Each script has its own usage examples at the top of its file. Add `--dry-run` w
 | `hide_articles` | Hides or unhides articles to match their site's setting |
 | `filter_articles` | Hides articles that match keywords in the Logic model |
 | `age_articles` | Lowers article rank so popular articles do not stay on top |
+| `aggregate_clicks` | Totals last month's clicks into the Analytics model (`--month 2026-09`, `--month current`, `--dry-run`). Run it before purging clicks |
 
 ## Deploying
 
