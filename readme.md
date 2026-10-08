@@ -32,7 +32,7 @@ python manage.py runserver
 ## Tests
 
 ```bash
-python manage.py test website.tests
+python manage.py test website
 ```
 
 ## Project layout
