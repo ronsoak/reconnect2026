@@ -75,10 +75,9 @@ class Sites(models.Model):
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_site_url')]
         indexes = [
             models.Index(fields=['name']),        # For searching or ordering by name
-            models.Index(fields=['url']),         # For filtering or lookups by URL
-            models.Index(fields=['hidden']),      # For filtering by hidden status
-            models.Index(fields=['category']),    # For filtering by category
-            models.Index(fields=['site_type']),   # For filtering by site_type
+            # Visible sites in a category, and the ingest batch lookup
+            models.Index(fields=['hidden', 'category'], name='site_hidden_category_idx'),
+            models.Index(fields=['batch_num', 'hidden', 'load_error'], name='site_batch_idx'),
         ]
     # Methods
     def clean(self):
@@ -124,13 +123,16 @@ class Articles(models.Model):
         verbose_name_plural = "Articles"
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_url')]
         indexes = [
-            models.Index(fields=['title']),       # For searching or filtering by title
-            models.Index(fields=['url']),         # For filtering or lookups by URL
-            models.Index(fields=['site']),        # For filtering by site
-            models.Index(fields=['published']),   # For filtering or ordering by published date
-            models.Index(fields=['created']),     # For ordering by creation date
-            models.Index(fields=['rank']),        # For ordering or filtering by rank
-            models.Index(fields=['hidden']),      # For filtering by hidden status
+            # Feed pages: visible articles, newest first, ties by run_id (pool for Newest and the new bucket)
+            models.Index(fields=['hidden', 'site_hide', '-published', 'run_id'], name='art_visible_published_idx'),
+            # Feed pages: visible articles by rank, ties as the feed orders them (Popular page and the popular bucket)
+            models.Index(fields=['hidden', 'site_hide', '-rank', '-published', 'run_id'], name='art_visible_rank_idx'),
+            # Latest article per site (last_article) and per-site lookups
+            models.Index(fields=['site', 'published'], name='art_site_published_idx'),
+            # Articles from the latest ingest run (count_articles)
+            models.Index(fields=['run_id'], name='art_run_id_idx'),
+            # Default admin ordering
+            models.Index(fields=['created']),
         ]
     # Methods 
     def __str__(self):
@@ -197,10 +199,8 @@ class Clicks(models.Model):
         verbose_name = "Clicks"
         verbose_name_plural = "Clicks"
         indexes = [
-            models.Index(fields=['type']),        # For filtering by click type
-            models.Index(fields=['article']),     # For filtering or lookups by article
-            models.Index(fields=['site']),        # For filtering by site
-            models.Index(fields=['date']),        # For ordering or filtering by date
+            # aggregate_clicks and purge_clicks both read one month of clicks by date
+            models.Index(fields=['date']),
         ]
     # Methods 
     def __str__(self):
