@@ -94,7 +94,9 @@ def has_valid_image(article):
 
 
 def advert_size(advert):
-    """Maps the advert's size from the Logic model to small, medium or large."""
+    """Maps the advert's size from the Logic model to small, medium or large. No image means small."""
+    if not advert.image:
+        return "small"
     return ADVERT_SIZES.get(advert.advert_size.value, "small")
 
 

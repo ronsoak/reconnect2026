@@ -4,7 +4,7 @@
   <a href="{% url 'go_advert' advert.pk %}" target="_blank" rel="noopener noreferrer sponsored" class="feed-card__link">
     {% if card.has_image %}
     <div class="feed-card__image has-background-warning-light">
-      <img src="{{ advert.image.url }}" alt="" loading="lazy" onerror="this.parentNode.remove();this.closest('.feed-card').classList.add('feed-card--text')">
+      <img src="{{ advert.image.url }}" alt="" loading="lazy" onerror="var c=this.closest('.feed-card');c.classList.remove('feed-card--medium','feed-card--large');c.classList.add('feed-card--small','feed-card--text');this.parentNode.remove()">
     </div>
     {% endif %}
     <div class="card-content p-3">

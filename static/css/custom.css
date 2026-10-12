@@ -63,23 +63,28 @@
   object-position: center 25%;
 }
 
-/* Cards with no image become full text cards: the text fills the card and gets more lines */
+/* Square corners on the filter and refresh buttons */
+.square-button {
+  border-radius: 0;
+}
+
+/* Category and advert tags only be as wide as their text */
+.feed-card .card-content .tag {
+  align-self: flex-start;
+}
+
+/* Cards with no image are always small cards, with the text sitting at the bottom */
 .feed-card--text .card-content {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
 }
 
 .feed-card--text .feed-card__title {
   -webkit-line-clamp: 6;
   line-clamp: 6;
   font-size: 1.1rem;
-}
-
-.feed-card--text.feed-card--medium .feed-card__title,
-.feed-card--text.feed-card--large .feed-card__title {
-  -webkit-line-clamp: 12;
-  line-clamp: 12;
 }
 
 /* Filter dropdowns open over the page instead of pushing content down */

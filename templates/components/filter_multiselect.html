@@ -2,7 +2,7 @@
 {# A button and a floating panel rather than <details>, because Safari pushes content down for <details>. #}
 {# static/js/filters.js opens and closes the panel and adds the select all toggle #}
 <div class="filter-multiselect">
-  <button type="button" class="button is-rounded filter-multiselect__button" aria-expanded="false" aria-haspopup="true">
+  <button type="button" class="button square-button filter-multiselect__button" aria-expanded="false" aria-haspopup="true">
     {{ label }}{% if selected %}&nbsp;({{ selected|length }}){% endif %}
   </button>
   <div class="box filter-multiselect__menu" hidden>

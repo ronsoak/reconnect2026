@@ -303,9 +303,8 @@ class FeedAdvertTests(FeedTestCase):
         self.assertLessEqual(max(gaps) - min(gaps), 1)
 
     def test_advert_size_comes_from_the_model(self):
-        self.make_advert("Big", size=self.large)
-        self.make_advert("Mid", size=self.medium)
-        self.make_advert("Small", size=self.small)
+        for title, size in (("Big", self.large), ("Mid", self.medium), ("Small", self.small)):
+            self.make_advert(title, size=size).__class__.objects.filter(title=title).update(image="adverts/x.png")
         sizes = {card.item.title: card.size for card in self.advert_cards(self.feed())}
         self.assertEqual(sizes, {"Big": "large", "Mid": "medium", "Small": "small"})
 
@@ -428,3 +427,20 @@ class PriorityAdvertTests(FeedTestCase):
         second.priority = True
         second.full_clean()
         second.save()
+
+
+class TextCardSizeTests(FeedTestCase):
+    def test_articles_without_a_valid_image_are_always_small(self):
+        site = self.make_site("Text Site", self.video)
+        self.make_articles(site, 100, image="")
+        self.make_articles(site, 100, first_age=100, image="/static/og-image.png")
+        cards = self.feed()
+        self.assertTrue(all(card.size == "small" for card in self.article_cards(cards)))
+
+    def test_advert_without_an_image_is_small_whatever_its_set_size(self):
+        site = self.make_site("Text Site", self.video)
+        self.make_articles(site, 200)
+        self.make_advert("Big text advert", size=self.large)
+        advert_card = self.advert_cards(self.feed())[0]
+        self.assertEqual(advert_card.size, "small")
+        self.assertFalse(advert_card.has_image)

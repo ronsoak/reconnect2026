@@ -76,7 +76,7 @@ class FilterMenuTests(TestCase):
     def test_labels_and_select_all(self):
         html = self.client.get("/").content.decode()
         self.assertIn("Category", html)
-        self.assertIn("Speciality", html)
+        self.assertIn("Focus", html)
         self.assertNotIn("Site type", html)
         self.assertNotIn(">Genre", html)
         self.assertIn("js/filters.js", html)
