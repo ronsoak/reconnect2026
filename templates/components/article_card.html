@@ -1,10 +1,12 @@
 {# One article card. Expects: card (a FeedCard with kind "article"). Size classes are in custom.css #}
 {% with article=card.item %}
-<article class="card feed-card feed-card--{{ card.size }}">
+<article class="card feed-card feed-card--{{ card.size }}{% if not card.has_image %} feed-card--text{% endif %}">
   <a href="{% url 'go_article' article.pk %}" target="_blank" rel="noopener noreferrer" class="feed-card__link">
+    {% if card.has_image %}
     <div class="feed-card__image has-background-grey-lighter">
-      {% if article.image_url %}<img src="{{ article.image_url }}" alt="" loading="lazy">{% endif %}
+      <img src="{{ article.image_url }}" alt="" loading="lazy" onerror="this.parentNode.remove();this.closest('.feed-card').classList.add('feed-card--text')">
     </div>
+    {% endif %}
     <div class="card-content p-3">
       <span class="tag is-info is-light is-rounded mb-2">{{ article.site.category.value }}</span>
       <p class="title is-6 feed-card__title">{{ article.title }}</p>

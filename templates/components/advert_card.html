@@ -1,10 +1,12 @@
 {# One advert card. Expects: card (a FeedCard with kind "advert"). Size classes are in custom.css #}
 {% with advert=card.item %}
-<article class="card feed-card feed-card--{{ card.size }} has-background-warning-light">
+<article class="card feed-card feed-card--{{ card.size }} has-background-warning-light{% if not card.has_image %} feed-card--text{% endif %}">
   <a href="{% url 'go_advert' advert.pk %}" target="_blank" rel="noopener noreferrer sponsored" class="feed-card__link">
+    {% if card.has_image %}
     <div class="feed-card__image has-background-warning-light">
-      {% if advert.image %}<img src="{{ advert.image.url }}" alt="" loading="lazy">{% endif %}
+      <img src="{{ advert.image.url }}" alt="" loading="lazy" onerror="this.parentNode.remove();this.closest('.feed-card').classList.add('feed-card--text')">
     </div>
+    {% endif %}
     <div class="card-content p-3">
       <span class="tag is-warning is-rounded mb-2">Advert</span>
       <p class="title is-6 feed-card__title">{{ advert.message }}</p>

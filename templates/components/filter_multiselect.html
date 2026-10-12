@@ -1,9 +1,18 @@
 {# Multiple choice filter. Expects: label, name, items (Logic rows), selected (list of selected pk strings) #}
-<details class="filter-multiselect">
-  <summary class="button is-rounded">
+{# A button and a floating panel rather than <details>, because Safari pushes content down for <details>. #}
+{# static/js/filters.js opens and closes the panel and adds the select all toggle #}
+<div class="filter-multiselect">
+  <button type="button" class="button is-rounded filter-multiselect__button" aria-expanded="false" aria-haspopup="true">
     {{ label }}{% if selected %}&nbsp;({{ selected|length }}){% endif %}
-  </summary>
-  <div class="box mt-2">
+  </button>
+  <div class="box filter-multiselect__menu" hidden>
+    {% if items %}
+      {# No name, so this checkbox is never submitted with the form #}
+      <label class="checkbox is-block mb-2 has-text-weight-semibold">
+        <input type="checkbox" data-select-all> Select all
+      </label>
+      <hr class="my-2">
+    {% endif %}
     {% for item in items %}
       <label class="checkbox is-block mb-2">
         <input type="checkbox" name="{{ name }}" value="{{ item.pk }}" {% if item.pk|stringformat:"s" in selected %}checked{% endif %}>
@@ -13,4 +22,4 @@
       <p class="has-text-grey">Nothing to choose yet</p>
     {% endfor %}
   </div>
-</details>
+</div>

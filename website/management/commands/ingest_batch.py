@@ -17,6 +17,7 @@ from django.db import transaction
 from django.utils import timezone
 from interruptingcow import timeout
 from typing import Any, Optional
+from website.images import clean_image_url
 from website.models import Sites, Articles, Logging
 from website.safe_fetch import UnsafeURL, build_safe_session, fetch, fetch_text
 
@@ -172,7 +173,7 @@ class Command(BaseCommand):
                                         url=link,
                                         defaults={
                                             "title": title[:255],
-                                            "image_url": str(image_url)[:512] if image_url is not None else "",
+                                            "image_url": clean_image_url(str(image_url)) if image_url else "",
                                             "site": site,
                                             "published": pub_date,
                                             "run_id": run_id,

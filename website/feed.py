@@ -26,6 +26,7 @@ from django.core.paginator import Paginator
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.utils import timezone
 
+from .images import is_valid_image_url
 from .models import Adverts, Articles, Sites
 
 # Total cards on the page, adverts included. Rounding up can push the total a little over.
@@ -71,6 +72,13 @@ class FeedCard:
     def is_advert(self):
         return self.kind == "advert"
 
+    @property
+    def has_image(self):
+        """False means the card is shown as a text card, with no image box."""
+        if self.is_advert:
+            return bool(self.item.image)
+        return has_valid_image(self.item)
+
 
 # ===== ===== ===== ===== ===== =====
 # Helpers
@@ -82,8 +90,7 @@ def ceil_percent(count, percent):
 
 def has_valid_image(article):
     """An article can only be a medium or large card if it has an http(s) image address."""
-    url = (article.image_url or "").strip().lower()
-    return url.startswith(("http://", "https://"))
+    return is_valid_image_url(article.image_url)
 
 
 def advert_size(advert):

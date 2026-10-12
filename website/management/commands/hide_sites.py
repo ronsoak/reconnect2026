@@ -5,7 +5,7 @@
 # Any hidden site will trigger a hide articles script. 
 #
 # Command Examples 
-#   Default run (hide sites older than 180 days): python manage.py hide_sites
+#   Default run (hide sites older than 270 days, 9 months): python manage.py hide_sites
 #   Dry-run to preview which sites would be hidden: python manage.py hide_sites --dry-run
 #   Backfill threshold (hide sites older than 365 days): python manage.py hide_sites --days 365
 #   Limit number of sites hidden in one execution (hide at most 10): python manage.py hide_sites --limit 10
@@ -24,7 +24,7 @@ from website.models import Sites, Articles, Logging
 class Command(BaseCommand):
     help = (
         "Hide sites whose last_article is older than the given number of days "
-        "(default 180). If any sites are hidden this command will call the "
+        "(default 270, about 9 months). If any sites are hidden this command will call the "
         "`hide_articles` management command to sync Articles.site_hide, and will "
         "write a HIDE_SITES_TASK log recording how many sites were hidden."
     )
@@ -33,8 +33,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--days",
             type=int,
-            default=180,
-            help="Threshold in days; sites with last_article greater than this will be hidden (default: 180).",
+            default=270,
+            help="Threshold in days; sites with last_article greater than this will be hidden (default: 270, about 9 months).",
         )
         parser.add_argument(
             "--dry-run",
