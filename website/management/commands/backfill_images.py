@@ -16,6 +16,10 @@ from concurrent.futures import ThreadPoolExecutor
 from django.core.management.base import BaseCommand
 
 from website.models import Articles
+from website.safe_fetch import build_safe_session, fetch_text
+
+# Pages are fetched through safe_fetch, which refuses non-public addresses (SSRF protection)
+session = build_safe_session(retries=1, user_agent="django-ingest-bot/1.0")
 
 
 def fetch_image(url):
@@ -23,7 +27,8 @@ def fetch_image(url):
     from linkpreview import link_preview
 
     try:
-        return (link_preview(url, parser="lxml").image or "")[:512]
+        page, final_url = fetch_text(session, url, timeout=10, max_bytes=1048576)
+        return (link_preview(final_url, content=page, parser="lxml").image or "")[:512]
     except Exception:
         return ""
 

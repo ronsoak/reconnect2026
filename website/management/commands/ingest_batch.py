@@ -2,6 +2,9 @@
 # Ingest Batch
 #
 # Get articles for the sites in this batch
+#
+# Feed addresses and article links are fetched through website/safe_fetch.py, which refuses
+# anything that isn't a public http(s) address (SSRF protection).
 # ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== 
 # Imports
 # ===== ===== ===== ===== 
@@ -13,32 +16,13 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 from interruptingcow import timeout
-from requests.adapters import HTTPAdapter
 from typing import Any, Optional
-from urllib3.util.retry import Retry
 from website.models import Sites, Articles, Logging
+from website.safe_fetch import UnsafeURL, build_safe_session, fetch, fetch_text
 
 # ===== ===== ===== ===== 
 # Command
 # ===== ===== ===== ===== 
-def build_requests_session(retries: int = 2, backoff: float = 0.5, user_agent: Optional[str] = None):
-    s = requests.Session()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff,
-        status_forcelist=(429, 500, 502, 503, 504),
-        allowed_methods=frozenset(["GET", "HEAD"]),
-    )
-    adapter = HTTPAdapter(max_retries=retry)
-    s.mount("https://", adapter)
-    s.mount("http://", adapter)
-    if user_agent:
-        s.headers.update({"User-Agent": user_agent})
-    return s
-
-
 class Command(BaseCommand):
     help = "Ingest a batch of sites. Usage: manage.py ingest_batch <batch_num> <run_id> [--days N]"
 
@@ -88,7 +72,7 @@ class Command(BaseCommand):
         date_cutoff = timezone.localdate() - timedelta(days=days)
 
         self.stdout.write(f"Starting ingest_batch batch={batch_num} run_id={run_id} days={days} cutoff={date_cutoff}")
-        session = build_requests_session(retries=2, backoff=0.5, user_agent=user_agent)
+        session = build_safe_session(retries=2, backoff=0.5, user_agent=user_agent)
 
         qs = Sites.objects.filter(batch_num=batch_num, load_error=False, hidden=False).order_by("id")
         total_sites = qs.count()
@@ -118,10 +102,9 @@ class Command(BaseCommand):
             for attempt in range(1, total_attempts + 1):
                 try:
                     with timeout(per_site_timeout, exception=RuntimeError):
-                        resp = session.get(feed_url, timeout=request_timeout, allow_redirects=True)
-                        resp.raise_for_status()
+                        content, _response = fetch(session, feed_url, timeout=request_timeout)
 
-                        feed = feedparser.parse(resp.content)
+                        feed = feedparser.parse(content)
 
                         if getattr(feed, "bozo", 0):
                             bozo_exc = getattr(feed, "bozo_exception", None)
@@ -172,7 +155,8 @@ class Command(BaseCommand):
                             try:
                                 from linkpreview import link_preview
 
-                                lp = link_preview(link, parser="lxml")
+                                page, final_url = fetch_text(session, link, timeout=request_timeout, max_bytes=1048576)
+                                lp = link_preview(final_url, content=page, parser="lxml")
                                 image_url = getattr(lp, "image", "") or ""
                             except Exception:
                                 image_url = getattr(site, "logo", None)
@@ -208,6 +192,11 @@ class Command(BaseCommand):
                 except RuntimeError as e:
                     last_exc_text = f"Timeout after {per_site_timeout}s: {e}"
                     self.stderr.write(f"Attempt {attempt}/{total_attempts} for {site_name} timed out: {e}")
+                except UnsafeURL as e:
+                    # A blocked address won't change on retry, so stop trying this site
+                    last_exc_text = f"Blocked unsafe URL: {e}"
+                    self.stderr.write(f"{site_name}: blocked unsafe URL: {e}")
+                    break
                 except requests.exceptions.RequestException as e:
                     last_exc_text = f"HTTP error: {e}"
                     self.stderr.write(f"Attempt {attempt}/{total_attempts} for {site_name} HTTP error: {e}")
