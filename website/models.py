@@ -23,9 +23,10 @@ class Logic(models.Model):
         ('AD_SIZE', 'Advert Size'),
         ('CLICK_TYPE', 'Click Type'),
         ('SEARCH_PLACEHOLDER', 'Search Placeholder'),
+        ('NEWSLETTER_EXCLUDED_TERM', 'Newsletter Excluded Term'),
     ]
     # Fields
-    logic_type      = models.CharField(max_length=20,choices=LOGIC_CHOICES,help_text="Category of Logic",verbose_name="Logic Type",)
+    logic_type      = models.CharField(max_length=32,choices=LOGIC_CHOICES,help_text="Category of Logic",verbose_name="Logic Type",)
     value           = models.CharField(max_length=512,blank=False,null=False,help_text="Logic Value",verbose_name="Value",)
     # Metadata
     class Meta:

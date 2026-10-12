@@ -1,0 +1,25 @@
+{# One table of newsletter articles. Expects: heading, rows #}
+<h2 class="text-lg font-semibold mb-2">{{ heading }} ({{ rows|length }})</h2>
+<div class="overflow-x-auto mb-8">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-left border-b">
+        <th class="p-2">Title</th><th class="p-2">Site</th><th class="p-2">Category</th>
+        <th class="p-2">Tags</th><th class="p-2">Clicks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in rows %}
+      <tr class="border-b">
+        <td class="p-2"><a href="{{ a.url }}" target="_blank" rel="noopener noreferrer">{{ a.title }}</a></td>
+        <td class="p-2">{{ a.site.name }}</td>
+        <td class="p-2">{{ a.site.category.value }}</td>
+        <td class="p-2">{% for t in a.site.tags.all %}{{ t.value }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+        <td class="p-2">{{ a.week_clicks }}</td>
+      </tr>
+      {% empty %}
+      <tr><td class="p-2" colspan="5">None.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

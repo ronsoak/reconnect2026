@@ -1,0 +1,11 @@
+{% extends "admin/index.html" %}
+
+{# Adds the newsletter export link above the usual app list on the admin front page #}
+{% block content %}
+<div class="mb-6 p-4 border rounded-default">
+  <h2 class="text-lg font-semibold mb-1">Newsletter export</h2>
+  <p class="mb-3">Preview this week's recap and download it as a markdown file.</p>
+  <a href="{% url 'newsletter_export' %}" class="px-3 py-2 rounded-default bg-primary-600 text-white">Open newsletter export</a>
+</div>
+{{ block.super }}
+{% endblock %}

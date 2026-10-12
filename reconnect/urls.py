@@ -18,12 +18,15 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.views.static import serve
+from website.admin_views import newsletter_export
 
 def serve_media(request, path):
     return serve(request, path, document_root=settings.MEDIA_ROOT)
 
 
 urlpatterns = [
+    # Must come before the admin urls so it is not swallowed by the admin catch-all
+    path('backdoor/newsletter/', admin.site.admin_view(newsletter_export), name='newsletter_export'),
     path('backdoor/', admin.site.urls),
     path('', include('website.urls')),
     # Serves uploads (advert images) in production too, as the volume is read by Django itself

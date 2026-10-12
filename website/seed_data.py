@@ -29,6 +29,11 @@ LOGIC = {
         "Layoffs",
     ],
 
+    # Titles containing one of these whole words are left out of the newsletter export
+    "NEWSLETTER_EXCLUDED_TERM": [
+        "Review",
+    ],
+
     # Silly phrases shown at random in the search bar. Add your own here or in the admin.
     "SEARCH_PLACEHOLDER": [
         "Search articles, games, topics, and more...",
