@@ -139,7 +139,7 @@ Every card has a `kind` (`article` or `advert`), a `size` (`small`, `medium` or 
 
 `size` is a layout hint for the website's grid, so other apps can ignore it. Clicks, boosts and hidden flags are never exposed. An unknown `feed` value returns a `400` error.
 
-Tests: `python manage.py test website.test_api`
+Tests live in `website/tests/`. Run them all with `python manage.py test website`, or one file with `python manage.py test website.tests.test_api`
 
 ## Management scripts
 

@@ -13,6 +13,14 @@ from website.models import Adverts, Logic
 MEDIA = tempfile.mkdtemp()
 
 
+def gif_file(name="ad.gif"):
+    # Two frames so the file is a genuinely animated GIF
+    buffer = BytesIO()
+    frames = [Image.new("RGB", (4, 4), "red"), Image.new("RGB", (4, 4), "blue")]
+    frames[0].save(buffer, "GIF", save_all=True, append_images=frames[1:], duration=100, loop=0)
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/gif")
+
+
 def png_file(name="ad.png"):
     buffer = BytesIO()
     Image.new("RGB", (4, 4), "red").save(buffer, "PNG")
@@ -55,3 +63,11 @@ class AdvertImageTests(TestCase):
         advert.image.delete()
         card = next(c for c in self.client.get("/api/feed/?feed=newest").json()["cards"] if c["kind"] == "advert")
         self.assertEqual(card["item"]["image"], "")
+
+    def test_animated_gif_is_accepted_and_served(self):
+        advert = self.make(image=gif_file())
+        advert.full_clean()
+        self.assertContains(self.client.get("/newest/"), advert.image.url)
+        response = self.client.get(advert.image.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(b"".join(response.streaming_content).startswith(b"GIF8"))
