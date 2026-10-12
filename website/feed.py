@@ -46,6 +46,9 @@ POPULAR_POOL_SIZE = 100
 LARGE_PERCENT = 10
 MEDIUM_PERCENT = 30
 
+# The priority advert's first appearance is within this many cards (dynamic page)
+PRIORITY_WITHIN = 10
+
 # Advert spacing: no advert within the first FIRST articles, and at least GAP articles between adverts.
 ADVERT_FIRST_ALLOWED = 5
 ADVERT_MIN_GAP = 5
@@ -202,19 +205,22 @@ def expand_advert_slots(adverts):
     return slots
 
 
-def insert_adverts(article_cards, advert_slots, at_end, rng):
+def insert_adverts(article_cards, advert_slots, at_end, rng, prioritise=False):
     """
     Puts advert cards between the article cards.
 
     The spare articles (beyond the minimum needed for the spacing rules) are shared out
     evenly, so the adverts are spread across the page. When the rules cannot be followed
-    the single advert goes at the end.
+    the single advert goes at the end. With prioritise set, the priority advert is placed
+    first and its first appearance is kept within the first PRIORITY_WITHIN cards.
     """
     if not advert_slots:
         return list(article_cards)
 
     advert_slots = list(advert_slots)
     rng.shuffle(advert_slots)
+    if prioritise:
+        advert_slots.sort(key=lambda advert: not advert.priority)
     advert_cards = [FeedCard("advert", advert, advert_size(advert)) for advert in advert_slots]
 
     if at_end:
@@ -229,6 +235,9 @@ def insert_adverts(article_cards, advert_slots, at_end, rng):
         base = ADVERT_FIRST_ALLOWED + ADVERT_MIN_GAP * (number - 1)
         extra = (spare * number + (advert_count + 1) // 2) // (advert_count + 1)
         positions.append(base + extra)
+    # The first advert has no adverts before it, so its card number equals its article count
+    if prioritise and advert_slots[0].priority:
+        positions[0] = min(positions[0], PRIORITY_WITHIN - 1)
 
     cards = []
     next_advert = 0
@@ -284,7 +293,7 @@ def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=FEED_SIZE, tod
 
     rng.shuffle(articles)
     article_cards = build_article_cards(articles, rng)
-    return insert_adverts(article_cards, advert_slots, at_end, rng)
+    return insert_adverts(article_cards, advert_slots, at_end, rng, prioritise=True)
 
 
 # ===== ===== ===== ===== ===== =====

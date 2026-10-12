@@ -253,6 +253,7 @@ class Adverts(models.Model):
     concurrency = models.IntegerField(default=1, help_text="Maximum amount of times this can appear on a page", verbose_name="Concurrency")
     clicks      = models.FloatField(default=0, blank=False, help_text="Count of link clicks", verbose_name="Click Count")
     advert_size = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'AD_SIZE'}, related_name='advert_size', verbose_name="Advert Size", help_text="The size of this advert")
+    priority    = models.BooleanField(default=False, help_text="Shown in the first 10 cards of the dynamic page. Only one advert can be the priority, untick the old one first", verbose_name="Priority Advert")
     # Metadata
     class Meta:
         db_table = "adverts"
@@ -264,6 +265,17 @@ class Adverts(models.Model):
             models.Index(fields=['end_date']),    # For filtering or ordering by end date
             models.Index(fields=['advert_size']), # For filtering by advert size
         ]
+        constraints = [
+            # At most one advert can have priority set, enforced by the database
+            UniqueConstraint(fields=['priority'], condition=Q(priority=True), name='single_priority_advert'),
+        ]
     # Methods 
+    def clean(self):
+        # Friendly message in the admin before the database constraint would fail
+        super().clean()
+        if self.priority:
+            other = Adverts.objects.filter(priority=True).exclude(pk=self.pk).first()
+            if other:
+                raise ValidationError({'priority': f"Advert '{other.title}' (id {other.pk}) is already the priority advert. Untick it first."})
     def __str__(self):
         return str(self.pk)

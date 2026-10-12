@@ -95,8 +95,8 @@ class LogicAdmin(ModelAdmin):
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 @admin.register(Adverts)
 class AdvertAdmin(ModelAdmin):
-    list_display=('title','site_name','start_date','end_date','image')
-    list_filter=['site_name']
+    list_display=('title','site_name','start_date','end_date','priority','image')
+    list_filter=['priority','site_name']
     show_facets = admin.ShowFacets.ALWAYS
     search_fields = ['title']
     # Methods

@@ -1,6 +1,8 @@
 import random
 from datetime import date, timedelta
 
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.test import SimpleTestCase, TestCase
 
 from website.feed import (
@@ -373,3 +375,56 @@ class FeedSizeTests(FeedTestCase):
         self.make_articles(site, 195, first_age=5, image="")
         counts = self.sizes(self.feed(feed_size=100))
         self.assertEqual(counts, {"large": 5, "medium": 0, "small": 95})
+
+
+class PriorityAdvertTests(FeedTestCase):
+    def setUp(self):
+        self.site = self.make_site("Only Site", self.video)
+        self.make_articles(self.site, 300)
+
+    def test_priority_advert_is_in_the_first_10_cards_every_time(self):
+        for index in range(4):
+            self.make_advert(f"Other {index}", concurrency=2)
+        priority = self.make_advert("Priority")
+        priority.priority = True
+        priority.save()
+        for seed in range(40):
+            cards = self.feed(rng=random.Random(seed))
+            first = next(i for i, card in enumerate(cards) if card.is_advert and card.item.pk == priority.pk)
+            self.assertLess(first, 10, seed)
+            self.assertGreaterEqual(first, 5)
+
+    def test_spacing_rules_still_hold_with_a_priority_advert(self):
+        for index in range(3):
+            self.make_advert(f"Other {index}", concurrency=2)
+        priority = self.make_advert("Priority", concurrency=2)
+        priority.priority = True
+        priority.save()
+        cards = self.feed()
+        indexes = [i for i, card in enumerate(cards) if card.is_advert]
+        self.assertGreaterEqual(indexes[0], 5)
+        self.assertTrue(all(b - a >= 6 for a, b in zip(indexes, indexes[1:])))
+
+    def test_only_one_advert_can_be_the_priority(self):
+        first = self.make_advert("First")
+        second = self.make_advert("Second")
+        first.priority = True
+        first.save()
+        second.priority = True
+        with self.assertRaises(ValidationError):
+            second.full_clean()
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            second.save()
+
+    def test_priority_advert_can_be_edited_and_priority_can_move(self):
+        first = self.make_advert("First")
+        second = self.make_advert("Second")
+        first.priority = True
+        first.save()
+        first.full_clean()
+        first.save()
+        first.priority = False
+        first.save()
+        second.priority = True
+        second.full_clean()
+        second.save()
