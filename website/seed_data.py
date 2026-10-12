@@ -29,6 +29,11 @@ LOGIC = {
         "Layoffs",
     ],
 
+    # Silly phrases shown at random in the search bar. Add your own here or in the admin.
+    "SEARCH_PLACEHOLDER": [
+        "Search articles, games, topics, and more...",
+    ],
+
     "SITE_TYPE": [
         "Substack",
         "Medium",

@@ -350,6 +350,7 @@ class RobotsAndSitemapTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/plain")
         self.assertContains(response, "Disallow: /backdoor/")
+        self.assertContains(response, "Disallow: /search/")
         self.assertContains(response, "Sitemap: http://testserver/sitemap.xml")
 
     def test_sitemap_lists_public_pages(self):

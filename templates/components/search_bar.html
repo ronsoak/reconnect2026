@@ -1,5 +1,6 @@
+{% load search_tags %}
 <form method="get" action="{% url 'search' %}" role="search" class="mb-4">
-  <input class="input is-medium is-rounded" type="search" name="q"
-         placeholder="Search articles, games, topics, and more..."
+  <input class="input is-medium square-button" type="search" name="q"
+         placeholder="{% search_placeholder %}"
          aria-label="Search articles" value="{{ query|default:'' }}">
 </form>

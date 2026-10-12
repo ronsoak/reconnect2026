@@ -212,6 +212,7 @@ def robots_txt(request):
         "User-agent: *",
         "Disallow: /backdoor/",
         "Disallow: /go/",
+        "Disallow: /search/",
         "",
         f"Sitemap: {request.build_absolute_uri(reverse('django.contrib.sitemaps.views.sitemap'))}",
     ]

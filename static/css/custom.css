@@ -119,7 +119,16 @@
 .refresh-button {
   position: fixed;
   right: 1.5rem;
-  bottom: 1.5rem;
+  bottom: calc(1.5rem + var(--refresh-lift, 0px));
   z-index: 20;
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+  transition: right 0.3s ease, transform 0.3s ease, min-width 0.3s ease;
+}
+
+/* Added by static/js/refresh.js at the bottom of the page: wider and centred.
+   --refresh-lift keeps the button above the footer */
+.refresh-button.is-at-end {
+  right: 50%;
+  transform: translateX(50%);
+  min-width: min(28rem, 90vw);
 }

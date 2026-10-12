@@ -19,6 +19,9 @@ from django.utils import timezone
 from typing import Any, Iterable, List, Optional
 from website.models import Sites, Articles, Logging
 
+# Sites that have never had an article are treated as very stale so hide_sites picks them up.
+NO_ARTICLES_DAYS = 9999
+
 # ===== ===== ===== ===== 
 # Command
 # ===== ===== ===== ===== 
@@ -80,7 +83,7 @@ class Command(BaseCommand):
             total += 1
             latest = getattr(site, "latest_published", None)
             if latest is None:
-                new_days = -1
+                new_days = NO_ARTICLES_DAYS
                 no_articles += 1
             else:
                 delta_days = (today - latest).days

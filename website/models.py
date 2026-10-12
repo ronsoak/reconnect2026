@@ -22,6 +22,7 @@ class Logic(models.Model):
         ('SITE_TYPE', 'Site Type'),
         ('AD_SIZE', 'Advert Size'),
         ('CLICK_TYPE', 'Click Type'),
+        ('SEARCH_PLACEHOLDER', 'Search Placeholder'),
     ]
     # Fields
     logic_type      = models.CharField(max_length=20,choices=LOGIC_CHOICES,help_text="Category of Logic",verbose_name="Logic Type",)
