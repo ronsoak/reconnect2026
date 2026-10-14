@@ -9,13 +9,13 @@ from .feed import visible_articles
 from .models import Logic
 
 
-RSS_FEED_ITEM_LIMIT = 50
+RSS_FEED_ITEM_LIMIT = 150
 
 
 class ArticlesFeed(Feed):
     title = "Reconnect"
     link = "/publications/"
-    description = "Recent independent writing about video games and tabletop games."
+    description = "Recent independent writing about Video Games, TCG's, TTRPG's, and Board Games."
 
     def get_object(self, request, category_id=None):
         if category_id is None:

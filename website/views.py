@@ -227,12 +227,15 @@ def go_advert(request, pk):
 
 
 def about(request):
-    return render(request, "about.html", filter_context(request))
+    context = filter_context(request)
+    context["hide_filters"] = True
+    return render(request, "about.html", context)
 
 
 def publications(request):
     context = filter_context(request)
     context["categories"] = context["categories"].order_by("value")
+    context["hide_filters"] = True
     return render(request, "publications.html", context)
 
 

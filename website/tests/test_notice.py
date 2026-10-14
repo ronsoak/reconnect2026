@@ -17,6 +17,19 @@ class FrontPageNoticeTests(TestCase):
 
         self.assertNotContains(self.client.get("/"), "Hidden notice.")
 
+    def test_static_pages_hide_feed_filters_but_keep_site_search(self):
+        for path in ("/about/", "/publications/"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertNotContains(response, 'class="filter-bar"')
+                self.assertNotContains(response, 'aria-label="Article feeds"')
+                self.assertContains(response, 'class="site-search"')
+
+        feed_response = self.client.get("/")
+        self.assertContains(feed_response, 'class="filter-bar"')
+        self.assertContains(feed_response, 'aria-label="Article feeds"')
+
     def test_admin_can_edit_notice(self):
         notice = FrontPageNotice.objects.create(message="Existing notice.")
         admin = get_user_model().objects.create_superuser("notice-admin", "notice@example.com", "pw")
