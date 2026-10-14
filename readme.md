@@ -147,6 +147,16 @@ Every card has a `kind` (`article` or `advert`), a `size` (`small`, `medium` or 
 
 Tests live in `website/tests/`. Run them all with `python manage.py test website`, or one file with `python manage.py test website.tests.test_api`
 
+## Editing the About page
+
+The About page is assembled in `templates/about.html` from four components:
+`about_intro.html`, `about_newsletter.html`, `about_using.html`, and `about_credits.html`
+in `templates/components/`. Edit those components to replace the draft copy.
+Marked placeholders reserve space for the Bluesky profile, Substack welcome letter
+and newsletter signup, and personal credits. No external embeds load until you add
+their official embed code. Counts are calculated from public articles and their
+distinct publications, independently of feed filters and cached site article counts.
+
 ## Management scripts
 
 Each script has its own usage examples at the top of its file. Add `--dry-run` where it is offered to preview changes.

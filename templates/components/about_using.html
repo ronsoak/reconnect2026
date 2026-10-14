@@ -1,0 +1,25 @@
+<section class="about-page__section" aria-labelledby="about-using-title">
+  <h2 id="about-using-title">Using Reconnect</h2>
+
+  <h3>Discover articles</h3>
+  <ul>
+    <li><a href="{% url 'home' %}">Dynamic</a> mixes new, older, and popular articles. Refresh it for another selection.</li>
+    <li><a href="{% url 'newest' %}">Newest</a> shows the latest articles first.</li>
+    <li><a href="{% url 'popular' %}">Popular</a> orders articles by rank, influenced by reader clicks.</li>
+    <li>Choose Category and Focus options, then select Apply to narrow the feed. Reset clears your choices.</li>
+    <li>Use the search bar on any page to find article titles or publication names. Search ignores your feed filters.</li>
+  </ul>
+  <p>Article links take you to the original publication. Browse the <a href="{% url 'publications' %}">Publications directory</a> to find a site's own website, RSS feed, and articles.</p>
+
+  <h3>Read through RSS</h3>
+  <p>Copy a feed link from the <a href="{% url 'publications' %}">Publications page</a> into your preferred RSS reader. Follow all articles or choose a category. Reconnect's feeds include the 50 newest articles with publication dates; individual publications also have their own source feeds.</p>
+
+  <h3>Use the API</h3>
+  <p>The public, read-only API returns JSON without requiring an account. Start with these endpoints:</p>
+  <ul>
+    <li><a href="{% url 'api_feed' %}"><code>/api/feed/</code></a> for the article feed.</li>
+    <li><a href="{% url 'api_search' %}?q=games"><code>/api/search/?q=games</code></a> for search results.</li>
+    <li><a href="{% url 'api_filters' %}"><code>/api/filters/</code></a> for category and Focus IDs.</li>
+  </ul>
+  <p>Choose an ordering with <code>?feed=newest</code> or <code>?feed=popular</code>. Filter with <code>category</code> and <code>tag</code> IDs; repeat either parameter to select more than one. Use <code>page</code> for additional Newest, Popular, or search results.</p>
+</section>

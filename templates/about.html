@@ -4,7 +4,9 @@
 
 {% block content %}
   <article class="about-page" aria-labelledby="about-title">
-    <h1 class="page-title" id="about-title">About Reconnect</h1>
-    <p class="about-page__lead">Reconnect brings independent writing across video games, tabletop role-playing games, trading card games and board games into one discovery feed.</p>
+    {% include "components/about_intro.html" %}
+    {% include "components/about_newsletter.html" %}
+    {% include "components/about_using.html" %}
+    {% include "components/about_credits.html" %}
   </article>
 {% endblock %}

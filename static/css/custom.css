@@ -553,7 +553,15 @@ input:focus-visible {
 
 .about-page {
   max-width: 70ch;
-  padding: clamp(1.6rem, 4vw, 3rem) 0;
+  margin-inline: auto;
+  padding: 0 1rem;
+  overflow-wrap: anywhere;
+}
+
+.about-page__counts {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .about-page__lead {
@@ -561,6 +569,50 @@ input:focus-visible {
   color: var(--muted);
   font-size: clamp(1.15rem, 2vw, 1.4rem);
   line-height: 1.65;
+}
+
+.about-page p + p {
+  margin-top: 1rem;
+}
+
+.about-page__section {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.about-page__section h2 {
+  margin: 0 0 0.75rem;
+  font: 700 clamp(1.35rem, 2vw, 1.7rem)/1.2 "Manrope", sans-serif;
+  text-wrap: balance;
+}
+
+.about-page__section h3 {
+  margin: 1.5rem 0 0.5rem;
+  font: 600 1.1rem/1.3 "Manrope", sans-serif;
+}
+
+.about-page__section ul {
+  margin: 0.75rem 0 1rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.about-page__section li + li {
+  margin-top: 0.5rem;
+}
+
+.about-page__placeholder {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  color: var(--muted);
+  background: var(--surface-muted);
+}
+
+.about-page iframe {
+  display: block;
+  max-width: 100%;
+  border: 0;
 }
 
 .publications-page {

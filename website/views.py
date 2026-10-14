@@ -247,6 +247,9 @@ def go_advert(request, pk):
 def about(request):
     context = filter_context(request)
     context["hide_filters"] = True
+    articles = visible_articles()
+    context["article_count"] = articles.count()
+    context["site_count"] = articles.order_by().values("site_id").distinct().count()
     return render(request, "about.html", context)
 
 
