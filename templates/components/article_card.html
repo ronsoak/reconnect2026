@@ -3,14 +3,21 @@
 <article class="card feed-card feed-card--{{ card.size }}{% if not card.has_image %} feed-card--text{% endif %}">
   <a href="{% url 'go_article' article.pk %}" target="_blank" rel="noopener noreferrer" class="feed-card__link">
     {% if card.has_image %}
-    <div class="feed-card__image has-background-grey-lighter">
-      <img src="{{ article.image_url }}" alt="" loading="lazy" onerror="var c=this.closest('.feed-card');c.classList.remove('feed-card--medium','feed-card--large');c.classList.add('feed-card--small','feed-card--text');this.parentNode.remove()">
+    <div class="feed-card__image">
+      <img src="{{ article.image_url }}" alt="" loading="lazy" onerror="var c=this.closest('.feed-card');c.classList.remove('feed-card--medium','feed-card--large');c.classList.add('feed-card--small','feed-card--text');this.parentElement.classList.add('feed-card__image--failed');this.remove()">
+    </div>
+    {% else %}
+    <div class="feed-card__image feed-card__image--placeholder" aria-hidden="true">
+      <span>Cover image unavailable</span>
     </div>
     {% endif %}
-    <div class="card-content p-3">
-      <span class="tag is-info is-light is-rounded mb-2">{{ article.site.category.value }}</span>
-      <p class="title is-6 feed-card__title">{{ article.title }}</p>
-      <p class="is-size-7 has-text-grey">{{ article.site.name }} &middot; {{ article.published|date:"j M Y" }}</p>
+    <div class="card-content feed-card__content">
+      <p class="feed-card__category">{{ article.site.category.value }}</p>
+      <h2 class="feed-card__title">{{ article.title }}</h2>
+      <p class="feed-card__source">
+        <span>{{ article.site.name }}</span>
+        {% if article.published %}<time datetime="{{ article.published|date:'Y-m-d' }}">{{ article.published|date:"j M Y" }}</time>{% endif %}
+      </p>
     </div>
   </a>
 </article>

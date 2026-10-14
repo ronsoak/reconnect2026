@@ -2,10 +2,10 @@
 {# A button and a floating panel rather than <details>, because Safari pushes content down for <details>. #}
 {# static/js/filters.js opens and closes the panel and adds the select all toggle #}
 <div class="filter-multiselect">
-  <button type="button" class="button square-button filter-multiselect__button" aria-expanded="false" aria-haspopup="true">
+  <button type="button" class="button filter-multiselect__button" aria-expanded="false" aria-haspopup="true" aria-controls="{{ name }}-filter-menu">
     {{ label }}{% if selected %}&nbsp;({{ selected|length }}){% endif %}
   </button>
-  <div class="box filter-multiselect__menu" hidden>
+  <div class="box filter-multiselect__menu" id="{{ name }}-filter-menu" role="group" aria-label="{{ label }}" hidden>
     {% if items %}
       {# No name, so this checkbox is never submitted with the form #}
       <label class="checkbox is-block mb-2 has-text-weight-semibold">

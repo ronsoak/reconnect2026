@@ -367,13 +367,37 @@ class FeedSizeTests(FeedTestCase):
         counts = self.sizes(self.feed(feed_size=100))
         self.assertEqual(counts, {"large": 0, "medium": 0, "small": 100})
 
+    def test_first_card_is_large_and_large_cards_are_spaced_out(self):
+        site = self.make_site("Only Site", self.video)
+        self.make_articles(site, 300)
+        self.make_advert("Big", size=self.large)
+        for _ in range(20):
+            cards = self.feed(feed_size=100)
+            self.assertEqual(cards[0].size, "large")
+            large = [i for i, card in enumerate(cards) if card.size == "large"]
+            gaps = [b - a - 1 for a, b in zip(large, large[1:])]
+            self.assertTrue(all(gap >= 4 for gap in gaps), gaps)
+            self.assertEqual(len([c for c in self.article_cards(cards) if c.size == "medium"]), 30)
+
+    def test_first_card_is_an_article_with_a_cover_when_one_exists(self):
+        site = self.make_site("Only Site", self.video)
+        self.make_articles(site, 150, first_age=1, image="")
+        self.make_articles(site, 1, first_age=0, image=GOOD_IMAGE)
+        for _ in range(10):
+            first = self.feed(feed_size=100)[0]
+            self.assertEqual(first.size, "large")
+            self.assertTrue(first.has_image)
+
     def test_few_images_fill_large_first(self):
         site = self.make_site("Only Site", self.video)
         # The 5 articles with an image are the newest, so they are always in the feed
         self.make_articles(site, 5, first_age=0, image=GOOD_IMAGE)
         self.make_articles(site, 195, first_age=5, image="")
         counts = self.sizes(self.feed(feed_size=100))
-        self.assertEqual(counts, {"large": 5, "medium": 0, "small": 95})
+        # Every image gets a bigger card, but large ones must stay 4 cards apart
+        self.assertEqual(counts["large"] + counts["medium"], 5)
+        self.assertGreaterEqual(counts["large"], 1)
+        self.assertEqual(counts["small"], 95)
 
 
 class PriorityAdvertTests(FeedTestCase):

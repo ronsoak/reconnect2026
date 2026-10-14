@@ -36,12 +36,13 @@ class ImageCardTests(TestCase):
     def render(self, article):
         return render_to_string("components/article_card.html", {"card": FeedCard("article", article, "small")})
 
-    def test_card_without_a_valid_image_is_a_text_card(self):
+    def test_card_without_a_valid_image_uses_a_cover_placeholder(self):
         for index, url in enumerate(("", "/static/og-image.png"), start=1):
             html = self.render(self.article(url, index))
             self.assertIn("feed-card--text", html)
             self.assertNotIn("<img", html)
-            self.assertNotIn("feed-card__image", html)
+            self.assertIn("feed-card__image--placeholder", html)
+            self.assertIn("Cover image unavailable", html)
 
     def test_card_with_an_image_shows_it(self):
         html = self.render(self.article("https://example.com/a.jpg"))

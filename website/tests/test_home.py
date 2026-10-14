@@ -50,11 +50,12 @@ class HomeFeedTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["cards"]), 24)
 
-    def test_missing_image_makes_a_text_card_without_an_image_box(self):
+    def test_missing_image_makes_a_text_card_with_a_placeholder(self):
         Articles.objects.all().update(image_url="")
         response = self.client.get("/")
         self.assertContains(response, "feed-card--text")
-        self.assertNotContains(response, "feed-card__image")
+        self.assertContains(response, "feed-card__image--placeholder")
+        self.assertContains(response, "Cover image unavailable")
         self.assertNotContains(response, "<img")
 
     def test_empty_state_when_nothing_matches(self):

@@ -1,13 +1,15 @@
 {# Category and tag filters. Apply saves them for 12 months, Reset clears them #}
-<div class="has-background-white-bis py-4">
-  <form method="get" action="{% if active_feed == 'newest' %}{% url 'newest' %}{% elif active_feed == 'popular' %}{% url 'popular' %}{% else %}{% url 'home' %}{% endif %}" class="container px-4">
+<div class="filter-bar">
+  <form method="get" action="{% if active_feed == 'newest' %}{% url 'newest' %}{% elif active_feed == 'popular' %}{% url 'popular' %}{% else %}{% url 'home' %}{% endif %}" class="container px-4 filter-bar__inner">
     <input type="hidden" name="apply" value="1">
-    <div class="is-flex is-flex-wrap-wrap is-align-items-flex-start is-gap-1">
-      {% include "components/filter_multiselect.html" with label="Category" name="category" items=categories selected=selected_categories %}
-      {% include "components/filter_multiselect.html" with label="Focus" name="tag" items=tags selected=selected_tags %}
-      <button class="button is-link square-button" type="submit">Apply</button>
-      <a class="button square-button" href="{% if active_feed %}{{ request.path }}{% else %}{% url 'home' %}{% endif %}?reset=1">Reset</a>
-      <div class="ml-auto">{% include "components/feed_tabs.html" %}</div>
+    <div class="filter-bar__controls">
+      <div class="filter-bar__choices">
+        {% include "components/filter_multiselect.html" with label="Category" name="category" items=categories selected=selected_categories %}
+        {% include "components/filter_multiselect.html" with label="Focus" name="tag" items=tags selected=selected_tags %}
+        <button class="button filter-bar__apply" type="submit">Apply</button>
+        <a class="button filter-bar__reset" href="{% if active_feed %}{{ request.path }}{% else %}{% url 'home' %}{% endif %}?reset=1">Reset</a>
+      </div>
+      <div class="filter-bar__feeds">{% include "components/feed_tabs.html" %}</div>
     </div>
   </form>
 </div>

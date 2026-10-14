@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T14:41:33Z",
+  "title": "Design System: Reconnect",
+  "extensions": {
+    "colorMeta": {
+      "paper-ground": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "#f5f5f2",
+        "tonalRamp": [
+          "oklch(15% 0.0040 106)",
+          "oklch(26% 0.0040 106)",
+          "oklch(37% 0.0040 106)",
+          "oklch(48% 0.0040 106)",
+          "oklch(59% 0.0040 106)",
+          "oklch(70% 0.0040 106)",
+          "oklch(82% 0.0040 106)",
+          "oklch(95% 0.0040 106)"
+        ]
+      },
+      "white-surface": {
+        "role": "neutral",
+        "displayName": "White Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89)",
+          "oklch(26% 0.0000 89)",
+          "oklch(37% 0.0000 89)",
+          "oklch(48% 0.0000 89)",
+          "oklch(59% 0.0000 89)",
+          "oklch(70% 0.0000 89)",
+          "oklch(82% 0.0000 89)",
+          "oklch(95% 0.0000 89)"
+        ]
+      },
+      "mist-surface": {
+        "role": "neutral",
+        "displayName": "Mist Surface",
+        "canonical": "#e9eeeb",
+        "tonalRamp": [
+          "oklch(15% 0.0066 160)",
+          "oklch(26% 0.0066 160)",
+          "oklch(37% 0.0066 160)",
+          "oklch(48% 0.0066 160)",
+          "oklch(59% 0.0066 160)",
+          "oklch(70% 0.0066 160)",
+          "oklch(82% 0.0066 160)",
+          "oklch(95% 0.0066 160)"
+        ]
+      },
+      "charcoal-ink": {
+        "role": "neutral",
+        "displayName": "Charcoal Ink",
+        "canonical": "#24282e",
+        "tonalRamp": [
+          "oklch(15% 0.0125 258)",
+          "oklch(26% 0.0125 258)",
+          "oklch(37% 0.0125 258)",
+          "oklch(48% 0.0125 258)",
+          "oklch(59% 0.0125 258)",
+          "oklch(70% 0.0125 258)",
+          "oklch(82% 0.0125 258)",
+          "oklch(95% 0.0125 258)"
+        ]
+      },
+      "muted-slate": {
+        "role": "neutral",
+        "displayName": "Muted Slate",
+        "canonical": "#56616a",
+        "tonalRamp": [
+          "oklch(15% 0.0199 242)",
+          "oklch(26% 0.0199 242)",
+          "oklch(37% 0.0199 242)",
+          "oklch(48% 0.0199 242)",
+          "oklch(59% 0.0199 242)",
+          "oklch(70% 0.0199 242)",
+          "oklch(82% 0.0199 242)",
+          "oklch(95% 0.0199 242)"
+        ]
+      },
+      "quiet-divider": {
+        "role": "neutral",
+        "displayName": "Quiet Divider",
+        "canonical": "#dfe2df",
+        "tonalRamp": [
+          "oklch(15% 0.0052 145)",
+          "oklch(26% 0.0052 145)",
+          "oklch(37% 0.0052 145)",
+          "oklch(48% 0.0052 145)",
+          "oklch(59% 0.0052 145)",
+          "oklch(70% 0.0052 145)",
+          "oklch(82% 0.0052 145)",
+          "oklch(95% 0.0052 145)"
+        ]
+      },
+      "ocean-blue": {
+        "role": "primary",
+        "displayName": "Muted Ocean Blue",
+        "canonical": "#45627a",
+        "tonalRamp": [
+          "oklch(15% 0.0518 244)",
+          "oklch(26% 0.0518 244)",
+          "oklch(37% 0.0518 244)",
+          "oklch(48% 0.0518 244)",
+          "oklch(59% 0.0518 244)",
+          "oklch(70% 0.0518 244)",
+          "oklch(82% 0.0518 244)",
+          "oklch(95% 0.0518 244)"
+        ]
+      },
+      "deep-ocean-blue": {
+        "role": "primary",
+        "displayName": "Deep Ocean Blue",
+        "canonical": "#304b62",
+        "tonalRamp": [
+          "oklch(15% 0.0510 245)",
+          "oklch(26% 0.0510 245)",
+          "oklch(37% 0.0510 245)",
+          "oklch(48% 0.0510 245)",
+          "oklch(59% 0.0510 245)",
+          "oklch(70% 0.0510 245)",
+          "oklch(82% 0.0510 245)",
+          "oklch(95% 0.0510 245)"
+        ]
+      },
+      "warm-advert-stock": {
+        "role": "neutral",
+        "displayName": "Warm Advert Stock",
+        "canonical": "#eee9dc",
+        "tonalRamp": [
+          "oklch(15% 0.0181 89)",
+          "oklch(26% 0.0181 89)",
+          "oklch(37% 0.0181 89)",
+          "oklch(48% 0.0181 89)",
+          "oklch(59% 0.0181 89)",
+          "oklch(70% 0.0181 89)",
+          "oklch(82% 0.0181 89)",
+          "oklch(95% 0.0181 89)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Page Display",
+        "purpose": "Confident page headings."
+      },
+      "title": {
+        "displayName": "Article Title",
+        "purpose": "Prominent story titles in feed cards."
+      },
+      "search": {
+        "displayName": "Search Text",
+        "purpose": "Text entered into the site search."
+      },
+      "body": {
+        "displayName": "Editorial Body",
+        "purpose": "General copy, ledes and reading text."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Search and primary action labels."
+      },
+      "filter": {
+        "displayName": "Filter Control",
+        "purpose": "Compact filter and reset control labels."
+      },
+      "navigation": {
+        "displayName": "Feed Navigation",
+        "purpose": "Dynamic, Newest and Popular feed tabs."
+      },
+      "label": {
+        "displayName": "Category Label",
+        "purpose": "Compact uppercase story categories."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "small",
+        "value": "480px"
+      },
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "wide",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Flat ocean-blue action for Search, Apply and refresh.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">Search</button>",
+      "css": ".ds-button-primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); border-radius: var(--radius); padding: 0.44rem 1.15rem; min-height: 2.9rem; font: 600 1rem/1.5 \"DM Sans\", sans-serif; box-shadow: none; } .ds-button-primary:hover, .ds-button-primary:active { background: var(--accent-deep); border-color: var(--accent-deep); } .ds-button-primary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-input",
+      "description": "White search input with the site's body face and visible focus.",
+      "html": "<label class=\"ds-search-label\" for=\"ds-search\">Search articles</label><input class=\"ds-search-input\" id=\"ds-search\" type=\"search\" placeholder=\"Search articles\">",
+      "css": ".ds-search-label { display: block; margin-bottom: 0.35rem; color: var(--ink); font: 600 0.84rem/1.2 \"DM Sans\", sans-serif; } .ds-search-input { width: 100%; min-width: 0; height: 2.9rem; padding: 0.4rem 0.65rem; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); background: #fff; font: 400 0.95rem/1.5 \"DM Sans\", sans-serif; } .ds-search-input:focus-visible { border-color: var(--accent); outline: 3px solid var(--accent); outline-offset: 3px; }"
+    },
+    {
+      "name": "Filter Control",
+      "kind": "button",
+      "refersTo": "filter-control",
+      "description": "Anchored multi-select trigger with a crisp CSS chevron.",
+      "html": "<button class=\"ds-filter-control\" type=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Category</button>",
+      "css": ".ds-filter-control { min-height: 2.55rem; padding: 0.55rem 0.75rem; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); background: #fff; font: 600 0.84rem/1.2 \"DM Sans\", sans-serif; box-shadow: none; } .ds-filter-control::after { display: inline-block; width: 0.45rem; height: 0.45rem; margin-left: 0.7rem; border: solid currentColor; border-width: 0 1.5px 1.5px 0; content: \"\"; transform: translateY(-0.12rem) rotate(45deg); } .ds-filter-control:hover { border-color: var(--accent); color: var(--accent-deep); } .ds-filter-control:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }"
+    },
+    {
+      "name": "Feed Navigation",
+      "kind": "nav",
+      "refersTo": "feed-tab-active",
+      "description": "Dynamic, Newest and Popular tabs with a clear current state.",
+      "html": "<nav class=\"ds-feed-tabs\" aria-label=\"Article feeds\"><a href=\"#\" aria-current=\"page\">Dynamic</a><a href=\"#\">Newest</a><a href=\"#\">Popular</a></nav>",
+      "css": ".ds-feed-tabs { display: inline-flex; gap: 0.2rem; padding: 0.2rem; border: 1px solid var(--line); border-radius: 0.55rem; background: var(--page); } .ds-feed-tabs a { display: inline-flex; align-items: center; justify-content: center; min-height: 2.1rem; padding: 0.35rem 0.9rem; border-radius: 0.3rem; color: var(--muted); font: 600 0.83rem/1.5 \"DM Sans\", sans-serif; text-decoration: none; } .ds-feed-tabs a:hover { color: var(--ink); } .ds-feed-tabs a[aria-current=\"page\"] { color: #fff; background: var(--accent); } .ds-feed-tabs a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Article Card",
+      "kind": "card",
+      "refersTo": "article-card",
+      "description": "Equal-width, cover-led story card with visible source and date.",
+      "html": "<article class=\"ds-article-card\"><a class=\"ds-article-link\" href=\"#\"><div class=\"ds-cover\" aria-hidden=\"true\"></div><div class=\"ds-card-content\"><p class=\"ds-category\">VIDEO GAMES</p><h2 class=\"ds-title\">Example story title</h2><p class=\"ds-source\"><span>Publication name</span><time>12 Oct 2026</time></p></div></a></article>",
+      "css": ".ds-article-card { overflow: hidden; border: 1px solid var(--line); border-radius: 0.75rem; background: #fff; box-shadow: none; } .ds-article-link { display: flex; min-height: 17rem; flex-direction: column; color: inherit; text-decoration: none; } .ds-cover { flex: 1 1 0; min-height: 7.5rem; background: var(--surface-muted); } .ds-card-content { padding: 0.9rem 1rem 1rem; } .ds-category { margin: 0 0 0.5rem; color: var(--accent); font: 700 0.68rem/1.3 \"DM Sans\", sans-serif; letter-spacing: 0.075em; text-transform: uppercase; } .ds-title { margin: 0; color: var(--ink); font: 700 1.04rem/1.28 \"Manrope\", sans-serif; letter-spacing: -0.015em; } .ds-source { display: flex; flex-wrap: wrap; gap: 0.25rem 0.6rem; margin: 0.7rem 0 0; color: var(--muted); font: 400 0.78rem/1.35 \"DM Sans\", sans-serif; font-variant-numeric: tabular-nums; } .ds-source span { color: var(--ink); font-weight: 600; } .ds-article-card:hover { border-color: #aab8c0; } .ds-article-link:focus-visible { outline: 3px solid var(--accent); outline-offset: -4px; }"
+    },
+    {
+      "name": "Advert Card",
+      "kind": "card",
+      "refersTo": "article-card",
+      "description": "Feed card variant with a reserved warm paper surface.",
+      "html": "<article class=\"ds-advert-card\"><div class=\"ds-advert-cover\" aria-hidden=\"true\"></div><div class=\"ds-advert-content\"><p>SPONSORED</p><h2>Advert title</h2></div></article>",
+      "css": ".ds-advert-card { overflow: hidden; border: 1px solid var(--line); border-radius: 0.75rem; color: var(--ink); background: #fff; box-shadow: none; } .ds-advert-cover { min-height: 7.5rem; background: var(--advert); } .ds-advert-content { padding: 0.9rem 1rem 1rem; } .ds-advert-content p { margin: 0 0 0.5rem; color: #6a5324; font: 700 0.68rem/1.3 \"DM Sans\", sans-serif; letter-spacing: 0.075em; } .ds-advert-content h2 { margin: 0; font: 700 1.04rem/1.28 \"Manrope\", sans-serif; }"
+    },
+    {
+      "name": "Refresh Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The Dynamic feed's lower-edge refresh action.",
+      "html": "<button class=\"ds-refresh-button\" type=\"button\">Refresh the mix</button>",
+      "css": ".ds-refresh-button { min-height: 2.75rem; padding: 0.44rem 1.5rem; border: 1px solid var(--accent); border-radius: var(--radius); color: #fff; background: var(--accent); font: 700 1rem/1.5 \"DM Sans\", sans-serif; box-shadow: none; } .ds-refresh-button:hover { border-color: var(--accent-deep); background: var(--accent-deep); } .ds-refresh-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Game Library for Independent Writing",
+    "overview": "Reconnect presents independent games writing as a changing collection of publication covers. The interface is editorial rather than retail: cover art helps readers recognize a story, while its title, publication and date remain the information used to scan and choose what to read.\n\nThe visual language is calm and catalogue-like. Cool paper tones, restrained blue actions, clean rules and confident sans typography give varied sources a shared frame without making the site feel like a storefront or social network.",
+    "keyCharacteristics": [
+      "Cover-led discovery with clear article attribution.",
+      "Equal-width cards whose image area and height vary by size.",
+      "Quiet, bordered surfaces instead of elevated or decorative panels.",
+      "Column-first feed flow that keeps visual order aligned with keyboard order."
+    ],
+    "rules": [
+      {
+        "name": "The Cover-First Rule",
+        "body": "Use cover art to signal an article's subject, but keep its title, publication and date legible.",
+        "section": "colors"
+      },
+      {
+        "name": "The Grid-Unit Rule",
+        "body": "Card sizes are whole multiples of one small cell; never use arbitrary heights or widths.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do use real publication cover art as the visual entry point; keep the title, publication and date legible.",
+      "Do size cards in whole grid cells: 1x1, 1x2 or 2x2.",
+      "Do use ocean blue for primary actions and the selected feed.",
+      "Do use a calm placeholder when a cover is missing or fails to load."
+    ],
+    "donts": [
+      "Don't turn the feed into a storefront or social network.",
+      "Don't add large shadows beneath bordered cards and controls.",
+      "Don't give a text-only or broken-image article a medium or large size.",
+      "Don't invent readership figures, testimonials or publication claims."
+    ]
+  }
+}

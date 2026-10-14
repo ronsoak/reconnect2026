@@ -3,27 +3,33 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 
-from website.newsletter import build_newsletter, render_markdown, week_start_for
+from website.newsletter import build_newsletter, period_range, render_markdown
 
 
 def newsletter_export(request):
-    """Preview of the weekly recap with a button to download it as markdown.
+    """Preview of the recap with a button to download it as markdown.
 
-    /backdoor/newsletter/               this week (Monday to Sunday)
-    /backdoor/newsletter/?week=last     previous week
-    /backdoor/newsletter/?download=1    the same data as a .md file
+    /backdoor/newsletter/                          this week (Monday to Sunday)
+    /backdoor/newsletter/?which=last               previous week
+    /backdoor/newsletter/?period=month             this calendar month
+    /backdoor/newsletter/?period=month&which=last  previous calendar month
+    add &download=1 to get the same data as a .md file
     """
-    which = "last" if request.GET.get("week") == "last" else "this"
-    data = build_newsletter(week_start_for(which))
+    period = "month" if request.GET.get("period") == "month" else "week"
+    which = "last" if request.GET.get("which") == "last" else "this"
+    start, end, top_count = period_range(period, which)
+    data = build_newsletter(start, end, top_count)
 
     if request.GET.get("download"):
         response = HttpResponse(render_markdown(data), content_type="text/markdown; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="recap-{data["week_start"]:%Y-%m-%d}.md"'
+        name = f"{start:%Y-%m}" if period == "month" else f"{start:%Y-%m-%d}"
+        response["Content-Disposition"] = f'attachment; filename="recap-{period}-{name}.md"'
         return response
 
     context = {
         **admin.site.each_context(request),
         "title": "Newsletter export",
+        "period": period,
         "which": which,
         **data,
     }

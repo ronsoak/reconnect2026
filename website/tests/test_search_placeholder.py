@@ -16,8 +16,9 @@ class SearchPlaceholderTests(TestCase):
         Logic.objects.create(logic_type="TAG", value="News")
         self.assertEqual(search_placeholder(), DEFAULT_PLACEHOLDER)
 
-    def test_search_bar_renders_phrase_and_is_square(self):
+    def test_search_bar_renders_phrase_and_submit_control(self):
         Logic.objects.create(logic_type="SEARCH_PLACEHOLDER", value="Find a dragon")
         response = self.client.get("/")
         self.assertContains(response, 'placeholder="Find a dragon"')
-        self.assertContains(response, "square-button")
+        self.assertContains(response, 'class="input site-search__input"')
+        self.assertContains(response, '>Search</button>')

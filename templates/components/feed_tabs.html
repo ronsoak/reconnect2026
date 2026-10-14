@@ -1,8 +1,6 @@
 {# Feed switcher, sits inside the filter bar. Expects active_feed ("dynamic", "newest" or "popular") #}
-<div class="tabs is-toggle is-rounded">
-  <ul>
-    <li {% if active_feed == "dynamic" %}class="is-active"{% endif %}><a href="{% url 'home' %}">Dynamic</a></li>
-    <li {% if active_feed == "newest" %}class="is-active"{% endif %}><a href="{% url 'newest' %}">Newest</a></li>
-    <li {% if active_feed == "popular" %}class="is-active"{% endif %}><a href="{% url 'popular' %}">Popular</a></li>
-  </ul>
-</div>
+<nav class="feed-tabs" aria-label="Article feeds">
+  <a href="{% url 'home' %}" {% if active_feed == "dynamic" %}aria-current="page"{% endif %}>Dynamic</a>
+  <a href="{% url 'newest' %}" {% if active_feed == "newest" %}aria-current="page"{% endif %}>Newest</a>
+  <a href="{% url 'popular' %}" {% if active_feed == "popular" %}aria-current="page"{% endif %}>Popular</a>
+</nav>

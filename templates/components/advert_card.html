@@ -1,16 +1,20 @@
 {# One advert card. Expects: card (a FeedCard with kind "advert"). Size classes are in custom.css #}
 {% with advert=card.item %}
-<article class="card feed-card feed-card--{{ card.size }} has-background-warning-light{% if not card.has_image %} feed-card--text{% endif %}">
+<article class="card feed-card feed-card--advert feed-card--{{ card.size }}{% if not card.has_image %} feed-card--text{% endif %}">
   <a href="{% url 'go_advert' advert.pk %}" target="_blank" rel="noopener noreferrer sponsored" class="feed-card__link">
     {% if card.has_image %}
-    <div class="feed-card__image has-background-warning-light">
-      <img src="{{ advert.image.url }}" alt="" loading="lazy" onerror="var c=this.closest('.feed-card');c.classList.remove('feed-card--medium','feed-card--large');c.classList.add('feed-card--small','feed-card--text');this.parentNode.remove()">
+    <div class="feed-card__image feed-card__image--advert">
+      <img src="{{ advert.image.url }}" alt="" loading="lazy" onerror="var c=this.closest('.feed-card');c.classList.remove('feed-card--medium','feed-card--large');c.classList.add('feed-card--small','feed-card--text');this.parentElement.classList.add('feed-card__image--failed');this.remove()">
+    </div>
+    {% else %}
+    <div class="feed-card__image feed-card__image--placeholder" aria-hidden="true">
+      <span>Reconnect partner</span>
     </div>
     {% endif %}
-    <div class="card-content p-3">
-      <span class="tag is-warning is-rounded mb-2">Advert</span>
-      <p class="title is-6 feed-card__title">{{ advert.message }}</p>
-      {% if advert.site_name %}<p class="is-size-7 has-text-grey">{{ advert.site_name }}</p>{% endif %}
+    <div class="card-content feed-card__content">
+      <p class="feed-card__category feed-card__category--advert">Sponsored</p>
+      <h2 class="feed-card__title">{{ advert.message }}</h2>
+      {% if advert.site_name %}<p class="feed-card__source"><span>{{ advert.site_name }}</span></p>{% endif %}
     </div>
   </a>
 </article>

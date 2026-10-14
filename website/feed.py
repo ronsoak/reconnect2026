@@ -47,6 +47,9 @@ POPULAR_POOL_SIZE = 100
 LARGE_PERCENT = 10
 MEDIUM_PERCENT = 30
 
+# Large cards always have at least this many cards between them.
+LARGE_MIN_GAP = 4
+
 # The priority advert's first appearance is within this many cards (dynamic page)
 PRIORITY_WITHIN = 10
 
@@ -194,6 +197,51 @@ def build_article_cards(articles, rng):
     return cards
 
 
+def arrange_large_cards(cards, rng):
+    """
+    Re-places the large article cards on the finished page (adverts included).
+
+    The first card is made large when it can be, and every other large card, advert or
+    article, has at least LARGE_MIN_GAP cards between it and the next. Articles keep their
+    small and medium counts; a large card that cannot be placed becomes a medium card.
+    Cards are modified in place and the same list is returned.
+    """
+    articles = [i for i, card in enumerate(cards) if not card.is_advert and card.has_image]
+    large_wanted = sum(1 for i in articles if cards[i].size == "large")
+    medium_wanted = sum(1 for i in articles if cards[i].size == "medium")
+    for i in articles:
+        cards[i].size = "small"
+    if not articles:
+        return cards
+
+    # Large adverts are fixed, so the article cards have to keep clear of them
+    taken = [i for i, card in enumerate(cards) if card.is_advert and card.size == "large"]
+
+    def fits(index):
+        return all(abs(index - other) > LARGE_MIN_GAP for other in taken)
+
+    large = []
+    if articles[0] == 0 and fits(0):
+        large.append(0)
+        taken.append(0)
+    candidates = [i for i in articles if i not in large]
+    rng.shuffle(candidates)
+    for index in candidates:
+        if len(large) >= max(large_wanted, 1):
+            break
+        if fits(index):
+            large.append(index)
+            taken.append(index)
+
+    for index in large:
+        cards[index].size = "large"
+    # A large card that could not be placed becomes a medium one instead of shrinking to small
+    mediums = [i for i in candidates if i not in large]
+    for index in mediums[:medium_wanted + max(large_wanted - len(large), 0)]:
+        cards[index].size = "medium"
+    return cards
+
+
 # ===== ===== ===== ===== ===== =====
 # Adverts
 # ===== ===== ===== ===== ===== =====
@@ -301,8 +349,14 @@ def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=FEED_SIZE, tod
         at_end = True
 
     rng.shuffle(articles)
+    # The page opens with a large card, so an article with a cover goes first
+    for index, article in enumerate(articles):
+        if has_valid_image(article):
+            articles.insert(0, articles.pop(index))
+            break
     article_cards = build_article_cards(articles, rng)
-    return insert_adverts(article_cards, advert_slots, at_end, rng, prioritise=True)
+    cards = insert_adverts(article_cards, advert_slots, at_end, rng, prioritise=True)
+    return arrange_large_cards(cards, rng)
 
 
 # ===== ===== ===== ===== ===== =====
@@ -342,7 +396,8 @@ def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size
         at_end = True
 
     article_cards = build_article_cards(articles, rng)
-    return insert_adverts(article_cards, advert_slots, at_end, rng), page_obj
+    cards = insert_adverts(article_cards, advert_slots, at_end, rng)
+    return arrange_large_cards(cards, rng), page_obj
 
 
 # ===== ===== ===== ===== ===== =====

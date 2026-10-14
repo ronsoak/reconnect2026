@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Reconnect — Conventional article grid</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#202124;font:15px/1.45 "DM Sans",sans-serif}
+.page{width:1440px;height:900px;overflow:hidden;padding:0 76px}
+header{height:100px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:37px;font-weight:700;letter-spacing:-1.4px}.tagline{font-size:14px;color:#696d73;margin-top:3px}
+.search{height:46px;border:1px solid #d1d4d8;padding:0 16px;display:flex;align-items:center;color:#8b9096}
+.nav{height:65px;background:#f5f6f8;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+.filters{display:flex;align-items:center;gap:8px}
+.filters button{border:1px solid #d3d6da;background:white;padding:9px 13px;color:#30343a}
+.filters .apply{background:#4966b0;color:#fff;border-color:#4966b0}
+.modes{display:flex;gap:19px;font-size:13px}.modes .active{color:#4966b0;font-weight:700}
+h1{font-size:26px;letter-spacing:-.7px;margin:24px 0 16px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:245px;gap:18px}
+.story{border:1px solid #e4e6e8;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 7px 20px rgba(28,37,56,.08)}
+.art{height:134px;background:#d8dde3;display:flex;align-items:flex-end;padding:12px;color:#fff;font-size:21px;font-weight:700;line-height:1.02}
+.story:nth-child(1) .art{background:#283549}.story:nth-child(2) .art{background:#b4a98e}.story:nth-child(3) .art{background:#415345}.story:nth-child(4) .art{background:#914e3c}
+.body{padding:11px 13px}.category{font-size:11px;color:#4966b0;font-weight:600}.title{font-size:16px;font-weight:700;line-height:1.18;margin-top:5px}.site{font-size:11px;color:#737981;margin-top:7px}
+</style>
+</head>
+<body><main class="page">
+<header><div><div class="brand">Reconnect</div><div class="tagline">Discover games writing</div></div><div class="search">Search articles, games, topics, and more...</div><a>About</a></header>
+<nav class="nav"><div class="filters"><button>Category</button><button>Focus</button><button class="apply">Apply</button><button>Reset</button></div><div class="modes"><span class="active">Dynamic</span><span>Newest</span><span>Popular</span></div></nav>
+<h1>Discover games writing</h1><div class="grid">
+<article class="story"><div class="art">WHAT IS SURVIVAL HORROR?</div><div class="body"><div class="category">Video Games</div><div class="title">What Is Survival Horror?</div><div class="site">Survival Horrors · 25 Sep 2026</div></div></article>
+<article class="story"><div class="art">11 C64 TITLES FOUND</div><div class="body"><div class="category">Video Games</div><div class="title">11 lost/missing C64 titles located</div><div class="site">Retro Gamer · 11 Oct 2026</div></div></article>
+<article class="story"><div class="art">GAMES EVENT CRITICISED</div><div class="body"><div class="category">Video Games</div><div class="title">Games Event Criticised After Dumping Sponsor Over 'Zionist' Allegations</div><div class="site">Aftermath · 11 Oct 2026</div></div></article>
+<article class="story"><div class="art">VALOR MORTIS</div><div class="body"><div class="category">Video Games</div><div class="title">Valor Mortis Gets A Launch Trailer</div><div class="site">Games writing · 11 Oct 2026</div></div></article>
+</div></main></body></html>

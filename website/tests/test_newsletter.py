@@ -4,7 +4,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from website.models import Articles, Clicks, Logic, Sites
-from website.newsletter import TOP_COUNT, build_newsletter, render_markdown, week_start_for
+from website.newsletter import (
+    MONTH_TOP_COUNT, TOP_COUNT, build_newsletter, month_range_for, period_range, render_markdown, week_start_for,
+)
 
 # Monday 5 Oct 2026 to Sunday 11 Oct 2026
 MONDAY = date(2026, 10, 5)
@@ -17,6 +19,21 @@ class WeekTests(TestCase):
 
     def test_last_week_is_seven_days_earlier(self):
         self.assertEqual(week_start_for("last", date(2026, 10, 11)), date(2026, 9, 28))
+
+
+class MonthTests(TestCase):
+    def test_this_and_last_month(self):
+        today = date(2026, 10, 13)
+        self.assertEqual(month_range_for("this", today), (date(2026, 10, 1), date(2026, 10, 31)))
+        self.assertEqual(month_range_for("last", today), (date(2026, 9, 1), date(2026, 9, 30)))
+
+    def test_last_month_crosses_the_year_and_leap_february(self):
+        self.assertEqual(month_range_for("last", date(2026, 1, 5)), (date(2025, 12, 1), date(2025, 12, 31)))
+        self.assertEqual(month_range_for("this", date(2028, 2, 10)), (date(2028, 2, 1), date(2028, 2, 29)))
+
+    def test_period_range_top_counts(self):
+        self.assertEqual(period_range("week", "this", date(2026, 10, 7))[2], TOP_COUNT)
+        self.assertEqual(period_range("month", "this", date(2026, 10, 7))[2], MONTH_TOP_COUNT)
 
 
 class NewsletterTests(TestCase):
@@ -117,12 +134,18 @@ class NewsletterAdminPageTests(TestCase):
 
     def test_page_and_download_work(self):
         self.client.force_login(self.admin)
-        page = self.client.get("/backdoor/newsletter/?week=last")
+        page = self.client.get("/backdoor/newsletter/?period=month&which=last")
         self.assertContains(page, "Download markdown")
         download = self.client.get("/backdoor/newsletter/?download=1")
         self.assertIn("attachment", download["Content-Disposition"])
         self.assertIn(".md", download["Content-Disposition"])
         self.assertIn("# Reconnect Recap", download.content.decode())
+
+    def test_monthly_download_uses_month_in_name_and_top_60(self):
+        self.client.force_login(self.admin)
+        download = self.client.get("/backdoor/newsletter/?period=month&download=1")
+        self.assertIn("recap-month-", download["Content-Disposition"])
+        self.assertIn("## Top 60 by clicks this month", download.content.decode())
 
     def test_admin_front_page_links_to_the_export(self):
         self.client.force_login(self.admin)

@@ -1,15 +1,20 @@
 {% extends "base.html" %}
 
+{% block title %}{% if query %}Search: {{ query }}{% else %}Search{% endif %} | Reconnect{% endblock %}
+
 {% block content %}
-  <div class="container px-4 mt-5">
+  <section class="search-page" aria-labelledby="search-title">
+    <header class="search-page__intro">
+      <h1 class="page-title" id="search-title">{% if query %}Search results{% else %}Search the feed{% endif %}</h1>
+    </header>
     {% if not query %}
-      <p class="has-text-centered has-text-grey py-6">Type something into the search bar to find articles.</p>
+      <p class="feed-empty">Type something into the search field above to find articles by title or publication name.</p>
     {% elif cards %}
-      <p class="has-text-grey mb-4">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }} for &ldquo;{{ query }}&rdquo;</p>
+      <p class="search-page__count">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }} for &ldquo;{{ query }}&rdquo;</p>
     {% else %}
-      <p class="has-text-centered has-text-grey py-6">No articles found for &ldquo;{{ query }}&rdquo;.</p>
+      <p class="feed-empty">No articles found for &ldquo;{{ query }}&rdquo;. Try another title or publication name.</p>
     {% endif %}
-  </div>
-  {% include "components/feed_grid.html" with hide_empty=True %}
-  {% include "components/pagination.html" with extra_query=query_string %}
+    {% include "components/feed_grid.html" with hide_empty=True %}
+    {% include "components/pagination.html" with extra_query=query_string %}
+  </section>
 {% endblock %}

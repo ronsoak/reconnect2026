@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 
+{% block title %}{% if active_feed == "newest" %}Newest stories{% elif active_feed == "popular" %}Popular stories{% else %}Browse stories{% endif %} | Reconnect{% endblock %}
+
 {% block content %}
-  {% include "components/feed_grid.html" %}
-  {% include "components/pagination.html" %}
+  <section class="feed-page" aria-labelledby="feed-title">
+    <header class="feed-page__intro">
+      <h1 class="page-title" id="feed-title">{% if active_feed == "newest" %}Newest stories{% elif active_feed == "popular" %}Popular stories{% else %}Browse stories{% endif %}</h1>
+      <p class="page-lede">Independent writing from across tabletop and video games.</p>
+    </header>
+    {% include "components/feed_grid.html" %}
+    {% include "components/pagination.html" %}
+  </section>
   {% if active_feed == "dynamic" %}{% include "components/refresh_button.html" %}{% endif %}
 {% endblock %}

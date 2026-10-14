@@ -1,13 +1,17 @@
 {% extends "admin/base_site.html" %}
 
 {% block content %}
+<div class="mb-4 flex flex-wrap items-center gap-2">
+  <a href="?period=week&which={{ which }}" class="px-3 py-2 border rounded-default {% if period == 'week' %}bg-primary-600 text-white{% endif %}">Weekly</a>
+  <a href="?period=month&which={{ which }}" class="px-3 py-2 border rounded-default {% if period == 'month' %}bg-primary-600 text-white{% endif %}">Monthly</a>
+</div>
 <div class="mb-6 flex flex-wrap items-center gap-2">
-  <a href="?week=this" class="px-3 py-2 border rounded-default {% if which == 'this' %}bg-primary-600 text-white{% endif %}">This week</a>
-  <a href="?week=last" class="px-3 py-2 border rounded-default {% if which == 'last' %}bg-primary-600 text-white{% endif %}">Last week</a>
-  <a href="?week={{ which }}&download=1" class="px-3 py-2 rounded-default bg-primary-600 text-white">Download markdown</a>
-  <span class="ml-2">{{ week_start|date:"j M" }} to {{ week_end|date:"j M Y" }}</span>
+  <a href="?period={{ period }}&which=this" class="px-3 py-2 border rounded-default {% if which == 'this' %}bg-primary-600 text-white{% endif %}">This {{ period }}</a>
+  <a href="?period={{ period }}&which=last" class="px-3 py-2 border rounded-default {% if which == 'last' %}bg-primary-600 text-white{% endif %}">Last {{ period }}</a>
+  <a href="?period={{ period }}&which={{ which }}&download=1" class="px-3 py-2 rounded-default bg-primary-600 text-white">Download markdown</a>
+  <span class="ml-2">{{ start|date:"j M" }} to {{ end|date:"j M Y" }}</span>
 </div>
 
-{% include "admin/newsletter_table.html" with heading="Top by clicks this week" rows=top %}
-{% include "admin/newsletter_table.html" with heading="Everything else this week" rows=remaining %}
+{% include "admin/newsletter_table.html" with heading="Top by clicks this "|add:period rows=top %}
+{% include "admin/newsletter_table.html" with heading="Everything else this "|add:period rows=remaining %}
 {% endblock %}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Reconnect — Measured grid</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f7f3;color:#171a1e;font:15px/1.35 "DM Sans",sans-serif}
+.page{width:1440px;height:900px;overflow:hidden;padding:0 72px}
+header{height:84px;display:grid;grid-template-columns:1fr 2fr 100px;align-items:center;border-bottom:1px solid #171a1e}
+.brand{font-size:34px;font-weight:700;letter-spacing:-1.5px}.tagline{font-size:12px;color:#62676d}
+.search{height:40px;border:1px solid #89919b;display:flex;align-items:center;padding:0 14px;color:#767d85;font-size:13px}
+.about{text-align:right;font-size:13px;font-weight:600}
+.feed-nav{height:59px;display:grid;grid-template-columns:repeat(12,1fr);align-items:center;border-bottom:1px solid #c5ccd2}
+.feed-nav span{grid-column:span 2;font-size:12px;color:#66717b}.feed-nav .selected{color:#2f64a8;font-weight:700}
+.filters{height:72px;display:flex;align-items:center;gap:9px;border-bottom:1px solid #c5ccd2}
+.filters button{height:34px;padding:0 12px;border:1px solid #a9b1bb;background:transparent;color:#171a1e;font:12px "DM Sans",sans-serif}
+.filters .apply{background:#2f64a8;color:white;border-color:#2f64a8}
+h1{font-size:29px;letter-spacing:-1.1px;margin:23px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 14px}
+.story{border-top:1px solid #171a1e;padding-top:9px}
+.art{height:150px;background:#d6dce4;margin-bottom:10px;display:flex;align-items:flex-end;padding:12px;color:#171a1e}
+.story:nth-child(1) .art{background:#25354a;color:#fff}.story:nth-child(2) .art{background:#c6ced5}
+.story:nth-child(3) .art{background:#d9e2eb}.story:nth-child(4) .art{background:#94a9bb}
+.big{font-size:22px;font-weight:700;line-height:1.05;letter-spacing:-.7px}
+.meta{font:10px "DM Mono",monospace;text-transform:uppercase;letter-spacing:.03em;color:#59636d;margin:7px 0}
+.title{font-size:16px;line-height:1.16;font-weight:600}
+.site{font-size:11px;color:#69717a;margin-top:7px}
+.index{float:right;color:#2f64a8}
+</style>
+</head>
+<body><main class="page">
+<header><div><div class="brand">Reconnect</div><div class="tagline">Discover games writing</div></div><div class="search">Search articles, games, topics, and more...</div><div class="about">About</div></header>
+<nav class="feed-nav"><span class="selected">DYNAMIC</span><span>NEWEST</span><span>POPULAR</span><span style="grid-column:7 / span 2">VIDEO GAMES</span><span style="grid-column:9 / span 2">TABLETOP</span></nav>
+<div class="filters"><button>Category</button><button>Focus</button><button class="apply">Apply filters</button><button>Reset</button></div>
+<section><h1>A measured field of game writing <span class="index">PAGE 01</span></h1>
+<div class="grid">
+<article class="story"><div class="art"><span class="big">WHAT IS<br>SURVIVAL HORROR?</span></div><div class="meta">VIDEO GAMES / 25 SEP 2026</div><div class="title">What Is Survival Horror?</div><div class="site">SURVIVAL HORRORS</div></article>
+<article class="story"><div class="art"><span class="big">11 C64 TITLES<br>LOCATED</span></div><div class="meta">VIDEO GAMES / 11 OCT 2026</div><div class="title">11 lost/missing C64 titles located</div><div class="site">RETRO GAMER</div></article>
+<article class="story"><div class="art"><span class="big">GAMES<br>EVENTS</span></div><div class="meta">VIDEO GAMES / 11 OCT 2026</div><div class="title">Games Event Criticised After Dumping Sponsor Over 'Zionist' Allegations</div><div class="site">AFTERMATH</div></article>
+<article class="story"><div class="art"><span class="big">VALOR<br>MORTIS</span></div><div class="meta">VIDEO GAMES / 11 OCT 2026</div><div class="title">Valor Mortis Gets A Launch Trailer</div><div class="site">GAMES WRITING</div></article>
+</div></section></main></body></html>

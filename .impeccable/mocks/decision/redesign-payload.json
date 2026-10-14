@@ -1,0 +1,53 @@
+{
+  "title": "Choose Reconnect's visual direction",
+  "question": "You asked for a safer hand. Choose a familiar reading structure or re-roll.",
+  "options": [
+    {
+      "id": "r1-field-guide",
+      "label": "Field guide index",
+      "lineage": "Tabletop sourcebooks and bestiary contents pages",
+      "thesis": "A calm, ordered guide to new writing, with useful categories and publication details visible before the reader opens an article.",
+      "palette": ["#f4f0e6", "#262a2b", "#60746a", "#cfc7b8"],
+      "materials": ["soft paper", "chapter rules", "compact index labels"],
+      "viewport": "Reconnect's masthead, square search and feed controls lead into a clear article index; the most useful story is set apart without hiding the rest.",
+      "risk": "A guidebook reference can feel too much like a tabletop product; keep the real article covers and publication names in charge.",
+      "html": ".impeccable/mocks/decision/r1-field-guide.html"
+    },
+    {
+      "id": "r1-reading-room",
+      "label": "Periodical reading room",
+      "lineage": "Library magazine racks and current-issue tables",
+      "thesis": "Publication identity comes first, while a clean current-issue index makes articles easy to scan across sources.",
+      "palette": ["#f7f5ef", "#263238", "#9a533d", "#d8d3c9"],
+      "materials": ["quiet architectural surfaces", "shelf labels", "reading-table paper"],
+      "viewport": "A publication-aware masthead and filter rail sit above a clear feed; every story pairs its title with the source, category and date.",
+      "risk": "Too much source-first organization could make a broad discovery feed feel like a directory.",
+      "html": ".impeccable/mocks/decision/r1-reading-room.html"
+    },
+    {
+      "id": "r1-game-library",
+      "label": "Game library browse",
+      "lineage": "Cover-led game collection catalogues",
+      "thesis": "A familiar image-led catalogue gives every article a strong cover moment, with its real title and source immediately below.",
+      "palette": ["#f5f5f2", "#24282e", "#45627a", "#dfe2df"],
+      "materials": ["cover-art windows", "clean catalogue rows", "quiet dividers"],
+      "viewport": "The normal web header and feed controls lead into a varied, image-forward grid; consistent source and date lines keep every tile legible.",
+      "risk": "The game-library reference can resemble a storefront; keep editorial titles and publication credit more prominent than product art.",
+      "html": ".impeccable/mocks/decision/r1-game-library.html"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code"},
+  "canon": true,
+  "canonCard": {
+    "label": "The familiar aggregator",
+    "lineage": "Publisher feeds, editorial reading lists and community-post indexes",
+    "thesis": "Use familiar discovery cues: publication identity from Substack, headline-led reading from Medium and scannable topic labels from Reddit.",
+    "palette": ["#ffffff", "#22252a", "#4563a6", "#e8eaed"],
+    "materials": ["neutral page", "article photography", "simple rules"],
+    "viewport": "A standard branded header, search and category filters above a regular article-card grid with clear publication and date metadata.",
+    "risk": "It may be polished but interchangeable. Reconnect should borrow familiar visual cues, not invent Substack subscriptions, Medium reading behavior or Reddit voting and comments.",
+    "html": ".impeccable/mocks/decision/r1-canon.html"
+  },
+  "steer": true
+}
