@@ -3,6 +3,11 @@
 {% block title %}{% if active_feed == "newest" %}Newest stories{% elif active_feed == "popular" %}Popular stories{% else %}Browse stories{% endif %} | Reconnect{% endblock %}
 
 {% block content %}
+  {% if front_page_notice %}
+    <aside class="front-page-notice" aria-label="Site notice">
+      <p class="front-page-notice__message">{{ front_page_notice.message|linebreaksbr }}</p>
+    </aside>
+  {% endif %}
   <section class="feed-page" aria-labelledby="feed-title">
     <header class="feed-page__intro">
       <h1 class="page-title" id="feed-title">{% if active_feed == "newest" %}Newest stories{% elif active_feed == "popular" %}Popular stories{% else %}Browse stories{% endif %}</h1>

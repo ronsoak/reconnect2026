@@ -26,8 +26,8 @@ from django.core.paginator import Paginator
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.utils import timezone
 
-from .images import is_valid_image_url
-from .models import Adverts, Articles, Sites
+from .images import fallback_image_url, is_valid_image_url
+from .models import Adverts, Articles, FrontPageNotice, Sites
 
 # Total cards on the page, adverts included. Rounding up can push the total a little over.
 FEED_SIZE = 100
@@ -81,6 +81,13 @@ class FeedCard:
         if self.is_advert:
             return bool(self.item.image)
         return has_valid_image(self.item)
+
+    @property
+    def fallback_image(self):
+        """Stable local artwork used when an article has no usable publisher image."""
+        if self.is_advert:
+            return ""
+        return fallback_image_url(self.item.pk)
 
 
 # ===== ===== ===== ===== ===== =====

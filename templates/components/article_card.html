@@ -1,10 +1,11 @@
+{% load static %}
 {# One article card. Expects: card (a FeedCard with kind "article"). Size classes are in custom.css #}
 {% with article=card.item %}
 <article class="card feed-card feed-card--{{ card.size }}{% if not card.has_image %} feed-card--text{% endif %}">
   <a href="{% url 'go_article' article.pk %}" target="_blank" rel="noopener noreferrer" class="feed-card__link">
-    {% if card.has_image %}
+    {% if card.has_image or card.fallback_image %}
     <div class="feed-card__image">
-      <img src="{{ article.image_url }}" alt="" loading="lazy" onerror="var c=this.closest('.feed-card');c.classList.remove('feed-card--medium','feed-card--large');c.classList.add('feed-card--small','feed-card--text');this.parentElement.classList.add('feed-card__image--failed');this.remove()">
+      <img src="{% if card.has_image %}{{ article.image_url }}{% else %}{{ card.fallback_image }}{% endif %}"{% if card.has_image and card.fallback_image %} data-fallback-src="{{ card.fallback_image }}"{% endif %} alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback){this.dataset.fallbackSrc='';this.src=fallback;return;}var c=this.closest('.feed-card');c.classList.remove('feed-card--medium','feed-card--large');c.classList.add('feed-card--small','feed-card--text');this.parentElement.classList.add('feed-card__image--failed');this.remove()">
     </div>
     {% else %}
     <div class="feed-card__image feed-card__image--placeholder" aria-hidden="true">

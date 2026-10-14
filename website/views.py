@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
 from .feed import build_dynamic_feed, build_ordered_feed, search_articles
-from .models import Adverts, Articles, Clicks, Logic
+from .models import Adverts, Articles, Clicks, FrontPageNotice, Logic
 
 
 FILTER_COOKIE = "reconnect_filters"
@@ -79,6 +79,7 @@ def home(request):
     category_ids, tag_ids = filter_ids(context)
     context["cards"] = build_dynamic_feed(category_ids=category_ids, tag_ids=tag_ids)
     context["active_feed"] = "dynamic"
+    context["front_page_notice"] = FrontPageNotice.objects.filter(is_active=True).first()
     return remember_filters(render(request, "home.html", context), context, request)
 
 

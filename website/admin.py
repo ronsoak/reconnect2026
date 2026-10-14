@@ -5,7 +5,16 @@ from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from website.models import Logic, Sites, Articles, Logging, Adverts, Clicks, Analytics
+from website.models import (
+    Logic,
+    Sites,
+    Articles,
+    Logging,
+    Adverts,
+    Clicks,
+    Analytics,
+    FrontPageNotice,
+)
 from unfold.admin import ModelAdmin                                     # for the Admin theme
 from unfold.contrib.forms.widgets import ArrayWidget, WysiwygWidget     # for the Admin theme
 
@@ -129,3 +138,15 @@ class AnalyticsAdmin(ModelAdmin):
     # Methods
     def get_ordering(self, request):
         return ['-month', '-clicks']
+
+
+@admin.register(FrontPageNotice)
+class FrontPageNoticeAdmin(ModelAdmin):
+    list_display = ("is_active", "updated")
+    fields = ("message", "is_active")
+
+    def has_add_permission(self, request):
+        return not FrontPageNotice.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False

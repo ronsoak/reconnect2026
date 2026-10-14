@@ -281,3 +281,30 @@ class Adverts(models.Model):
                 raise ValidationError({'priority': f"Advert '{other.title}' (id {other.pk}) is already the priority advert. Untick it first."})
     def __str__(self):
         return str(self.pk)
+
+
+class FrontPageNotice(models.Model):
+    singleton_key = models.CharField(
+        max_length=32,
+        default="front-page",
+        unique=True,
+        editable=False,
+    )
+    message = models.TextField(
+        help_text="Message shown in the notice banner on the front page.",
+        verbose_name="Notice message",
+    )
+    is_active = models.BooleanField(
+        default=False,
+        help_text="Show this notice on the front page.",
+        verbose_name="Show notice",
+    )
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Front-page notice"
+        verbose_name_plural = "Front-page notice"
+        ordering = ["pk"]
+
+    def __str__(self):
+        return "Front-page notice"

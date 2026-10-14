@@ -335,6 +335,20 @@ input:focus-visible {
   margin-bottom: 1.4rem;
 }
 
+.front-page-notice {
+  margin-bottom: 1.4rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  color: var(--ink);
+  background: var(--surface-muted);
+}
+
+.front-page-notice__message {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .feed-grid {
   --feed-gap: 0.9rem;
   --feed-columns: 2;

@@ -219,7 +219,8 @@ the card content remains on a white surface.
 - **Internal Padding:** `0.9rem 1rem 1rem` on wide screens, reduced on narrow
   screens.
 - **Cover Art:** Use the publication image when valid. Missing or failed images
-  receive a neutral placeholder; text-only cards stay small.
+  use a stable local fallback from `static/images/article-fallbacks/` when one is
+  available; otherwise show a neutral placeholder. Text-only cards stay small.
 - **Size:** Small is 1x1, medium is 1x2 and large is 2x2 grid cells. The cover
   art fills the space left by the text.
 
@@ -247,7 +248,8 @@ the card content remains on a white surface.
   title, publication and date legible.
 - **Do** size cards in whole grid cells: 1x1, 1x2 or 2x2.
 - **Do** use ocean blue for primary actions and the selected feed.
-- **Do** use a calm placeholder when a cover is missing or fails to load.
+- **Do** use a stable local fallback cover when available; otherwise use the
+  calm placeholder when a cover is missing or fails to load.
 
 ### Don't:
 - **Don't** turn the feed into a storefront or social network.
