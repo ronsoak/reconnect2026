@@ -59,8 +59,13 @@ Reconnect has a read-only JSON API so other people can build on the same feed, f
 | `/api/feed/` | The article feed, with adverts |
 | `/api/search/` | Search articles by title or site name |
 | `/api/filters/` | Lists the category and tag ids the feed accepts |
+| `/feeds/all.rss` | RSS feed of the 50 newest visible articles |
+| `/feeds/category/<category_id>.rss` | RSS feed of the 50 newest visible articles in a category |
 
-All endpoints accept `GET` only and return JSON.
+API endpoints accept `GET` only and return JSON. RSS endpoints return RSS XML.
+
+RSS links route through Reconnect so article clicks from feed readers are included in click analytics.
+Visit `/publications/` for links to the all-articles feed and each category feed.
 
 ### Feed parameters
 

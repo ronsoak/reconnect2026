@@ -182,6 +182,29 @@ def go_article(request, pk):
     return redirect_with_click_cookie(article.url, cookie_value)
 
 
+def go_article_from_rss(request, pk):
+    """Record an RSS click, then redirect the reader to the original article."""
+    article = get_object_or_404(
+        Articles.objects.select_related("site"),
+        pk=pk,
+        hidden=False,
+        site_hide=False,
+        site__hidden=False,
+    )
+    rss_type = Logic.objects.get(logic_type="CLICK_TYPE", value="RSS")
+
+    def record():
+        Articles.objects.filter(pk=article.pk).update(clicks=F("clicks") + 1)
+        Clicks.objects.create(
+            type=rss_type,
+            article=str(article.pk),
+            site=article.site,
+        )
+
+    cookie_value = count_click(request, f"rss{article.pk}", record)
+    return redirect_with_click_cookie(article.url, cookie_value)
+
+
 def go_advert(request, pk):
     """
     Counts a click on an advert, then sends the visitor to the advertiser.
@@ -205,6 +228,12 @@ def go_advert(request, pk):
 
 def about(request):
     return render(request, "about.html", filter_context(request))
+
+
+def publications(request):
+    context = filter_context(request)
+    context["categories"] = context["categories"].order_by("value")
+    return render(request, "publications.html", context)
 
 
 def robots_txt(request):

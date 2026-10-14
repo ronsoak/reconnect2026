@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Publications | Reconnect{% endblock %}
+
+{% block content %}
+  <section class="publications-page" aria-labelledby="publications-title">
+    <h1 class="page-title" id="publications-title">Follow Reconnect</h1>
+    <p class="publications-page__lead">
+      Subscribe in your preferred feed reader to keep up with new writing from Reconnect.
+    </p>
+
+    <ul class="publications-feed-list">
+      <li class="publications-feed-list__item">
+        <div>
+          <h2>All articles</h2>
+          <p>The latest articles from every visible publication.</p>
+        </div>
+        <a href="{% url 'rss_feed_all' %}">RSS feed</a>
+      </li>
+      {% for category in categories %}
+        <li class="publications-feed-list__item">
+          <div>
+            <h2>{{ category.value }}</h2>
+            <p>The latest articles in {{ category.value }}.</p>
+          </div>
+          <a href="{% url 'rss_feed_category' category_id=category.pk %}">RSS feed</a>
+        </li>
+      {% empty %}
+        <li>No categories are available yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

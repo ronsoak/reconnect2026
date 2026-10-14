@@ -147,6 +147,7 @@ input:focus-visible {
 .site-menu {
   display: flex;
   justify-content: flex-end;
+  gap: 1rem;
 }
 
 .site-menu__link {
@@ -562,6 +563,47 @@ input:focus-visible {
   line-height: 1.65;
 }
 
+.publications-page {
+  max-width: 70ch;
+}
+
+.publications-page__lead {
+  margin: 0.75rem 0 1.5rem;
+  color: var(--muted);
+}
+
+.publications-feed-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.publications-feed-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.publications-feed-list__item h2 {
+  margin: 0;
+  font: 600 1.05rem/1.3 "Manrope", sans-serif;
+}
+
+.publications-feed-list__item p {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.publications-feed-list__item > a {
+  flex: 0 0 auto;
+  font-weight: 600;
+}
+
 .pagination {
   gap: 0.4rem;
 }
@@ -679,6 +721,11 @@ input:focus-visible {
   .site-header > .container {
     padding-top: 0.9rem;
     padding-bottom: 0.9rem;
+  }
+
+  .publications-feed-list__item {
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .site-main {

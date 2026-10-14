@@ -20,6 +20,7 @@ LOGIC = {
     "CLICK_TYPE": [
         "Article",
         "Advert",
+        "RSS",
     ],
 
     "KEYWORD": [
