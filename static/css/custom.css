@@ -851,6 +851,59 @@ input:focus-visible {
   margin: 0;
 }
 
+.site-footer__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+}
+
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.site-footer__links a {
+  padding-block: 0.25rem;
+  color: var(--ink);
+}
+
+.site-footer__links a:hover {
+  text-decoration: underline;
+}
+
+.site-footer__count {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-footer__count strong {
+  display: block;
+  color: var(--ink);
+  font: 700 1.5rem/1.3 "Manrope", sans-serif;
+}
+
+.site-footer__credits {
+  text-align: right;
+}
+
+@media screen and (max-width: 768px) {
+  .site-footer__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    text-align: center;
+  }
+
+  .site-footer__links {
+    justify-content: center;
+  }
+
+  .site-footer__credits {
+    text-align: center;
+  }
+}
+
 .refresh-button {
   position: fixed;
   right: 1.5rem;

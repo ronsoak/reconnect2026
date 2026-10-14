@@ -157,6 +157,14 @@ and newsletter signup, and personal credits. No external embeds load until you a
 their official embed code. Counts are calculated from public articles and their
 distinct publications, independently of feed filters and cached site article counts.
 
+## Editing the footer
+
+The shared footer lives in `templates/components/footer.html`, with layout in
+`static/css/custom.css`. Its article count uses the same public-article query as
+About and ignores filters. `static/js/footer.js` adds a one-time entrance when the
+count enters view; the final number remains readable without JavaScript or with
+reduced motion enabled.
+
 ## Management scripts
 
 Each script has its own usage examples at the top of its file. Add `--dry-run` where it is offered to preview changes.

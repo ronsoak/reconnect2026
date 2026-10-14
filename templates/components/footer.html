@@ -1,5 +1,21 @@
+{% load footer_tags %}
+{% footer_article_count as total_articles %}
 <footer class="footer site-footer">
-  <div class="content has-text-centered">
-    <p>Reconnect &copy; {% now "Y" %}</p>
+  <div class="container site-footer__inner">
+    <nav class="site-footer__links" aria-label="Footer navigation">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'publications' %}">Publications</a>
+      <a href="{% url 'about' %}">About</a>
+      <a href="{% url 'rss_feed_all' %}">RSS feed</a>
+    </nav>
+    <p class="site-footer__count" data-footer-count>
+      <strong>{{ total_articles }}</strong>
+      article{{ total_articles|pluralize }} to discover
+    </p>
+    <div class="site-footer__credits">
+      <p>Reconnect &copy; {% now "Y" %}</p>
+      <p>Developed by Alex Antra</p>
+      <p>Designed by Micah Tabak</p>
+    </div>
   </div>
 </footer>
