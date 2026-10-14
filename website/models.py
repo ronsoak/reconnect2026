@@ -63,6 +63,7 @@ class Sites(models.Model):
     article_count   = models.IntegerField(default=0, help_text="Count of articles under this site", verbose_name="Article Count")
     batch_num       = models.IntegerField(default=0, help_text="Ingest Batch Number", verbose_name="Batch Number")
     hidden          = models.BooleanField(default=False, help_text="Is this site hidden?", verbose_name="Site Hidden")
+    dormant         = models.BooleanField(default=False, help_text="Hidden for inactivity and eligible for automatic recovery. Clear this to keep a site hidden permanently.", verbose_name="Dormant")
     auto_post       = models.BooleanField(default=True, help_text="Can this site's articles be automatically posted to social media?", verbose_name="Auto Post")
     load_error      = models.BooleanField(default=False, help_text="Has this site had a load error?", verbose_name="Load Error")
     recap           = models.BooleanField(default=True, help_text="Include this site's articles in the weekly newsletter recap?", verbose_name="Include in Recap")
@@ -116,6 +117,7 @@ class Articles(models.Model):
     site_hide   = models.BooleanField(default=False, help_text="The parent site is hidden", verbose_name="Site Hidden")
     manual_post = models.BooleanField(default=False, help_text="Post this to Bluesky, if parent site is blocked", verbose_name="Manual Post")
     bluesky     = models.BooleanField(default=False, help_text="The article has been posted to Bluesky", verbose_name="Article Posted to Bluesky")
+    bluesky_rkey = models.CharField(max_length=13, blank=True, default="", editable=False, help_text="Reserved Bluesky record key for safe publishing retries.")
     # Metadata
     class Meta:
         db_table = "articles"
@@ -152,6 +154,7 @@ class Logging(models.Model):
         ('BATCH_TASK', 'Batch Sites Task Result'),
         ('HIDE_ARTICLES_TASK', 'Hide Articles Task Result'),
         ('HIDE_SITES_TASK', 'Hide Sites Task Result'),
+        ('DORMANT_CHECK_TASK', 'Dormant Sites Check'),
         ('LAST_ARTICLE_TASK', 'Last Articles Task Result'),
         ('FILTER_ARTICLE_TASK', 'Filter Articles Task Result'),
         ('COUNT_ARTICLES', 'Articles Counted'),

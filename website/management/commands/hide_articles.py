@@ -10,8 +10,7 @@
 # ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== 
 # Imports
 # ===== ===== ===== ===== 
-from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from typing import Any, Optional
 from website.models import Articles, Sites, Logging
@@ -48,8 +47,7 @@ class Command(BaseCommand):
             try:
                 site = Sites.objects.get(pk=site_pk)
             except Sites.DoesNotExist:
-                self.stderr.write(f"Site with pk={site_pk} not found.")
-                return 1
+                raise CommandError(f"Site with pk={site_pk} not found.")
 
             desired_flag = site.hidden
             qs = Articles.objects.filter(site=site)
@@ -71,15 +69,10 @@ class Command(BaseCommand):
                 return
 
             # Single atomic update for this site's articles
-            try:
-                with transaction.atomic():
-                    updated = to_change_qs.update(site_hide=desired_flag)
-                self.stdout.write(f"Updated {updated} articles for site {site_pk}.")
-                # Count only those set to True (hidden) in this run
-                hidden_count = updated if desired_flag else 0
-            except Exception as e:
-                self.stderr.write(f"Failed to update articles for site {site_pk}: {e}")
-                return 1
+            with transaction.atomic():
+                updated = to_change_qs.update(site_hide=desired_flag)
+            self.stdout.write(f"Updated {updated} articles for site {site_pk}.")
+            hidden_count = updated if desired_flag else 0
 
         else:
             # No single-site specified: perform set-based updates across all sites.
@@ -102,13 +95,9 @@ class Command(BaseCommand):
                 self.stdout.write(f"Would hide {true_count} articles.")
                 return
 
-            try:
-                with transaction.atomic():
-                    updated_true = true_qs.update(site_hide=True)
-                    updated_false = false_qs.update(site_hide=False)
-            except Exception as e:
-                self.stderr.write(f"Failed to update articles: {e}")
-                return 1
+            with transaction.atomic():
+                updated_true = true_qs.update(site_hide=True)
+                updated_false = false_qs.update(site_hide=False)
 
             self.stdout.write(
                 f"Updated {updated_true} -> site_hide=True, {updated_false} -> site_hide=False."
@@ -116,13 +105,8 @@ class Command(BaseCommand):
             hidden_count = updated_true
 
         # Write Logging entry for the number of articles hidden in this run.
-        try:
-            Logging.objects.create(
-                log_type="HIDE_ARTICLES_TASK",
-                value=f"Hiding Articles: {hidden_count} articles hidden.",
-            )
-            self.stdout.write(f"Logged HIDE_ARTICLES_TASK: [{hidden_count}] articles hidden.")
-        except Exception as e:
-            self.stderr.write(f"Failed to write Logging row: {e}")
-
-        return 0
+        Logging.objects.create(
+            log_type="HIDE_ARTICLES_TASK",
+            value=f"Hiding Articles: {hidden_count} articles hidden.",
+        )
+        self.stdout.write(f"Logged HIDE_ARTICLES_TASK: [{hidden_count}] articles hidden.")

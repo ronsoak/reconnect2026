@@ -131,6 +131,8 @@ For each job below: **New → GitHub Repo → same repo**, set the Start Command
 | `cron-maintenance` | `python manage.py filter_articles && python manage.py hide_articles && python manage.py count_articles && python manage.py last_article` | `30 19 * * *` (daily) | Runs after the ingest. Confirm the order is right for you |
 | `cron-age` | `python manage.py age_articles` | Your choice | Lowers article ranks so popular articles don't stay on top. Check the script header for how often it should run |
 | `cron-hide-sites` | `python manage.py hide_sites` | `0 20 * * 0` (weekly) | Hides sites with no articles for a long time. Runs after `last_article` |
+| `cron-dormant-sites` | `python manage.py check_dormant_sites` | `0 17 1 * *` (monthly, 1st) | Reactivates hidden dormant sites with newer dated RSS entries. Run before the next ingest; no `--limit` |
+| `cron-bluesky` | `python manage.py post_bluesky` | `*/15 * * * *` | At most one article per run. Add `BLUESKY_IDENTIFIER` and `BLUESKY_APP_PASSWORD` to this service's variables; verify a dry-run and one manual live post first |
 | `cron-aggregate` | `python manage.py aggregate_clicks` | `0 18 2 * *` (monthly, 2nd) | Totals **last month's** clicks into Analytics |
 | `cron-purge` | `python manage.py purge_clicks` | `0 18 3 * *` (monthly, 3rd) | Deletes the clicks from four months ago, but only if Analytics matches |
 

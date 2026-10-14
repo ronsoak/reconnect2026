@@ -24,6 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='fallback-secret-key')
 
+BLUESKY_IDENTIFIER = config('BLUESKY_IDENTIFIER', default='')
+BLUESKY_APP_PASSWORD = config('BLUESKY_APP_PASSWORD', default='')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

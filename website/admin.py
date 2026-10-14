@@ -44,8 +44,8 @@ class SitesAdmin(ModelAdmin):
 @admin.register(Sites)
 class SiteAdmin(ModelAdmin):
     form = SitesAdminForm  # Use the custom form
-    list_display = ('name', 'hidden','article_count','last_article', 'site_type', 'category')
-    list_filter = ['modifier', 'hidden','article_count','last_article', 'category', 'load_error', 'recap']
+    list_display = ('name', 'hidden', 'dormant','article_count','last_article', 'site_type', 'category')
+    list_filter = ['modifier', 'hidden', 'dormant','article_count','last_article', 'category', 'load_error', 'recap', 'auto_post']
     list_per_page = 500
     actions = ['hide_site']
     show_facets = admin.ShowFacets.ALWAYS
@@ -56,7 +56,7 @@ class SiteAdmin(ModelAdmin):
         return ['name']
 
     def hide_site(self, request, queryset):
-        queryset.update(hidden=True)
+        queryset.update(hidden=True, dormant=False)
     hide_site.short_description = "Hidden"
 
     def save_model(self, request, obj, form, change):
@@ -74,7 +74,7 @@ class SiteAdmin(ModelAdmin):
 @admin.register(Articles)
 class ArticleAdmin(ModelAdmin):
     list_display=('title','rank','site','published','hidden','site_hide')
-    list_filter=['hidden','site_hide','site']
+    list_filter=['hidden','site_hide','site', 'bluesky', 'manual_post']
     actions = ['mark_as_hidden']
     show_facets = admin.ShowFacets.ALWAYS
     search_fields = ['title']

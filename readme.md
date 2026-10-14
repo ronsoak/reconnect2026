@@ -179,12 +179,109 @@ Each script has its own usage examples at the top of its file. Add `--dry-run` w
 | `ingest_batch` | Fetches articles for one batch, called by `ingest_all` |
 | `count_articles` | Updates the article count per site |
 | `last_article` | Updates the days since each site's last article |
-| `hide_sites` | Hides sites with no recent articles |
+| `hide_sites` | Hides sites with no recent articles and marks them dormant |
+| `check_dormant_sites` | Checks hidden dormant sites for newer RSS entries and reactivates them |
+| `post_bluesky` | Posts one eligible article to Bluesky, oldest first; supports `--dry-run` |
 | `hide_articles` | Hides or unhides articles to match their site's setting |
 | `filter_articles` | Hides articles that match keywords in the Logic model |
 | `age_articles` | Lowers article rank so popular articles do not stay on top |
 | `aggregate_clicks` | Totals last month's clicks into the Analytics model (`--month 2026-09`, `--month current`, `--dry-run`). Run it before purging clicks |
 | `purge_clicks` | Deletes the month of Clicks that is four months old (keeps about 90 days). Refuses unless Analytics already matches. `--dry-run`, `--month`, `--force` |
+
+### Dormant publication recovery
+
+Run `python manage.py last_article` before `hide_sites`. Sites hidden by
+`hide_sites` are marked **Dormant**, allowing a monthly recovery check:
+
+```sh
+python manage.py check_dormant_sites --dry-run
+python manage.py check_dormant_sites
+# Check one publication, or throttle a manual run:
+python manage.py check_dormant_sites --site 5 --dry-run
+python manage.py check_dormant_sites --limit 10 --request-timeout 15
+```
+
+Only sites with both **Site Hidden** and **Dormant** checked are fetched, using
+the same guarded HTTP fetcher as ingest. The command compares the newest dated
+RSS/Atom entry against the latest stored publication date, including hidden
+articles. A site without any stored dates can recover if its feed has a dated
+entry. Undated entries never count as evidence of renewed activity.
+
+Recovery clears Site Hidden, Dormant, and Load Error, then runs `hide_articles`
+for that publication. Individually hidden articles stay hidden. Site recovery
+and the article sync are transactional; a sync failure rolls back recovery.
+The command does not import articles: the next scheduled ingest does that.
+Ingest normally looks back 14 days; use `ingest_all --days 365` if you deliberately
+want to backfill older entries after recovery.
+
+The admin **Hidden** bulk action clears Dormant so manually excluded sites are
+not recovered. When editing a hidden site directly, clear **Dormant** to exclude
+it from automatic recovery. Existing hidden sites are **not** marked dormant by
+the migration: opt in only the ones you know were hidden for inactivity.
+
+Feed fetch failures are reported to stderr and recorded under **Dormant Sites
+Check** in Logging; other sites are still checked, and the command exits with an
+error status if any fetch failed. Parse/undated-entry warnings appear in command
+output. `--dry-run` checks feeds but writes nothing, including no logs.
+The `--limit` option selects the first eligible sites by ID, not a rotating batch;
+leave it unset for the monthly job.
+
+### Bluesky article posting
+
+Set these environment variables (or add them to your ignored local `.env`):
+
+```dotenv
+BLUESKY_IDENTIFIER=your-account.bsky.social
+BLUESKY_APP_PASSWORD=your-app-password
+```
+
+Use a Bluesky **app password**, not your main account password. Never commit it
+or paste it into logs. The command currently targets Bluesky-hosted accounts
+through `https://bsky.social`; custom/self-hosted PDS accounts are not supported.
+
+```sh
+# Safe preview: no credentials, network calls, uploads, or database writes.
+python manage.py post_bluesky --dry-run
+# Live: posts at most one article.
+python manage.py post_bluesky
+```
+
+Each run selects the oldest unposted public article with a publication date from
+today minus seven days through today (inclusive), breaking ties by creation time
+and ID. Undated/future articles and hidden articles/publications are excluded.
+Sites with **Auto Post** disabled are excluded unless the article has **Manual
+Post** enabled; that override never bypasses hiding.
+
+Posts contain `Reconnect Recommends`, the publication name, an optional clickable
+Bluesky mention, and a lowercase category hashtag without spaces or a trailing
+apostrophe-s. Store only the publication's handle in Sites.bluesky (an initial
+`@` is accepted), not a profile URL. Handle resolution failures stop the run
+rather than silently omitting a requested mention.
+
+The article URL/title is embedded as a rich link. Its image is downloaded through
+the guarded fetcher; absent, invalid, inaccessible or oversized images produce
+a warning and use a stable local image from `static/images/article-fallbacks/`.
+Thumbnails are flattened to JPEG and compressed below 1 MB. Missing/broken local
+fallbacks or upload errors stop the run without marking the article posted.
+
+Before any publishing request, an additive `Articles.bluesky_rkey` field stores
+a reserved AT Protocol timestamp ID. Retries check that exact record key and
+reconcile a post already created before marking Articles.bluesky true. This
+protects against overlapping runs and a crash between Bluesky acceptance and
+the database save. Do not clear reserved keys or delete remote posts expecting
+automatic reposting. Keep one production database/account pair; do not run live
+posting from a copied/staging database against the same account.
+
+Errors are surfaced in stderr with a non-zero exit status; the oldest failing
+article stays at the head of the queue for correction. Credentials and remote
+error response bodies are not printed. Dry-run shows planned text and link,
+but does not validate handles or download/preview thumbnails.
+
+Schedule `post_bluesky` every 15 minutes (`*/15 * * * *`) only after checking one
+live post manually. Each run creates **at most one** new post; an empty queue
+does nothing. Articles expire from the queue after the lookback window, so one
+post every 15 minutes has a maximum capacity of 96 articles per day.
+Custom promotional/newsletter posts are not part of this command.
 
 ## Deploying
 
