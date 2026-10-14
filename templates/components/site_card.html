@@ -1,0 +1,17 @@
+<article class="site-card">
+  <div class="site-card__header">
+    <p class="site-card__category">{{ site.category.value }}</p>
+    <h3 class="site-card__title">{{ site.name }}</h3>
+  </div>
+  <p class="site-card__description">{{ site.description|truncatewords:28 }}</p>
+  <ul class="site-card__details">
+    {% if site.site_type %}<li>{{ site.site_type.value }}</li>{% endif %}
+    {% for tag in site.tags.all %}<li>{{ tag.value }}</li>{% endfor %}
+  </ul>
+  <p class="site-card__count">{{ site.visible_article_count }} article{{ site.visible_article_count|pluralize }}</p>
+  <div class="site-card__links">
+    <a href="{{ site.url }}" target="_blank" rel="noopener noreferrer">Website</a>
+    <a href="{{ site.rss_feed }}" target="_blank" rel="noopener noreferrer">Source RSS</a>
+    <a href="{% url 'site_articles' site_id=site.pk %}">See articles</a>
+  </div>
+</article>

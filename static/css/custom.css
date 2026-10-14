@@ -564,7 +564,7 @@ input:focus-visible {
 }
 
 .publications-page {
-  max-width: 70ch;
+  width: 100%;
 }
 
 .publications-page__lead {
@@ -572,36 +572,191 @@ input:focus-visible {
   color: var(--muted);
 }
 
-.publications-feed-list {
+.publications-page__intro {
+  margin-bottom: 2rem;
+}
+
+.publications-rss {
+  margin-bottom: 2rem;
+}
+
+.publications-rss > h2,
+.site-directory__heading h2 {
+  margin: 0;
+  font: 700 clamp(1.35rem, 2vw, 1.7rem)/1.2 "Manrope", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.publications-rss > h2 {
+  margin-bottom: 0.55rem;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.publications-rss__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line);
   list-style: none;
 }
 
-.publications-feed-list__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.1rem 0;
-  border-bottom: 1px solid var(--line);
+.publications-rss__links a {
+  display: inline-block;
+  padding-block: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
-.publications-feed-list__item h2 {
-  margin: 0;
-  font: 600 1.05rem/1.3 "Manrope", sans-serif;
-}
-
-.publications-feed-list__item p {
-  margin: 0.3rem 0 0;
+.publications-rss__empty {
   color: var(--muted);
   font-size: 0.9rem;
 }
 
-.publications-feed-list__item > a {
-  flex: 0 0 auto;
+.site-directory__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.site-directory__heading p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.site-directory__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.site-directory__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.site-directory__select {
+  width: auto;
+  min-height: 2.55rem;
+  border-color: var(--line);
+  border-radius: var(--radius);
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.site-directory__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
+}
+
+.site-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.site-card__category {
+  margin: 0 0 0.35rem;
+  color: var(--accent-deep);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.site-card__title {
+  margin: 0;
+  font: 700 1.2rem/1.25 "Manrope", sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.site-card__description,
+.site-articles-page__description {
+  margin: 0.75rem 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.site-card__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-card__details li {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--surface-muted);
+  font-size: 0.75rem;
+}
+
+.site-card__count {
+  margin: 0.75rem 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.site-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin: auto 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.85rem;
   font-weight: 600;
+}
+
+.site-articles-page__intro {
+  max-width: 70ch;
+  margin: 1rem 0 1.5rem;
+}
+
+.site-articles__orders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.site-articles__orders .button {
+  border-color: var(--line);
+  border-radius: var(--radius);
+  box-shadow: none;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.site-articles__orders .button.is-active {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+}
+
+.site-directory__empty {
+  grid-column: 1 / -1;
+  color: var(--muted);
 }
 
 .pagination {
@@ -723,9 +878,17 @@ input:focus-visible {
     padding-bottom: 0.9rem;
   }
 
-  .publications-feed-list__item {
-    align-items: flex-start;
-    gap: 0.75rem;
+  .site-directory__filters {
+    align-items: stretch;
+  }
+
+  .site-directory__sort {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  .site-directory__select {
+    flex: 1;
   }
 
   .site-main {

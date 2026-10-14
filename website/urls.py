@@ -3,7 +3,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import path
 
 from .api import FeedView, FiltersView, SearchView
-from .sitemaps import StaticPagesSitemap
+from .sitemaps import SiteArticlesSitemap, StaticPagesSitemap
 from .rss import ArticlesFeed
 from .views import (
     about,
@@ -16,9 +16,10 @@ from .views import (
     publications,
     robots_txt,
     search,
+    site_articles,
 )
 
-sitemaps = {"static": StaticPagesSitemap}
+sitemaps = {"static": StaticPagesSitemap, "sites": SiteArticlesSitemap}
 
 urlpatterns = [
     path('', home, name='home'),  # Homepage
@@ -26,6 +27,7 @@ urlpatterns = [
     path('popular/', popular, name='popular'),
     path('search/', search, name='search'),
     path('publications/', publications, name='publications'),
+    path('publications/<int:site_id>/', site_articles, name='site_articles'),
     path('feeds/all.rss', ArticlesFeed(), name='rss_feed_all'),
     path(
         'feeds/category/<int:category_id>.rss',

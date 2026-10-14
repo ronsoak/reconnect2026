@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site.name }} | Publications | Reconnect{% endblock %}
+
+{% block content %}
+  <section class="site-articles-page" aria-labelledby="site-articles-title">
+    <p><a href="{% url 'publications' %}">Back to publications</a></p>
+    <header class="site-articles-page__intro">
+      <p class="site-card__category">{{ site.category.value }}</p>
+      <h1 class="page-title" id="site-articles-title">{{ site.name }}</h1>
+      <p class="site-articles-page__description">{{ site.description }}</p>
+      <ul class="site-card__details">
+        {% if site.site_type %}<li>{{ site.site_type.value }}</li>{% endif %}
+        {% for tag in site.tags.all %}<li>{{ tag.value }}</li>{% endfor %}
+      </ul>
+      <p class="site-card__links">
+        <a href="{{ site.url }}" target="_blank" rel="noopener noreferrer">Website</a>
+        <a href="{{ site.rss_feed }}" target="_blank" rel="noopener noreferrer">Source RSS</a>
+      </p>
+    </header>
+
+    <nav class="site-articles__orders" aria-label="Order articles">
+      {% for value, label in article_orders %}
+        <a class="button{% if order == value %} is-active{% endif %}"
+           href="?order={{ value }}"{% if order == value %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+
+    {% if cards %}
+      <div class="feed-grid">
+        {% for card in cards %}
+          {% include "components/article_card.html" %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="feed-empty">This publication has no visible articles.</p>
+    {% endif %}
+
+    {% include "components/pagination.html" %}
+  </section>
+{% endblock %}

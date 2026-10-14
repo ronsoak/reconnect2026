@@ -4,30 +4,63 @@
 
 {% block content %}
   <section class="publications-page" aria-labelledby="publications-title">
-    <h1 class="page-title" id="publications-title">Follow Reconnect</h1>
-    <p class="publications-page__lead">
-      Subscribe in your preferred feed reader to keep up with new writing from Reconnect.
-    </p>
+    <header class="publications-page__intro">
+      <h1 class="page-title" id="publications-title">Publications</h1>
+      <p class="publications-page__lead">
+        Discover independent games writing or subscribe to Reconnect's feeds.
+      </p>
+    </header>
 
-    <ul class="publications-feed-list">
-      <li class="publications-feed-list__item">
-        <div>
-          <h2>All articles</h2>
-          <p>The latest articles from every publication.</p>
-        </div>
-        <a href="{% url 'rss_feed_all' %}">RSS feed</a>
-      </li>
-      {% for category in categories %}
-        <li class="publications-feed-list__item">
-          <div>
-            <h2>{{ category.value }}</h2>
-            <p>The latest articles in {{ category.value }}.</p>
-          </div>
-          <a href="{% url 'rss_feed_category' category_id=category.pk %}">RSS feed</a>
+    <section class="publications-rss" aria-labelledby="publications-rss-title">
+      <h2 id="publications-rss-title">Reconnect RSS feeds</h2>
+      <ul class="publications-rss__links">
+        <li>
+          <a href="{% url 'rss_feed_all' %}">All articles</a>
         </li>
-      {% empty %}
-        <li>No categories are available yet.</li>
-      {% endfor %}
-    </ul>
+        {% for category in categories %}
+          <li>
+            <a href="{% url 'rss_feed_category' category_id=category.pk %}">{{ category.value }}</a>
+          </li>
+        {% empty %}
+          <li class="publications-rss__empty">No categories are available yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="site-directory" aria-labelledby="site-directory-title">
+      <div class="site-directory__heading">
+        <div>
+          <h2 id="site-directory-title">Explore publications</h2>
+          <p>{{ page_obj.paginator.count }} publications</p>
+        </div>
+      </div>
+
+      <form method="get" action="{% url 'publications' %}" class="site-directory__filters">
+        {% include "components/filter_multiselect.html" with label="Category" name="category" items=categories selected=selected_categories %}
+        {% include "components/filter_multiselect.html" with label="Focus" name="tag" items=tags selected=selected_tags %}
+        <label class="site-directory__sort">
+          <span>Sort by</span>
+          <select name="sort" class="select">
+            <option value="alpha" {% if sort == "alpha" %}selected{% endif %}>Alphabetical</option>
+            <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest</option>
+            <option value="reverse" {% if sort == "reverse" %}selected{% endif %}>Reverse alphabetical</option>
+            <option value="random" {% if sort == "random" %}selected{% endif %}>Random</option>
+          </select>
+        </label>
+        <button class="button filter-bar__apply" type="submit">Apply</button>
+        <a class="button filter-bar__reset" href="{% url 'publications' %}">Reset</a>
+      </form>
+
+      {% if page_obj %}
+        <div class="site-directory__grid">
+          {% for site in page_obj %}
+            {% include "components/site_card.html" %}
+          {% empty %}
+            <p class="site-directory__empty">No publications match these filters.</p>
+          {% endfor %}
+        </div>
+        {% include "components/pagination.html" %}
+      {% endif %}
+    </section>
   </section>
 {% endblock %}

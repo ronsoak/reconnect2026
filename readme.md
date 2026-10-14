@@ -65,7 +65,8 @@ Reconnect has a read-only JSON API so other people can build on the same feed, f
 API endpoints accept `GET` only and return JSON. RSS endpoints return RSS XML.
 
 RSS links route through Reconnect so article clicks from feed readers are included in click analytics.
-Visit `/publications/` for links to the all-articles feed and each category feed.
+Visit `/publications/` for the all-articles and category feeds, and to browse visible publications.
+Publication pages list each site's visible articles and offer newest, popular, and random ordering.
 
 ### Feed parameters
 

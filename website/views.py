@@ -1,21 +1,39 @@
+import random
 import time
 from urllib.parse import urlencode
 
 from django.core import signing
+from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Count, F, Q
 from django.http import HttpResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
-from .feed import build_dynamic_feed, build_ordered_feed, search_articles
-from .models import Adverts, Articles, Clicks, FrontPageNotice, Logic
+from .feed import (
+    arrange_large_cards,
+    build_article_cards,
+    build_dynamic_feed,
+    build_ordered_feed,
+    search_articles,
+    visible_articles,
+)
+from .models import Adverts, Articles, Clicks, FrontPageNotice, Logic, Sites
 
 
 FILTER_COOKIE = "reconnect_filters"
 FILTER_COOKIE_MAX_AGE = 60 * 60 * 24 * 365  # 12 months
+SITE_DIRECTORY_PAGE_SIZE = 100
+SITE_ARTICLE_PAGE_SIZE = 50
+SITE_ARTICLE_LIMIT = 250
+SITE_ARTICLE_SORTS = {"newest", "popular", "random"}
+SITE_ARTICLE_ORDERS = (
+    ("newest", "Newest"),
+    ("popular", "Popular"),
+    ("random", "Random"),
+)
 
 
 def current_filters(request):
@@ -233,10 +251,93 @@ def about(request):
 
 
 def publications(request):
-    context = filter_context(request)
-    context["categories"] = context["categories"].order_by("value")
-    context["hide_filters"] = True
+    selected_categories = [
+        value for value in request.GET.getlist("category")
+        if value.isascii() and value.isdigit()
+    ]
+    selected_tags = [
+        value for value in request.GET.getlist("tag")
+        if value.isascii() and value.isdigit()
+    ]
+    sort = request.GET.get("sort", "alpha")
+    if sort not in {"alpha", "newest", "reverse", "random"}:
+        sort = "alpha"
+
+    sites = Sites.objects.filter(hidden=False).annotate(
+        visible_article_count=Count(
+            "articles",
+            filter=Q(articles__hidden=False, articles__site_hide=False),
+            distinct=True,
+        )
+    ).filter(visible_article_count__gt=0)
+    if selected_categories:
+        sites = sites.filter(category_id__in=selected_categories)
+    if selected_tags:
+        sites = sites.filter(tags__pk__in=selected_tags)
+    sites = sites.select_related("category", "site_type").prefetch_related("tags").distinct()
+    if sort == "newest":
+        sites = sites.order_by("-pk")
+    elif sort == "reverse":
+        sites = sites.order_by("-name", "-pk")
+    elif sort == "random":
+        sites = sites.order_by("?")
+    else:
+        sites = sites.order_by("name", "pk")
+
+    page_obj = Paginator(sites, SITE_DIRECTORY_PAGE_SIZE).get_page(request.GET.get("page", 1))
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    context = {
+        "categories": Logic.objects.filter(logic_type="CATEGORY").order_by("value"),
+        "tags": Logic.objects.filter(logic_type="TAG").order_by("value"),
+        "selected_categories": selected_categories,
+        "selected_tags": selected_tags,
+        "sort": sort,
+        "page_obj": page_obj,
+        "extra_query": f"&{query_params.urlencode()}" if query_params else "",
+        "hide_filters": True,
+    }
     return render(request, "publications.html", context)
+
+
+def site_articles(request, site_id):
+    site = get_object_or_404(
+        Sites.objects.filter(hidden=False).select_related("category", "site_type").prefetch_related("tags"),
+        pk=site_id,
+    )
+    order = request.GET.get("order", "newest")
+    if order not in SITE_ARTICLE_SORTS:
+        order = "newest"
+
+    articles = visible_articles().filter(site=site).select_related("site__category")
+    if order == "popular":
+        articles = articles.order_by("-rank", "-published", "run_id", "pk")
+    elif order == "random":
+        articles = articles.order_by("?")
+    else:
+        articles = articles.order_by("-published", "run_id", "pk")
+
+    page_obj = Paginator(articles[:SITE_ARTICLE_LIMIT], SITE_ARTICLE_PAGE_SIZE).get_page(
+        request.GET.get("page", 1)
+    )
+    rng = random.Random()
+    cards = build_article_cards(list(page_obj.object_list), rng)
+
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    return render(
+        request,
+        "site_articles.html",
+        {
+            "site": site,
+            "cards": arrange_large_cards(cards, rng),
+            "page_obj": page_obj,
+            "order": order,
+            "article_orders": SITE_ARTICLE_ORDERS,
+            "extra_query": f"&{query_params.urlencode()}" if query_params else "",
+            "hide_filters": True,
+        },
+    )
 
 
 def robots_txt(request):
