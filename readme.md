@@ -237,7 +237,8 @@ Keep current-month click records; the normal purge policy retains them.
 
 The full-width Highlight Reel uses existing article cards and local image
 fallbacks. All three cards display together in equal-width columns when the
-widget has at least 600px of available width; on phones they stack vertically.
+widget has at least 600px of available width; on phones they become a swipeable
+row that snaps one card at a time, with the next card peeking in.
 There are no carousel controls or horizontal scrolling, and the card layout
 works without JavaScript.
 Horizontal divider lines frame a dark blue-grey widget background with a white

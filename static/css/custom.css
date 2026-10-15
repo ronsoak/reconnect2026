@@ -416,24 +416,45 @@ input:focus-visible {
   font-size: clamp(1.5rem, 3vw, 2rem);
 }
 
+/* Narrow reels (phones) are a swipeable row: one card in view with the next
+   peeking in from the right. Wider reels show all three side by side. */
 .highlight-reel__cards {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 85%;
   gap: var(--feed-gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 45%) transparent;
 }
 
 .highlight-reel__item {
   min-width: 0;
+  scroll-snap-align: start;
 }
 
 .highlight-reel__item > .feed-card {
-  height: 30rem;
+  height: 22rem;
   margin: 0;
+}
+
+/* Keep the focus ring inside the scroller so it is not clipped */
+.highlight-reel__cards .feed-card__link:focus-visible {
+  outline-offset: -3px;
 }
 
 @container (min-width: 600px) {
   .highlight-reel__cards {
+    grid-auto-flow: row;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .highlight-reel__item > .feed-card {
+    height: 30rem;
   }
 }
 
