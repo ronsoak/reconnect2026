@@ -213,6 +213,10 @@ fallbacks. All three cards display together in equal-width columns when the
 widget has at least 600px of available width; on phones they stack vertically.
 There are no carousel controls or horizontal scrolling, and the card layout
 works without JavaScript.
+Horizontal divider lines frame the widget. Highlight images cover the full
+card, with white text over a dark bottom scrim (at least 82% black behind text)
+for readable contrast even on bright artwork. Regular feed cards are unchanged.
+Missing/broken images retain the existing local fallback and text-card behavior.
 
 Widgets are additional to the ordinary card quota. Their source positions are
 spread across the feed, jittered, and their order shuffled on refresh; Newest
