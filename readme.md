@@ -149,6 +149,10 @@ Tests live in `website/tests/`. Run them all with `python manage.py test website
 
 ## Editing the About page
 
+The shared header keeps the title and navigation on its top row, with a full-width
+search row underneath at all screen sizes. Its markup is in
+`templates/components/header.html` and layout is in `static/css/custom.css`.
+
 The About page is assembled in `templates/about.html` from five components:
 `about_intro.html`, `about_newsletter.html`, `about_using.html`, `about_contact.html` and `about_credits.html`
 in `templates/components/`. Edit those components to replace the draft copy.

@@ -22,3 +22,13 @@ class SearchPlaceholderTests(TestCase):
         self.assertContains(response, 'placeholder="Find a dragon"')
         self.assertContains(response, 'class="input site-search__input"')
         self.assertContains(response, '>Search</button>')
+
+    def test_shared_header_orders_navigation_before_search(self):
+        for path in ("/", "/newest/", "/popular/", "/publications/", "/about/", "/privacy/", "/search/?q=games"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                header = response.content.decode().split("</header>", 1)[0]
+                self.assertLess(header.index('class="site-brand"'), header.index('class="site-menu"'))
+                self.assertLess(header.index('class="site-menu"'), header.index('class="site-search"'))
+                self.assertEqual(header.count('role="search"'), 1)
