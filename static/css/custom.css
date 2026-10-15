@@ -71,9 +71,12 @@ input:focus-visible {
   padding-bottom: 1.15rem;
 }
 
-/* Below desktop Bulma's container is full width, so match the header and
-   filter bar's 1rem side padding to stop page content touching the edges */
+/* Below desktop Bulma's container is full width, so give the header, filter
+   bar and page content the same 1rem side padding. From 1024px up the
+   container supplies its own margins, so everything shares one left edge. */
 @media screen and (max-width: 1023px) {
+  .site-header > .container,
+  .filter-bar__inner,
   .site-main > .container {
     padding-inline: 1rem;
   }

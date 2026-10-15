@@ -1,6 +1,6 @@
 {# Category and tag filters. Apply saves them for 12 months, Reset clears them #}
 <div class="filter-bar">
-  <form method="get" action="{% if active_feed == 'newest' %}{% url 'newest' %}{% elif active_feed == 'popular' %}{% url 'popular' %}{% else %}{% url 'home' %}{% endif %}" class="container px-4 filter-bar__inner">
+  <form method="get" action="{% if active_feed == 'newest' %}{% url 'newest' %}{% elif active_feed == 'popular' %}{% url 'popular' %}{% else %}{% url 'home' %}{% endif %}" class="container filter-bar__inner">
     <input type="hidden" name="apply" value="1">
     <div class="filter-bar__controls">
       <div class="filter-bar__choices">
