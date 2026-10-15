@@ -17,7 +17,6 @@
       <h2 class="feed-card__title">{{ article.title }}</h2>
       <p class="feed-card__source">
         <span>{{ article.site.name }}</span>
-        {% if article.published %}<time datetime="{{ article.published|date:'Y-m-d' }}">{{ article.published|date:"j M Y" }}</time>{% endif %}
       </p>
     </div>
   </a>

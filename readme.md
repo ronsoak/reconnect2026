@@ -165,6 +165,12 @@ About and ignores filters. `static/js/footer.js` adds a one-time entrance when t
 count enters view; the final number remains readable without JavaScript or with
 reduced motion enabled.
 
+## Article cards
+
+Public article cards show the publication name but no publication date, including
+Dynamic, Newest, Popular, search, publication feeds and Highlight Reel. Stored
+dates remain available for sorting, RSS, the API and newsletter exports.
+
 ## Newest Additions widget
 
 The Dynamic page includes `templates/components/newest_additions.html` as a
