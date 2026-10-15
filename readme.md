@@ -157,9 +157,12 @@ The logo is `static/images/branding/reconnect_full_title.svg`; its width scales
 with the screen via `.site-brand__logo`.
 Site colours are CSS variables at the top of `static/css/custom.css`, matching
 the brand palette in agents.md. Category labels render through
-`templates/components/category_pill.html`, which adds a `category-pill--<slug>`
-class (e.g. `category-pill--video-games`); add a matching rule in custom.css when
-a new category is created, otherwise it falls back to the neutral grey pill.
+`templates/components/category_pill.html` as a coloured dot followed by the
+category name. It adds a `category-pill--<slug>` class (e.g.
+`category-pill--video-games`) that sets the dot colour; add a matching rule in
+custom.css when a new category is created, otherwise the dot is neutral grey.
+The header's second row shows the subtitle and the public article count (the
+same count as the footer).
 The main menu (`templates/components/menu.html`) shows Home, Publications and
 About as outlined round buttons, highlighting the current section. At 768px and
 below `static/js/menu.js` collapses them behind a hamburger toggle (Escape or an

@@ -3,7 +3,7 @@ from django.test import SimpleTestCase
 
 
 class CategoryPillTests(SimpleTestCase):
-    """The category pill turns a category name into a colour class used by custom.css."""
+    """The category label is a coloured dot plus the name; the slug class picks the dot colour."""
 
     def render(self, category):
         return render_to_string("components/category_pill.html", {"category": category}).strip()
@@ -19,7 +19,10 @@ class CategoryPillTests(SimpleTestCase):
             with self.subTest(name=name):
                 html = self.render(name)
                 self.assertIn(f'class="category-pill {css_class}"', html)
-                self.assertIn(f">{name.replace(chr(39), '&#x27;')}</span>", html)
+                self.assertIn('<span class="category-pill__dot" aria-hidden="true"></span>', html)
+                self.assertIn(
+                    f'<span class="category-pill__name">{name.replace(chr(39), "&#x27;")}</span>', html
+                )
 
     def test_missing_category_renders_nothing(self):
         self.assertEqual(self.render(None), "")

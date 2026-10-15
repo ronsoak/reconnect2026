@@ -99,9 +99,34 @@ input:focus-visible {
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     "brand menu"
+    "tagline count"
     "search search";
   align-items: center;
   gap: 1rem 1.25rem;
+}
+
+/* Second header row: subtitle under the logo, article count under the menu. */
+.site-header__tagline,
+.site-header__count {
+  margin: -0.4rem 0 0;
+  color: var(--muted);
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.site-header__tagline {
+  grid-area: tagline;
+  min-width: 0;
+}
+
+.site-header__count {
+  grid-area: count;
+  justify-self: end;
+  color: var(--ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .site-brand {
@@ -166,7 +191,7 @@ input:focus-visible {
   height: 2.9rem;
   padding-left: 1.15rem;
   padding-right: 6.5rem;
-  border-color: var(--line);
+  border-color: #8f8b8c;
   border-radius: var(--pill);
   box-shadow: none;
   caret-color: var(--accent);
@@ -178,6 +203,10 @@ input:focus-visible {
 .site-search__input::placeholder {
   color: var(--muted);
   opacity: 1;
+}
+
+.site-search__input:hover {
+  border-color: var(--ink);
 }
 
 .site-search__input:focus {
@@ -954,43 +983,62 @@ input:focus-visible {
   text-transform: uppercase;
 }
 
-/* Category pills: one fill per category, text colour chosen for AA contrast. */
+/* Category label: a coloured dot followed by the name in plain text.
+   Each category sets --category-dot; unknown categories keep the neutral grey. */
 .category-pill {
-  display: inline-block;
+  --category-dot: #a9a6a7;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   max-width: 100%;
-  padding: 0.28rem 0.6rem;
-  overflow: hidden;
-  border-radius: 999px;
-  color: var(--brand-dark);
-  background: var(--brand-grey);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 600;
   line-height: 1.2;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
   vertical-align: middle;
 }
 
+.category-pill__dot {
+  flex: 0 0 auto;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--category-dot);
+}
+
+.category-pill__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .category-pill--video-games {
-  color: #ffffff;
-  background: var(--category-video-games);
+  --category-dot: var(--category-video-games);
 }
 
 .category-pill--ttrpgs,
 .category-pill--ttrpg {
-  background: var(--category-ttrpg);
+  --category-dot: var(--category-ttrpg);
 }
 
 .category-pill--tabletop {
-  color: #ffffff;
-  background: var(--category-tabletop);
+  --category-dot: var(--category-tabletop);
 }
 
 .category-pill--tcgs,
 .category-pill--tcg {
-  background: var(--category-tcg);
+  --category-dot: var(--category-tcg);
+}
+
+/* The Highlight Reel sets its text on a dark overlay. A thin light ring keeps
+   dark dots visible there. */
+.highlight-reel .category-pill {
+  color: inherit;
+}
+
+.highlight-reel .category-pill__dot {
+  box-shadow: 0 0 0 1.5px rgb(255 255 255 / 85%);
 }
 
 .feed-card__title {

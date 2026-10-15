@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.urls import reverse
 
 from website.models import Logic
 from website.templatetags.search_tags import DEFAULT_PLACEHOLDER, search_placeholder
@@ -63,3 +64,13 @@ class SearchPlaceholderTests(TestCase):
         header = self.client.get("/privacy/").content.decode().split("</header>", 1)[0]
         nav = header.split('class="site-menu"', 1)[1].split("</nav>", 1)[0]
         self.assertNotIn("aria-current=", nav)
+
+
+class HeaderTaglineTests(TestCase):
+    """The second header row shows the subtitle and the public article count."""
+
+    def test_header_shows_tagline_and_article_count(self):
+        response = self.client.get(reverse("privacy"))
+        self.assertContains(response, '<p class="site-header__tagline">For all things games writing</p>', html=True)
+        self.assertContains(response, 'class="site-header__count"')
+        self.assertRegex(response.content.decode(), r'site-header__count">\d+ Articles?<')

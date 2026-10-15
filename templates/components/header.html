@@ -1,4 +1,5 @@
-{% load static %}
+{% load static footer_tags %}
+{% footer_article_count as header_article_count %}
 <header class="site-header">
   <div class="container">
     <div class="site-header__masthead">
@@ -6,6 +7,8 @@
         <img src="{% static 'images/branding/reconnect_full_title.svg' %}" alt="Reconnect" class="site-brand__logo" width="1450" height="148">
       </a>
       {% include "components/menu.html" %}
+      <p class="site-header__tagline">For all things games writing</p>
+      <p class="site-header__count">{{ header_article_count }} Article{{ header_article_count|pluralize }}</p>
       {% include "components/search_bar.html" %}
     </div>
   </div>

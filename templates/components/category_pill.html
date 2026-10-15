@@ -1,3 +1,3 @@
-{# Coloured category pill. Expects: category (the category name, e.g. "Video Games"). #}
-{# Colours come from .category-pill--<slug> rules in custom.css; unknown categories use the neutral grey. #}
-{% if category %}<span class="category-pill category-pill--{{ category|slugify }}">{{ category }}</span>{% endif %}
+{# Category label: a coloured dot followed by the category name. Expects: category (e.g. "Video Games"). #}
+{# Dot colours come from .category-pill--<slug> rules in custom.css; unknown categories use the neutral grey. #}
+{% if category %}<span class="category-pill category-pill--{{ category|slugify }}"><span class="category-pill__dot" aria-hidden="true"></span><span class="category-pill__name">{{ category }}</span></span>{% endif %}
