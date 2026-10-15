@@ -165,6 +165,20 @@ About and ignores filters. `static/js/footer.js` adds a one-time entrance when t
 count enters view; the final number remains readable without JavaScript or with
 reduced motion enabled.
 
+## Newest Additions widget
+
+The Dynamic page includes `templates/components/newest_additions.html` as a
+medium (one column by two rows) card. It lists up to ten public publications
+with public articles, newest site ID first, respecting Category and Focus
+filters. Links open each publication's article page.
+
+The widget is additional to the article/advert quota. On each refresh its
+position is randomly chosen from 11 through 50 (or the end of a shorter feed),
+after at least ten existing cards. Feeds with fewer than ten cards omit it.
+Newest, Popular, search and publication-specific feeds do not include it.
+Placement refers to source/card order; the dense responsive grid may fill gaps
+with later cards.
+
 ## Management scripts
 
 Each script has its own usage examples at the top of its file. Add `--dry-run` where it is offered to preview changes.

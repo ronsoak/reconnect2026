@@ -96,6 +96,14 @@ def home(request):
     context = filter_context(request)
     category_ids, tag_ids = filter_ids(context)
     context["cards"] = build_dynamic_feed(category_ids=category_ids, tag_ids=tag_ids)
+    if len(context["cards"]) >= 10:
+        public_site_ids = visible_articles(category_ids, tag_ids).order_by().values("site_id")
+        context["newest_additions"] = list(
+            Sites.objects.filter(pk__in=public_site_ids).order_by("-pk")[:10]
+        )
+        if context["newest_additions"]:
+            # Insert after 10-49 existing cards: the widget itself occupies position 11-50.
+            context["newest_additions_after"] = random.randint(10, min(49, len(context["cards"])))
     context["active_feed"] = "dynamic"
     context["front_page_notice"] = FrontPageNotice.objects.filter(is_active=True).first()
     return remember_filters(render(request, "home.html", context), context, request)

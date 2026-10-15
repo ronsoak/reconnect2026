@@ -7,6 +7,9 @@
       {% else %}
         {% include "components/article_card.html" %}
       {% endif %}
+      {% if newest_additions and forloop.counter == newest_additions_after %}
+        {% include "components/newest_additions.html" %}
+      {% endif %}
     {% endfor %}
   </div>
 {% elif not hide_empty %}

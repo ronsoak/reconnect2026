@@ -400,6 +400,55 @@ input:focus-visible {
   grid-row: span 2;
 }
 
+.newest-additions {
+  padding: 1.25rem;
+}
+
+.newest-additions__title {
+  margin: 0 0 1rem;
+  color: var(--ink);
+  font: 700 1.25rem/1.3 "Manrope", sans-serif;
+}
+
+.newest-additions__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.newest-additions__list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.newest-additions__list a {
+  display: block;
+  padding-block: 0.85rem;
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.newest-additions a:hover {
+  color: var(--accent-deep);
+  text-decoration: underline;
+}
+
+.newest-additions__list a:focus-visible {
+  outline-offset: -2px;
+}
+
+.newest-additions__directory {
+  align-self: flex-start;
+  margin-top: 1rem;
+  padding-block: 0.5rem;
+  color: var(--accent-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .feed-card__link {
   display: flex;
   min-width: 0;

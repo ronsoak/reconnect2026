@@ -50,7 +50,7 @@ def eligible_articles():
 
 def post_text(article, mention_did=None):
     """Facet offsets are UTF-8 bytes, not Python character offsets."""
-    text = f"Reconnect Recommends\nFrom {article.site.name}"
+    text = f"🟨 Reconnect Recommends:\n\n✍️ By: {article.site.name}\n"
     facets = []
     handle = article.site.bluesky.strip().lstrip("@")
     if handle:
