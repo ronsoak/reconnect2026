@@ -179,6 +179,26 @@ Newest, Popular, search and publication-specific feeds do not include it.
 Placement refers to source/card order; the dense responsive grid may fill gaps
 with later cards.
 
+## Article ticker
+
+The Dynamic feed includes up to ten random public articles published in the past
+seven days through today, respecting Category and Focus. Titles link through the
+normal article click tracker. There is no visible heading.
+
+`templates/components/article_ticker.html` renders a static list without
+JavaScript. `static/js/ticker.js` places it in a full-width grid row near a random
+target, preferring a natural boundary with no tall cards crossing it and a filled
+row above. If none exists, an explicit row forces a clean break (some empty grid
+cells may remain above). Placement is recalculated for viewport changes and
+image-failure card-size changes. The ticker is additional to the card quota.
+
+Titles are separated by `|`. Motion is a linear CSS transform at about 40 pixels
+per second and pauses on mouse hover, without a visible pause button.
+Keyboard focus presents a static, horizontally
+scrollable list. Reduced motion presents a wrapped static list. Repeated visual
+titles are excluded from screen readers and the tab order. No recent matching
+articles means no ticker; other feeds do not include it.
+
 ## Management scripts
 
 Each script has its own usage examples at the top of its file. Add `--dry-run` where it is offered to preview changes.

@@ -1,5 +1,6 @@
 import random
 import time
+from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.core import signing
@@ -96,6 +97,15 @@ def home(request):
     context = filter_context(request)
     category_ids, tag_ids = filter_ids(context)
     context["cards"] = build_dynamic_feed(category_ids=category_ids, tag_ids=tag_ids)
+    today = timezone.localdate()
+    recent_articles = visible_articles(category_ids, tag_ids).filter(
+        published__gte=today - timedelta(days=7), published__lte=today,
+    )
+    recent_ids = list(recent_articles.order_by().values_list("pk", flat=True))
+    ticker_ids = random.sample(recent_ids, min(10, len(recent_ids)))
+    ticker_articles = recent_articles.in_bulk(ticker_ids)
+    context["ticker_articles"] = [ticker_articles[pk] for pk in ticker_ids]
+    context["ticker_target"] = random.random()
     if len(context["cards"]) >= 10:
         public_site_ids = visible_articles(category_ids, tag_ids).order_by().values("site_id")
         context["newest_additions"] = list(

@@ -1,0 +1,11 @@
+<aside class="article-ticker" aria-label="Recent articles" data-ticker-target="{{ ticker_target|stringformat:'.6f' }}">
+  <div class="article-ticker__viewport">
+    <div class="article-ticker__track">
+      <ul class="article-ticker__items">
+        {% for article in ticker_articles %}
+          <li><a href="{% url 'go_article' article.pk %}" target="_blank" rel="noopener noreferrer">{{ article.title }}</a><span class="article-ticker__separator" aria-hidden="true">|</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</aside>

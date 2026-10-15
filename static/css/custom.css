@@ -378,6 +378,105 @@ input:focus-visible {
   margin: 0;
 }
 
+.article-ticker {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-block: 1rem;
+  padding: 0.75rem 1rem;
+  border-block: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.feed-grid > .article-ticker {
+  margin: 0;
+}
+
+.article-ticker__viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.article-ticker__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.article-ticker__items a {
+  color: var(--accent-deep);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.article-ticker__items a:hover {
+  text-decoration: underline;
+}
+
+.article-ticker__separator {
+  margin-left: 2rem;
+  color: var(--muted);
+}
+
+.article-ticker.is-enhanced:not(.is-reduced) .article-ticker__viewport {
+  overflow: hidden;
+}
+
+.article-ticker.is-enhanced:not(.is-reduced) .article-ticker__track {
+  display: flex;
+  width: max-content;
+  animation: article-ticker-scroll var(--ticker-duration, 60s) linear infinite;
+}
+
+.article-ticker.is-enhanced:not(.is-reduced) .article-ticker__items {
+  flex-wrap: nowrap;
+  align-items: center;
+  flex-shrink: 0;
+  padding-right: 2rem;
+}
+
+.article-ticker.is-enhanced:not(.is-reduced) li {
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .article-ticker:hover .article-ticker__track {
+    animation-play-state: paused !important;
+  }
+}
+
+/* Keyboard focus uses the original, static list so every link stays reachable. */
+.article-ticker:focus-within .article-ticker__track,
+.article-ticker.is-reduced .article-ticker__track {
+  animation: none !important;
+  transform: none;
+}
+
+.article-ticker:focus-within .article-ticker__copy,
+.article-ticker.is-reduced .article-ticker__copy {
+  display: none;
+}
+
+.article-ticker.is-enhanced:focus-within .article-ticker__viewport {
+  overflow: auto;
+}
+
+@keyframes article-ticker-scroll {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-ticker .article-ticker__track {
+    animation: none !important;
+  }
+}
+
 .feed-card {
   display: flex;
   width: 100%;
