@@ -20,6 +20,8 @@
   --accent-deep: #1f1b1d;
   --advert: #eee9dc;
   --radius: 0.45rem;
+  --card-radius: 0.3rem;
+  --pill: 999px;
 }
 
 * {
@@ -152,7 +154,9 @@ input:focus-visible {
   margin: 0;
 }
 
+/* Rounded field with the Search button sitting inside its right-hand end. */
 .site-search__control {
+  position: relative;
   display: flex;
   width: 100%;
 }
@@ -160,8 +164,10 @@ input:focus-visible {
 .site-search__input {
   min-width: 0;
   height: 2.9rem;
+  padding-left: 1.15rem;
+  padding-right: 6.5rem;
   border-color: var(--line);
-  border-radius: var(--radius) 0 0 var(--radius);
+  border-radius: var(--pill);
   box-shadow: none;
   caret-color: var(--accent);
   color: var(--ink);
@@ -180,10 +186,14 @@ input:focus-visible {
 }
 
 .site-search__button {
-  height: 2.9rem;
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  bottom: 0.3rem;
+  height: auto;
   padding-inline: 1.15rem;
   border: 1px solid var(--accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: var(--pill);
   box-shadow: none;
   color: #fff;
   background: var(--accent);
@@ -230,8 +240,9 @@ input:focus-visible {
 }
 
 .site-menu__link:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--brand-grey);
 }
 
 .site-menu__link:focus-visible,
@@ -240,11 +251,11 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-/* The current section is the one place the hero green appears in the header. */
-.site-menu__link[aria-current] {
+.site-menu__link[aria-current],
+.site-menu__link[aria-current]:hover {
   border-color: var(--brand-dark);
-  background: var(--brand-green);
-  color: var(--brand-dark);
+  background: var(--brand-dark);
+  color: #fff;
 }
 
 .site-menu__toggle {
@@ -258,6 +269,10 @@ input:focus-visible {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
+}
+
+.site-menu__toggle:hover {
+  background: var(--brand-grey);
 }
 
 .site-menu__toggle[hidden] {
@@ -338,8 +353,8 @@ input:focus-visible {
 }
 
 .filter-bar {
-  border-block: 1px solid var(--line);
-  background: var(--surface-muted);
+  border-bottom: 1px solid var(--line);
+  background: var(--page);
 }
 
 .filter-bar__inner {
@@ -362,8 +377,9 @@ input:focus-visible {
 .filter-bar .button,
 .filter-multiselect__button {
   min-height: 2.55rem;
+  padding-inline: 1.1rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   box-shadow: none;
   color: var(--ink);
   background: var(--surface);
@@ -463,8 +479,8 @@ input:focus-visible {
   gap: 0.2rem;
   padding: 0.2rem;
   border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 0.1rem);
-  background: var(--page);
+  border-radius: var(--pill);
+  background: var(--surface);
 }
 
 .feed-tabs a {
@@ -473,7 +489,7 @@ input:focus-visible {
   justify-content: center;
   min-height: 2.1rem;
   padding: 0.35rem 0.9rem;
-  border-radius: 0.3rem;
+  border-radius: var(--pill);
   color: var(--muted);
   font-size: 0.83rem;
   font-weight: 600;
@@ -517,7 +533,7 @@ input:focus-visible {
   margin-bottom: 1.4rem;
   padding: 0.85rem 1rem;
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
+  border-radius: var(--card-radius);
   color: var(--ink);
   background: var(--surface-muted);
 }
@@ -574,8 +590,8 @@ input:focus-visible {
   container-type: inline-size;
   border-block: 1px solid var(--line);
   padding: 1.25rem;
-  color: #fff;
-  background: var(--accent-deep);
+  color: var(--ink);
+  background: var(--surface-muted);
 }
 
 .highlight-reel__header {
@@ -587,9 +603,8 @@ input:focus-visible {
   margin-block: 0.5rem 1rem;
 }
 
-/* Green on the dark reel is a high-contrast (8:1) hero accent. */
 .highlight-reel__header h2 {
-  color: var(--brand-green);
+  color: var(--ink);
   font-family: "DM Sans", sans-serif;
   font-size: clamp(1.5rem, 3vw, 2rem);
 }
@@ -605,7 +620,7 @@ input:focus-visible {
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 45%) transparent;
+  scrollbar-color: #a9a6a7 transparent;
 }
 
 .highlight-reel__item {
@@ -742,7 +757,7 @@ input:focus-visible {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
+  border-radius: var(--card-radius);
   box-shadow: none;
   background: var(--surface);
 }
@@ -757,11 +772,11 @@ input:focus-visible {
   grid-row: span 2;
 }
 
-/* Newest Sites widget: warm amber panel so it reads as a feature, not an article */
+/* Newest Sites widget: brand green at half strength so it reads as a feature, not an article */
 .newest-additions {
-  --newest-bg: #f6e7c1;
-  --newest-line: #e2cc94;
-  --newest-ink: #4a3410;
+  --newest-bg: rgb(0 239 108 / 50%);
+  --newest-line: rgb(53 48 50 / 22%);
+  --newest-ink: var(--brand-dark);
   padding: 1.25rem;
   border-color: var(--newest-line);
   background: var(--newest-bg);
@@ -1068,7 +1083,7 @@ input:focus-visible {
 }
 
 .highlight-reel .feed-card__link:focus-visible {
-  outline: 3px solid #fff;
+  outline: 3px solid var(--accent);
 }
 
 @media (forced-colors: active) {
@@ -1239,9 +1254,9 @@ input:focus-visible {
   align-items: center;
   gap: 0.5rem;
   min-height: 2.75rem;
-  padding: 0.5rem 0.9rem;
+  padding: 0.5rem 1rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   background: var(--surface);
   cursor: pointer;
   transition: border-color 150ms ease, background-color 150ms ease;
@@ -1277,8 +1292,9 @@ input:focus-visible {
 
 .contact-form__submit {
   min-height: 2.75rem;
+  padding-inline: 1.5rem;
   border: 1px solid var(--accent);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   color: #fff;
   background: var(--accent);
   font: 700 0.95rem/1.2 "Manrope", sans-serif;
@@ -1423,7 +1439,7 @@ input:focus-visible {
   flex-direction: column;
   padding: 1.2rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--card-radius);
   background: var(--surface);
 }
 
@@ -1493,7 +1509,7 @@ input:focus-visible {
 
 .site-articles__orders .button {
   border-color: var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   box-shadow: none;
   color: var(--ink);
   background: var(--surface);
@@ -1518,8 +1534,9 @@ input:focus-visible {
 .pagination-next,
 .pagination-link {
   min-height: 2.5rem;
+  padding-inline: 1rem;
   border-color: var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   box-shadow: none;
   color: var(--ink);
   background: var(--surface);
@@ -1540,9 +1557,8 @@ input:focus-visible {
 
 .site-footer {
   padding: 1.5rem 1rem;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  background: var(--surface-muted);
+  color: #d3d0d1;
+  background: var(--brand-dark);
   font-size: 0.82rem;
 }
 
@@ -1565,11 +1581,17 @@ input:focus-visible {
 
 .site-footer__links a {
   padding-block: 0.25rem;
-  color: var(--ink);
+  color: #fff;
 }
 
 .site-footer__links a:hover {
+  color: #fff;
   text-decoration: underline;
+}
+
+/* The default dark focus ring would vanish against the dark footer. */
+.site-footer a:focus-visible {
+  outline-color: var(--brand-green);
 }
 
 .site-footer__count {
@@ -1579,7 +1601,7 @@ input:focus-visible {
 
 .site-footer__count strong {
   display: block;
-  color: var(--ink);
+  color: #fff;
   font: 700 1.5rem/1.3 "Manrope", sans-serif;
 }
 
@@ -1603,6 +1625,12 @@ input:focus-visible {
   }
 }
 
+/* Leave clear space below the last card for the floating buttons
+   (2.75rem button + its 1.1rem offset + breathing room). */
+.site-main:has(.floating-actions) {
+  padding-bottom: 7.5rem;
+}
+
 /* Floating feed actions: back to top (all feeds) and refresh (Dynamic only).
    The group is lifted above the footer by floating_actions.js. */
 .floating-actions {
@@ -1619,7 +1647,7 @@ input:focus-visible {
   min-height: 2.75rem;
   padding-inline: 1.5rem;
   border: 1px solid var(--accent);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   box-shadow: none;
   color: #fff;
   background: var(--accent);
@@ -1649,7 +1677,7 @@ input:focus-visible {
   height: 2.75rem;
   padding: 0;
   border: 1px solid var(--accent);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   box-shadow: none;
   color: var(--accent);
   background: #fff;

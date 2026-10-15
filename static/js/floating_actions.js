@@ -46,6 +46,18 @@
   }
 
   window.addEventListener("scroll", update, { passive: true });
-  window.addEventListener("resize", update);
+  // Measure again on the next frame, once the browser has settled the layout
+  // and any clamped scroll position.
+  function scheduleUpdate() {
+    window.requestAnimationFrame(update);
+  }
+  window.addEventListener("resize", scheduleUpdate);
+  // Images, fonts and widget layout change the page height after load without
+  // a scroll, so re-measure whenever the body resizes.
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(scheduleUpdate).observe(document.body);
+  } else {
+    window.addEventListener("load", update);
+  }
   update();
 })();
