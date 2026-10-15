@@ -13,6 +13,7 @@ from .views import (
     go_article_from_rss,
     newest,
     popular,
+    privacy,
     publications,
     robots_txt,
     search,
@@ -41,6 +42,7 @@ urlpatterns = [
     path('go/rss/<int:pk>/', go_article_from_rss, name='rss_article_click'),
     path('go/ad/<int:pk>/', go_advert, name='go_advert'),
     path('about/', about, name='about'),
+    path('privacy/', privacy, name='privacy'),
     path('robots.txt', robots_txt, name='robots_txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]

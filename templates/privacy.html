@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy | Reconnect{% endblock %}
+
+{% block content %}
+  <article class="about-page" aria-labelledby="privacy-title">
+    <header>
+      <h1 class="page-title" id="privacy-title">Privacy policy</h1>
+      <p class="page-lede">How Reconnect handles information when you browse games writing.</p>
+      <p><strong>Last updated: 15 October 2026.</strong></p>
+      <p>This policy describes the current website. Hosting-log retention and automated deletion schedules are not yet finalised. The contact form described below is not yet available; these details need to be completed before launch.</p>
+    </header>
+    {% include "components/privacy_information.html" %}
+    {% include "components/privacy_cookies.html" %}
+    {% include "components/privacy_clicks.html" %}
+    {% include "components/privacy_services.html" %}
+    {% include "components/privacy_retention.html" %}
+    <section class="about-page__section" aria-labelledby="privacy-contact-title">
+      <h2 id="privacy-contact-title">Privacy questions and requests</h2>
+      <p>For questions about this policy or to raise a privacy concern, please use the contact form on the <a href="{% url 'about' %}">About page</a>.</p>
+      <p><strong>The contact form is planned but not yet available.</strong> No public email address is published here.</p>
+    </section>
+  </article>
+{% endblock %}

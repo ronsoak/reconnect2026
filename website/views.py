@@ -256,6 +256,10 @@ def about(request):
     return render(request, "about.html", context)
 
 
+def privacy(request):
+    return render(request, "privacy.html", {"hide_filters": True})
+
+
 def publications(request):
     selected_categories = [
         value for value in request.GET.getlist("category")

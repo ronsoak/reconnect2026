@@ -396,7 +396,9 @@ input:focus-visible {
   align-self: start;
   container-type: inline-size;
   border-block: 1px solid var(--line);
-  padding-block: 1.25rem;
+  padding: 1.25rem;
+  color: #fff;
+  background: var(--accent-deep);
 }
 
 .highlight-reel__header {
@@ -409,6 +411,7 @@ input:focus-visible {
 }
 
 .highlight-reel__header h2 {
+  color: inherit;
   font-family: "DM Sans", sans-serif;
   font-size: clamp(1.5rem, 3vw, 2rem);
 }

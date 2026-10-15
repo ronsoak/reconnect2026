@@ -165,6 +165,18 @@ About and ignores filters. `static/js/footer.js` adds a one-time entrance when t
 count enters view; the final number remains readable without JavaScript or with
 reduced motion enabled.
 
+## Privacy policy
+
+`/privacy/` is linked from the footer only and included in the sitemap. Its
+modular templates describe actual click fields, filter/repeat-click cookies,
+Django session/CSRF cookies, external images, Google Fonts and Substack.
+It explicitly flags unfinished hosting-log/backup retention and automated
+click-maintenance scheduling rather than promising a deletion deadline.
+The requested contact direction points to About, but clearly states that the
+contact form is not available yet. Complete these operational details and the
+contact route, review the copy before launch, and revisit it when adding embeds.
+This page is not a consent banner or a guarantee of legal compliance.
+
 ## Article cards
 
 Public article cards show the publication name but no publication date, including
@@ -219,7 +231,8 @@ fallbacks. All three cards display together in equal-width columns when the
 widget has at least 600px of available width; on phones they stack vertically.
 There are no carousel controls or horizontal scrolling, and the card layout
 works without JavaScript.
-Horizontal divider lines frame the widget. Highlight images cover the full
+Horizontal divider lines frame a dark blue-grey widget background with a white
+heading and inset padding. Highlight images cover the full
 card, with white text over a dark bottom scrim (at least 82% black behind text)
 for readable contrast even on bright artwork. Regular feed cards are unchanged.
 Missing/broken images retain the existing local fallback and text-card behavior.
