@@ -32,3 +32,10 @@ class SearchPlaceholderTests(TestCase):
                 self.assertLess(header.index('class="site-brand"'), header.index('class="site-menu"'))
                 self.assertLess(header.index('class="site-menu"'), header.index('class="site-search"'))
                 self.assertEqual(header.count('role="search"'), 1)
+
+    def test_shared_header_uses_logo_image(self):
+        header = self.client.get("/").content.decode().split("</header>", 1)[0]
+        self.assertIn('images/branding/reconnect_full_title.svg', header)
+        self.assertIn('alt="Reconnect"', header)
+        self.assertIn('aria-label="Reconnect home"', header)
+        self.assertNotIn("site-brand__name", header)

@@ -1,9 +1,9 @@
+{% load static %}
 <header class="site-header">
   <div class="container px-4">
     <div class="site-header__masthead">
       <a href="{% url 'home' %}" class="site-brand" aria-label="Reconnect home">
-        <span class="site-brand__name">Reconnect</span>
-        <span class="site-brand__tagline">Discover games writing</span>
+        <img src="{% static 'images/branding/reconnect_full_title.svg' %}" alt="Reconnect" class="site-brand__logo" width="1450" height="148">
       </a>
       {% include "components/menu.html" %}
       {% include "components/search_bar.html" %}

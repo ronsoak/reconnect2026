@@ -18,6 +18,7 @@
 
 html {
   scrollbar-color: #9aa8ad var(--page);
+  scroll-padding-top: calc(var(--site-header-height, 0px) + 1rem);
 }
 
 body.site-body {
@@ -58,7 +59,9 @@ input:focus-visible {
 }
 
 .site-header {
-  position: relative;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
   z-index: 5;
   background: var(--page);
 }
@@ -88,22 +91,21 @@ input:focus-visible {
 
 .site-brand {
   grid-area: brand;
-  display: flex;
-  flex-direction: column;
-  color: var(--ink);
-  line-height: 1.15;
+  display: block;
+  justify-self: start;
+  align-self: center;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 0;
   text-decoration: none;
 }
 
-.site-brand__name {
-  font: 700 clamp(1.8rem, 3vw, 2.35rem)/1 "Manrope", sans-serif;
-  letter-spacing: -0.035em;
-}
-
-.site-brand__tagline {
-  margin-top: 0.3rem;
-  color: var(--muted);
-  font-size: 0.8rem;
+/* The logo is roughly 10:1, so width drives its height. */
+.site-brand__logo {
+  display: block;
+  width: clamp(12rem, 42vw, 30rem);
+  max-width: 100%;
+  height: auto;
 }
 
 .site-search {
@@ -257,7 +259,7 @@ input:focus-visible {
   z-index: 30;
   min-width: 15rem;
   max-width: min(20rem, calc(100vw - 2rem));
-  max-height: 20rem;
+  max-height: min(20rem, calc(100dvh - var(--site-header-height, 0px) - 1rem));
   overflow-y: auto;
   margin: 0;
   border: 1px solid var(--line);

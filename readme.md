@@ -149,9 +149,14 @@ Tests live in `website/tests/`. Run them all with `python manage.py test website
 
 ## Editing the About page
 
-The shared header keeps the title and navigation on its top row, with a full-width
-search row underneath at all screen sizes. Its markup is in
+The shared header keeps the logo and navigation on its top row, with a full-width
+search row underneath at all screen sizes. The entire header, including feed
+options when present, stays pinned to the top while scrolling. Its markup is in
 `templates/components/header.html` and layout is in `static/css/custom.css`.
+The logo is `static/images/branding/reconnect_full_title.svg`; its width scales
+with the screen via `.site-brand__logo`.
+`static/js/header.js` measures its responsive height so anchor/focus scrolling
+clears it and filter dropdowns fit the remaining viewport.
 
 The About page is assembled in `templates/about.html` from five components:
 `about_intro.html`, `about_newsletter.html`, `about_using.html`, `about_contact.html` and `about_credits.html`
