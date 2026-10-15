@@ -708,6 +708,10 @@ input:focus-visible {
   font-size: clamp(1.15rem, 1.45vw, 1.45rem);
 }
 
+.feed-card[data-widget-small] .feed-card__title {
+  font-size: 1.04rem;
+}
+
 .feed-card--text .feed-card__title {
   -webkit-line-clamp: 5;
   line-clamp: 5;

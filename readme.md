@@ -194,8 +194,8 @@ normal article click tracker. There is no visible heading.
 `templates/components/article_ticker.html` renders a static list without
 JavaScript. `static/js/feed_widgets.js` coordinates its full-width row with the
 other widgets; `static/js/ticker.js` only manages the scrolling text.
-Explicit row boundaries prevent tall cards crossing the ticker (some empty grid
-cells may remain above). The ticker is additional to the card quota.
+The ticker waits for a filled, flat grid boundary near its randomized target
+rather than forcing a break with empty cells. It is additional to the card quota.
 
 Titles are separated by `|`. Motion is a linear CSS transform at about 40 pixels
 per second and pauses on mouse hover, without a visible pause button.
@@ -231,15 +231,24 @@ spread across the feed, jittered, and their order shuffled on refresh; Newest
 Additions stays after 10-49 ordinary cards. There must be at least **10 ordinary
 article/advert cards and two fully occupied grid rows between visible widgets**.
 The shared layout recalculates on resize and ordinary card image failures,
-reserving clean full-width rows for the ticker and reel. Ordinary cards retain
-their order and sizes; small cards can fill beside Newest Additions.
+reserving clean full-width rows for the ticker and reel. Targets may move later,
+up to the next widget, to find a completely filled boundary. If no natural
+boundary exists, the planner tries the fewest size reductions among up to eight
+nearby medium/large article cards. The first card and adverts are never resized.
+Ordinary card order, counts and pagination are preserved; nothing is duplicated
+or pulled forward. Small cards can fill beside Newest Additions.
+Responsive recalculation starts from the original sizes, so temporary reductions
+do not persist when the new layout no longer needs them.
 
 Short feeds first omit excess widgets in this priority order: retain Newest
 Additions, then ticker, then Highlight Reel. Fewer than ten ordinary cards
 omits all widgets. The browser omits later widgets if their targets cannot meet
-the complete-row spacing rule at that viewport. With JavaScript disabled,
+the complete-row spacing rule or a gap-free boundary at that viewport. With JavaScript disabled,
 source-order card spacing remains, but exact filled-row spacing is not measured.
 No monthly clicked articles means no reel.
+
+Run the grid planner regression tests with:
+`node --test website/tests/js/feed_widgets.test.cjs`.
 
 ## Management scripts
 
