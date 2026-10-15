@@ -6,7 +6,7 @@
   <section class="site-articles-page" aria-labelledby="site-articles-title">
     <p><a href="{% url 'publications' %}">Back to publications</a></p>
     <header class="site-articles-page__intro">
-      <p class="site-card__category">{{ site.category.value }}</p>
+      <p class="site-card__category">{% include "components/category_pill.html" with category=site.category.value %}</p>
       <h1 class="page-title" id="site-articles-title">{{ site.name }}</h1>
       <p class="site-articles-page__description">{{ site.description }}</p>
       <ul class="site-card__details">

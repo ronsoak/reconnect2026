@@ -1,6 +1,6 @@
 <article class="site-card">
   <div class="site-card__header">
-    <p class="site-card__category">{{ site.category.value }}</p>
+    <p class="site-card__category">{% include "components/category_pill.html" with category=site.category.value %}</p>
     <h3 class="site-card__title">{{ site.name }}</h3>
   </div>
   <p class="site-card__description">{{ site.description|truncatewords:28 }}</p>

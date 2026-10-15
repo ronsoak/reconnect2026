@@ -1,4 +1,18 @@
+{% with page=request.resolver_match.url_name %}
 <nav class="site-menu" aria-label="Main navigation">
-  <a href="{% url 'publications' %}" class="site-menu__link">Publications</a>
-  <a href="{% url 'about' %}" class="site-menu__link">About</a>
+  {# Shown by menu.js on narrow screens; without JavaScript the links stay visible. #}
+  <button type="button" class="site-menu__toggle" aria-expanded="false" aria-controls="site-menu-list" hidden>
+    <svg class="site-menu__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+      <path class="site-menu__bar site-menu__bar--top" d="M4 7h16" />
+      <path class="site-menu__bar site-menu__bar--middle" d="M4 12h16" />
+      <path class="site-menu__bar site-menu__bar--bottom" d="M4 17h16" />
+    </svg>
+    <span class="site-menu__toggle-label">Menu</span>
+  </button>
+  <ul id="site-menu-list" class="site-menu__list">
+    <li><a href="{% url 'home' %}" class="site-menu__link"{% if page == 'home' %} aria-current="page"{% elif page == 'newest' or page == 'popular' %} aria-current="true"{% endif %}>Home</a></li>
+    <li><a href="{% url 'publications' %}" class="site-menu__link"{% if page == 'publications' %} aria-current="page"{% elif page == 'site_articles' %} aria-current="true"{% endif %}>Publications</a></li>
+    <li><a href="{% url 'about' %}" class="site-menu__link"{% if page == 'about' %} aria-current="page"{% endif %}>About</a></li>
+  </ul>
 </nav>
+{% endwith %}

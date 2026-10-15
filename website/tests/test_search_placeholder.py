@@ -39,3 +39,27 @@ class SearchPlaceholderTests(TestCase):
         self.assertIn('alt="Reconnect"', header)
         self.assertIn('aria-label="Reconnect home"', header)
         self.assertNotIn("site-brand__name", header)
+
+    def test_main_menu_links_and_current_page(self):
+        expected = {
+            "/": ('href="/" class="site-menu__link" aria-current="page"',),
+            "/newest/": ('href="/" class="site-menu__link" aria-current="true"',),
+            "/publications/": ('href="/publications/" class="site-menu__link" aria-current="page"',),
+            "/about/": ('href="/about/" class="site-menu__link" aria-current="page"',),
+        }
+        for path, snippets in expected.items():
+            with self.subTest(path=path):
+                header = self.client.get(path).content.decode().split("</header>", 1)[0]
+                for label in (">Home</a>", ">Publications</a>", ">About</a>"):
+                    self.assertIn(label, header)
+                for snippet in snippets:
+                    self.assertIn(snippet, header)
+                nav = header.split('class="site-menu"', 1)[1].split("</nav>", 1)[0]
+                self.assertEqual(nav.count("aria-current="), 1)
+                # The hamburger toggle starts hidden so the links still work without JavaScript.
+                self.assertIn('aria-controls="site-menu-list" hidden', header)
+
+    def test_privacy_page_marks_no_menu_item_current(self):
+        header = self.client.get("/privacy/").content.decode().split("</header>", 1)[0]
+        nav = header.split('class="site-menu"', 1)[1].split("</nav>", 1)[0]
+        self.assertNotIn("aria-current=", nav)

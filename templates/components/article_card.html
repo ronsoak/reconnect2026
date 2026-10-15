@@ -13,7 +13,7 @@
     </div>
     {% endif %}
     <div class="card-content feed-card__content">
-      <p class="feed-card__category">{{ article.site.category.value }}</p>
+      <p class="feed-card__category">{% include "components/category_pill.html" with category=article.site.category.value %}</p>
       <h2 class="feed-card__title">{{ article.title }}</h2>
       <p class="feed-card__source">
         <span>{{ article.site.name }}</span>

@@ -155,6 +155,15 @@ options when present, stays pinned to the top while scrolling. Its markup is in
 `templates/components/header.html` and layout is in `static/css/custom.css`.
 The logo is `static/images/branding/reconnect_full_title.svg`; its width scales
 with the screen via `.site-brand__logo`.
+Site colours are CSS variables at the top of `static/css/custom.css`, matching
+the brand palette in agents.md. Category labels render through
+`templates/components/category_pill.html`, which adds a `category-pill--<slug>`
+class (e.g. `category-pill--video-games`); add a matching rule in custom.css when
+a new category is created, otherwise it falls back to the neutral grey pill.
+The main menu (`templates/components/menu.html`) shows Home, Publications and
+About as outlined round buttons, highlighting the current section. At 768px and
+below `static/js/menu.js` collapses them behind a hamburger toggle (Escape or an
+outside click closes it); without JavaScript the links stay visible.
 `static/js/header.js` measures its responsive height so anchor/focus scrolling
 clears it and filter dropdowns fit the remaining viewport.
 
