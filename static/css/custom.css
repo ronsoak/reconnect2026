@@ -68,6 +68,14 @@ input:focus-visible {
   padding-bottom: 1.15rem;
 }
 
+/* Below desktop Bulma's container is full width, so match the header and
+   filter bar's 1rem side padding to stop page content touching the edges */
+@media screen and (max-width: 1023px) {
+  .site-main > .container {
+    padding-inline: 1rem;
+  }
+}
+
 .site-header__masthead {
   display: grid;
   grid-template-columns: auto minmax(16rem, 38rem) auto;
