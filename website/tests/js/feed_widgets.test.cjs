@@ -110,6 +110,17 @@ test("selective resizing closes a break while adverts and first card keep their 
   assert.ok(!grid.children.find(n => n.dataset.feedWidget).hidden);
 });
 
+test("Newest Sites spans the full row, one row tall, on the two-column grid", () => {
+  for (const columns of [2, 3, 4]) {
+    const { grid } = render(columns, Array(40).fill("small"), { 12: "newest" });
+    verify(grid, columns);
+    const widget = grid.children.find(n => n.dataset.feedWidget === "newest");
+    const expected = columns === 2 ? "/ span 2" : "/ span 1";
+    assert.ok(widget.style.gridColumn.endsWith(expected), `${columns} columns: ${widget.style.gridColumn}`);
+    assert.ok(widget.style.gridRow.endsWith(columns === 2 ? "/ span 1" : "/ span 2"));
+  }
+});
+
 test("resize and image-failure size changes recalculate from original cards", () => {
   const fixture = render(4,
     Array.from({ length: 100 }, (_, i) => i % 5 ? "small" : "large"),

@@ -587,14 +587,20 @@ input:focus-visible {
   grid-row: span 2;
 }
 
+/* Newest Sites widget: warm amber panel so it reads as a feature, not an article */
 .newest-additions {
+  --newest-bg: #f6e7c1;
+  --newest-line: #e2cc94;
+  --newest-ink: #4a3410;
   padding: 1.25rem;
+  border-color: var(--newest-line);
+  background: var(--newest-bg);
 }
 
 .newest-additions__title {
-  margin: 0 0 1rem;
-  color: var(--ink);
-  font: 700 1.25rem/1.3 "Manrope", sans-serif;
+  margin: 0 0 0.75rem;
+  color: var(--newest-ink);
+  font: 800 1.35rem/1.2 "Manrope", sans-serif;
 }
 
 .newest-additions__list {
@@ -607,19 +613,19 @@ input:focus-visible {
 }
 
 .newest-additions__list li + li {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--newest-line);
 }
 
 .newest-additions__list a {
   display: block;
-  padding-block: 0.85rem;
+  padding-block: 0.8rem;
   color: var(--ink);
-  font-weight: 600;
+  font: 700 1.05rem/1.25 "Manrope", sans-serif;
   overflow-wrap: anywhere;
 }
 
 .newest-additions a:hover {
-  color: var(--accent-deep);
+  color: var(--newest-ink);
   text-decoration: underline;
 }
 
@@ -629,12 +635,51 @@ input:focus-visible {
 
 .newest-additions__directory {
   align-self: flex-start;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   padding-block: 0.5rem;
-  color: var(--accent-deep);
+  color: var(--newest-ink);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
 }
+
+/* Two-column phone grid: the widget spans the row and is one row tall, so the
+   list is compact and the "All publications" link sits beside the title. */
+@media screen and (max-width: 768px) {
+  .newest-additions {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: start;
+    column-gap: 1rem;
+    padding: 1rem;
+  }
+
+  .newest-additions__title {
+    margin-bottom: 0.4rem;
+    font-size: 1.2rem;
+  }
+
+  .newest-additions__directory {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin: 0 0 0.4rem;
+  }
+
+  .newest-additions__list {
+    grid-column: 1 / -1;
+  }
+
+  .newest-additions__list a {
+    padding-block: 0.55rem;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 
 .feed-card__link {
   display: flex;

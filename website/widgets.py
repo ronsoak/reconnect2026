@@ -55,7 +55,7 @@ def widget_slots(card_count, kinds, rng=None):
         position = rng.randint(low, max(low, high))
         positions.append(position)
         previous = position
-    # Newest Additions retains its existing position-11-through-50 rule.
+    # Newest Sites retains its existing position-11-through-50 rule.
     rng.shuffle(kinds)
     if "newest" in kinds:
         eligible = [
@@ -80,7 +80,7 @@ def dynamic_widgets(cards, category_ids=None, tag_ids=None):
     ticker = articles.in_bulk(ticker_ids)
     newest = list(Sites.objects.filter(
         pk__in=articles.order_by().values("site_id"),
-    ).order_by("-pk")[:10])
+    ).order_by("-pk")[:5])
     pool = list(highlight_pool(category_ids, tag_ids, today))
     highlights = random.sample(pool, min(3, len(pool)))
     context = {

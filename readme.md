@@ -192,10 +192,12 @@ moves keyboard focus to the Reconnect home link. The Dynamic feed also shows the
 Refresh the mix button beside it, which widens and centres near the bottom. The
 group lifts above the footer so it never covers it.
 
-## Newest Additions widget
+## Newest Sites widget
 
-Dynamic, Newest and Popular include `templates/components/newest_additions.html` as a
-medium (one column by two rows) card. It lists up to ten public publications
+Dynamic, Newest and Popular include `templates/components/newest_additions.html`, titled
+"Newest Sites", on a warm amber background. On tablet and desktop it is a medium
+(one column by two rows) card; on the two-column phone grid it spans the full
+row at one row tall. It lists up to five public publications
 with public articles, newest site ID first, respecting Category and Focus
 filters. Links open each publication's article page.
 
@@ -259,7 +261,7 @@ up to the next widget, to find a completely filled boundary. If no natural
 boundary exists, the planner tries the fewest size reductions among up to eight
 nearby medium/large article cards. The first card and adverts are never resized.
 Ordinary card order, counts and pagination are preserved; nothing is duplicated
-or pulled forward. Small cards can fill beside Newest Additions.
+or pulled forward. Small cards can fill beside Newest Sites on tablet and desktop.
 Responsive recalculation starts from the original sizes, so temporary reductions
 do not persist when the new layout no longer needs them.
 

@@ -1,5 +1,5 @@
 <aside class="feed-card feed-card--medium newest-additions" aria-labelledby="newest-additions-title" data-feed-widget="newest">
-  <h2 class="newest-additions__title" id="newest-additions-title">Newest Additions</h2>
+  <h2 class="newest-additions__title" id="newest-additions-title">Newest Sites</h2>
   <ul class="newest-additions__list">
     {% for site in newest_additions %}
       <li><a href="{% url 'site_articles' site.pk %}">{{ site.name }}</a></li>

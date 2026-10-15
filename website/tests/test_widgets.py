@@ -31,11 +31,11 @@ class NewestAdditionsTests(TestCase):
         cls.sites[0].tags.add(cls.tag)
         Sites.objects.filter(pk=cls.sites[0].pk).update(category=cls.other_category)
 
-    def test_ten_newest_public_sites_and_links(self):
+    def test_five_newest_public_sites_and_links(self):
         response = self.client.get("/")
         self.assertEqual(
             [site.pk for site in response.context["newest_additions"]],
-            [site.pk for site in reversed(self.sites[-10:])],
+            [site.pk for site in reversed(self.sites[-5:])],
         )
         self.assertContains(response, 'id="newest-additions-title"', count=1)
         self.assertTemplateUsed(response, "components/newest_additions.html")
@@ -49,7 +49,7 @@ class NewestAdditionsTests(TestCase):
         response = self.client.get("/")
         self.assertEqual(
             [site.pk for site in response.context["newest_additions"]],
-            [site.pk for site in reversed(self.sites[:-4])],
+            [site.pk for site in reversed(self.sites[:-4])][:5],
         )
 
     def test_category_and_focus_filters_and_saved_cookie(self):
@@ -78,7 +78,7 @@ class NewestAdditionsTests(TestCase):
         Articles.objects.exclude(pk__in=keep).delete()
         response = self.client.get("/")
         self.assertEqual(response.context["widget_slots"], [{"kind": "newest", "after": 10}])
-        self.assertContains(response, "Newest Additions")
+        self.assertContains(response, "Newest Sites")
 
     def test_short_and_empty_feeds_omit_widget(self):
         keep = list(Articles.objects.order_by("pk").values_list("pk", flat=True)[:9])

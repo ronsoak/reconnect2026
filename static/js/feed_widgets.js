@@ -124,8 +124,11 @@
     items.forEach(function (node) {
       var kind = node.dataset.feedWidget;
       var fullWidth = kind === "ticker" || kind === "highlight";
-      var width = fullWidth ? columns : !small.has(node) && node.classList.contains("feed-card--large") ? 2 : 1;
-      var height = !fullWidth && !small.has(node) && (node.classList.contains("feed-card--large") ||
+      // On the two-column phone grid Newest Sites spans the row, one row tall.
+      var wideNewest = kind === "newest" && columns <= 2;
+      var width = fullWidth || wideNewest ? columns :
+        !small.has(node) && node.classList.contains("feed-card--large") ? 2 : 1;
+      var height = !fullWidth && !wideNewest && !small.has(node) && (node.classList.contains("feed-card--large") ||
         node.classList.contains("feed-card--medium")) ? 2 : 1;
       var row = fullWidth ? end : floor;
       var column = 0;
@@ -146,7 +149,7 @@
       end = Math.max(end, row + height);
       if (kind) {
         lastWidget = { end: row + height, count: ordinary };
-        // Full-width rows are barriers; ordinary cards may still fill beside Newest Additions.
+        // Full-width rows are barriers; ordinary cards may still fill beside Newest Sites.
         if (fullWidth) floor = end;
         if (fullWidth) segmentStart = end;
       } else {
