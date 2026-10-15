@@ -17,10 +17,11 @@
     {% include "components/feed_grid.html" %}
     {% include "components/pagination.html" %}
   </section>
-  {% if active_feed == "dynamic" %}{% include "components/refresh_button.html" %}{% endif %}
+  {% include "components/floating_actions.html" %}
 {% endblock %}
 
 {% block extra_js %}
+  <script src="{% static 'js/floating_actions.js' %}" defer></script>
   {% if widget_slots %}
     <script src="{% static 'js/feed_widgets.js' %}" defer></script>
     {% if ticker_articles %}<script src="{% static 'js/ticker.js' %}" defer></script>{% endif %}

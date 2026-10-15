@@ -1186,11 +1186,19 @@ input:focus-visible {
   }
 }
 
-.refresh-button {
+/* Floating feed actions: back to top (all feeds) and refresh (Dynamic only).
+   The group is lifted above the footer by floating_actions.js. */
+.floating-actions {
   position: fixed;
   right: 1.5rem;
-  bottom: calc(1.1rem + var(--refresh-lift, 0px));
+  bottom: calc(max(1.1rem, env(safe-area-inset-bottom)) + var(--floating-lift, 0px));
   z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.refresh-button {
   min-height: 2.75rem;
   padding-inline: 1.5rem;
   border: 1px solid var(--accent);
@@ -1208,11 +1216,59 @@ input:focus-visible {
   background: var(--accent-deep);
 }
 
-.refresh-button.is-at-end {
+.floating-actions.is-at-end {
   right: 50%;
   width: min(28rem, 90vw);
-  justify-content: center;
   transform: translateX(50%);
+}
+
+.floating-actions.is-at-end .refresh-button {
+  flex: 1;
+  justify-content: center;
+}
+
+.scroll-top-button {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: none;
+  color: var(--accent);
+  background: #fff;
+  /* Hidden (and unfocusable) until the reader has scrolled */
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 0.5rem;
+  transition: opacity 160ms ease-out, translate 160ms ease-out, visibility 0s linear 160ms;
+}
+
+.scroll-top-button.is-visible {
+  visibility: visible;
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 160ms ease-out, translate 160ms ease-out, visibility 0s;
+}
+
+.scroll-top-button:focus-visible {
+  border-color: var(--accent-deep);
+  color: #fff;
+  background: var(--accent-deep);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .scroll-top-button:hover {
+    border-color: var(--accent-deep);
+    color: #fff;
+    background: var(--accent-deep);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-top-button,
+  .scroll-top-button.is-visible {
+    translate: none;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -1309,12 +1365,12 @@ input:focus-visible {
     font-size: 0.8rem;
   }
 
-  .refresh-button {
+  .floating-actions {
     right: 0.75rem;
-    bottom: calc(0.75rem + var(--refresh-lift, 0px));
+    bottom: calc(max(0.75rem, env(safe-area-inset-bottom)) + var(--floating-lift, 0px));
   }
 
-  .refresh-button.is-at-end {
+  .floating-actions.is-at-end {
     right: 50%;
   }
 }

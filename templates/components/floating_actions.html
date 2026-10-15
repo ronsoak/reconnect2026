@@ -1,0 +1,7 @@
+{# Floating buttons on the feed pages. Back to top shows on every feed; refresh reloads the Dynamic mix #}
+<div class="floating-actions" data-floating-actions>
+  <button type="button" class="button scroll-top-button" data-scroll-top aria-label="Back to top">
+    <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  {% if active_feed == "dynamic" %}<a class="button refresh-button" href="{{ request.get_full_path }}">Refresh the mix</a>{% endif %}
+</div>

@@ -183,6 +183,15 @@ Public article cards show the publication name but no publication date, includin
 Dynamic, Newest, Popular, search, publication feeds and Highlight Reel. Stored
 dates remain available for sorting, RSS, the API and newsletter exports.
 
+## Floating feed buttons
+
+Dynamic, Newest and Popular share `templates/components/floating_actions.html`
+and `static/js/floating_actions.js`. A back-to-top button appears once the first
+screen has scrolled away; it scrolls smoothly (instantly with reduced motion) and
+moves keyboard focus to the Reconnect home link. The Dynamic feed also shows the
+Refresh the mix button beside it, which widens and centres near the bottom. The
+group lifts above the footer so it never covers it.
+
 ## Newest Additions widget
 
 Dynamic, Newest and Popular include `templates/components/newest_additions.html` as a
