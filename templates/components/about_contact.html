@@ -1,0 +1,87 @@
+{% comment %}
+  Contact section for the About page. Posts to the contact view, which checks the
+  honeypot, signed timer, rate limit and Cloudflare Turnstile before saving.
+{% endcomment %}
+<section class="about-page__section contact-section" id="contact" aria-labelledby="about-contact-title">
+  <h2 id="about-contact-title">Contact</h2>
+  <p>Want to advertise, suggest a site Reconnect should follow, or ask about something else? Send a message and it will come straight to the inbox.</p>
+
+  {% if contact_sent %}
+    <div class="contact-form__status" role="status">
+      <p><strong>Thanks, your message has been sent.</strong> You'll get a reply at the email address you gave.</p>
+    </div>
+  {% endif %}
+
+  <form class="contact-form" action="{% url 'contact' %}#contact" method="post" novalidate>
+    {% csrf_token %}
+    {{ contact_form.started }}
+
+    {% if contact_form.non_field_errors %}
+      <div class="contact-form__alert" role="alert">
+        {% for error in contact_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="field">
+      <label class="label" for="contact-name">Name</label>
+      <div class="control">
+        <input class="input{% if contact_form.name.errors %} is-danger{% endif %}" type="text" id="contact-name" name="name"
+               value="{{ contact_form.name.value|default_if_none:'' }}" maxlength="100" autocomplete="name" required
+               {% if contact_form.name.errors %}aria-invalid="true" aria-describedby="contact-name-error"{% endif %}>
+      </div>
+      {% if contact_form.name.errors %}<p class="help is-danger" id="contact-name-error">{{ contact_form.name.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="field">
+      <label class="label" for="contact-email">Email</label>
+      <div class="control">
+        <input class="input{% if contact_form.email.errors %} is-danger{% endif %}" type="email" id="contact-email" name="email"
+               value="{{ contact_form.email.value|default_if_none:'' }}" maxlength="254" autocomplete="email"
+               autocapitalize="off" autocorrect="off" spellcheck="false" required
+               aria-describedby="contact-email-help{% if contact_form.email.errors %} contact-email-error{% endif %}"
+               {% if contact_form.email.errors %}aria-invalid="true"{% endif %}>
+      </div>
+      <p class="help" id="contact-email-help">Only used to reply to you.</p>
+      {% if contact_form.email.errors %}<p class="help is-danger" id="contact-email-error">{{ contact_form.email.errors.0 }}</p>{% endif %}
+    </div>
+
+    <fieldset class="field contact-form__reasons"{% if contact_form.reason.errors %} aria-describedby="contact-reason-error"{% endif %}>
+      <legend class="label">Reason</legend>
+      <div class="control contact-form__choices">
+        {% for choice in contact_form.reason %}
+          <label class="contact-form__choice" for="{{ choice.id_for_label }}">
+            <input type="radio" id="{{ choice.id_for_label }}" name="reason" value="{{ choice.data.value }}"
+                   {% if choice.data.selected %}checked{% endif %} required>
+            <span>{{ choice.choice_label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      {% if contact_form.reason.errors %}<p class="help is-danger" id="contact-reason-error">{{ contact_form.reason.errors.0 }}</p>{% endif %}
+    </fieldset>
+
+    <div class="field">
+      <label class="label" for="contact-message">Message</label>
+      <div class="control">
+        <textarea class="textarea{% if contact_form.message.errors %} is-danger{% endif %}" id="contact-message" name="message"
+                  rows="6" maxlength="5000" required
+                  {% if contact_form.message.errors %}aria-invalid="true" aria-describedby="contact-message-error"{% endif %}>{{ contact_form.message.value|default_if_none:'' }}</textarea>
+      </div>
+      {% if contact_form.message.errors %}<p class="help is-danger" id="contact-message-error">{{ contact_form.message.errors.0 }}</p>{% endif %}
+    </div>
+
+    {% comment %}Honeypot: hidden from people and screen readers. Bots that fill it are ignored.{% endcomment %}
+    <div class="contact-form__trap" aria-hidden="true">
+      <label for="contact-website">Leave this field empty</label>
+      <input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    {% if turnstile_site_key %}
+      <div class="cf-turnstile contact-form__challenge" data-sitekey="{{ turnstile_site_key }}" data-size="flexible" data-theme="light"></div>
+    {% endif %}
+
+    <div class="field">
+      <button class="button contact-form__submit" type="submit">Send message</button>
+    </div>
+    <p class="contact-form__privacy">See the <a href="{% url 'privacy' %}">privacy policy</a> for how messages are handled.</p>
+  </form>
+</section>

@@ -14,6 +14,7 @@ from website.models import (
     Clicks,
     Analytics,
     FrontPageNotice,
+    ContactMessage,
 )
 from unfold.admin import ModelAdmin                                     # for the Admin theme
 from unfold.contrib.forms.widgets import ArrayWidget, WysiwygWidget     # for the Admin theme
@@ -149,4 +150,22 @@ class FrontPageNoticeAdmin(ModelAdmin):
         return not FrontPageNotice.objects.exists()
 
     def has_delete_permission(self, request, obj=None):
+        return False
+
+
+# ===== ===== ===== ===== ===== ===== ===== =====
+# Contact messages (sent from the About page)
+# ===== ===== ===== ===== ===== ===== ===== =====
+@admin.register(ContactMessage)
+class ContactMessageAdmin(ModelAdmin):
+    list_display = ("name", "reason", "email", "created", "handled", "email_sent")
+    list_filter = ["reason", "handled", "email_sent"]
+    list_editable = ["handled"]
+    search_fields = ["name", "email", "message"]
+    show_facets = admin.ShowFacets.ALWAYS
+    readonly_fields = ("name", "email", "reason", "message", "created", "email_sent")
+    fields = ("name", "email", "reason", "created", "message", "email_sent", "handled")
+
+    # Messages only arrive through the public form.
+    def has_add_permission(self, request):
         return False

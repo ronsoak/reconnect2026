@@ -53,6 +53,16 @@ Set these under the web service's **Variables** tab.
 | `DATABASE_URL` | Reference the Postgres service: `${{Postgres.DATABASE_URL}}` |
 | `ALLOWED_HOSTS` | Your Railway domain and your real domain |
 | `MEDIA_ROOT` | `/data/media` (see section 3) |
+| `TURNSTILE_SITE_KEY` | From Cloudflare dashboard → Turnstile → Add widget. Add your Railway domain and real domain as hostnames |
+| `TURNSTILE_SECRET_KEY` | The secret key from the same Turnstile widget. Without both keys the contact form refuses all messages |
+| `CONTACT_EMAIL` | Where new contact messages are emailed. Defaults to `alex@antranaut.com` |
+| `CLIENT_IP_HEADER` | `HTTP_X_REAL_IP`, so the contact rate limit sees each visitor rather than Railway's proxy. Confirm Railway sets `X-Real-IP` |
+| `EMAIL_BACKEND` | `django.core.mail.backends.smtp.EmailBackend` |
+| `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_USE_TLS` | Your SMTP provider's details, e.g. `smtp.resend.com`, `587`, `True` |
+| `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | SMTP login from your email provider |
+| `DEFAULT_FROM_EMAIL` | A sender on a domain your provider has verified, e.g. `Reconnect <noreply@yourdomain>` |
+
+After deploying, send a test message from the About page. It should appear in the admin under **Contact messages** with **Email sent** ticked, and arrive in the inbox.
 
 Add your own notes here:
 

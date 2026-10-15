@@ -67,7 +67,7 @@ class BlueskyTests(BlueskyFixtures, TestCase):
 
     def test_text_and_hashtag(self):
         text, facets = post_text(self.article)
-        self.assertEqual(text, "Reconnect Recommends\nFrom Example\n#videogames")
+        self.assertEqual(text, "🟨 Reconnect Recommends:\n\n✍️ By: Example\n\n#videogames")
         self.assertEqual(facets[0]["features"][0]["tag"], "videogames")
         for category in ("TCG's", "TCG\u2019s"):
             self.site.category.value = category
@@ -86,6 +86,10 @@ class BlueskyTests(BlueskyFixtures, TestCase):
             "@example.bsky.social",
         )
         self.assertEqual(facets[0]["features"][0]["did"], "did:plc:example")
+        # The handle stays on the same line as the publication name.
+        self.assertIn("✍️ By: Caf\u00e9 \U0001f3ae, @example.bsky.social\n\n#", text)
+        tag_index = facets[1]["index"]
+        self.assertEqual(text.encode()[tag_index["byteStart"]:tag_index["byteEnd"]].decode(), "#videogames")
 
     def test_long_post_is_explicit_error(self):
         self.site.name = "x" * 300

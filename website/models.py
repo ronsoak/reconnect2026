@@ -311,3 +311,39 @@ class FrontPageNotice(models.Model):
 
     def __str__(self):
         return "Front-page notice"
+
+# ===== ===== ===== ===== ===== ===== ===== =====
+# Contact messages
+# ===== ===== ===== ===== ===== ===== ===== =====
+class ContactMessage(models.Model):
+    # Drop down selection, shown as radio buttons on the About page
+    REASON_CHOICES = [
+        ("ADVERTISING", "Advertising"),
+        ("SUGGEST_SITE", "Suggest a site"),
+        ("OTHER", "Other"),
+    ]
+    # Fields
+    name = models.CharField(max_length=100, verbose_name="Name")
+    email = models.EmailField(max_length=254, verbose_name="Email")
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES, verbose_name="Reason")
+    message = models.TextField(max_length=5000, verbose_name="Message")
+    created = models.DateTimeField(auto_now_add=True, verbose_name="Received")
+    email_sent = models.BooleanField(
+        default=False,
+        help_text="Ticked when the notification email was sent successfully.",
+        verbose_name="Email sent",
+    )
+    handled = models.BooleanField(
+        default=False,
+        help_text="Tick once you have replied to or dealt with this message.",
+        verbose_name="Handled",
+    )
+
+    class Meta:
+        db_table = "contact_messages"
+        ordering = ["-created"]
+        verbose_name = "Contact message"
+        verbose_name_plural = "Contact messages"
+
+    def __str__(self):
+        return f"{self.get_reason_display()} from {self.name}"

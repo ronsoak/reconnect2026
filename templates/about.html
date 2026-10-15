@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}About | Reconnect{% endblock %}
 
@@ -7,6 +8,15 @@
     {% include "components/about_intro.html" %}
     {% include "components/about_newsletter.html" %}
     {% include "components/about_using.html" %}
+    {% include "components/about_contact.html" %}
     {% include "components/about_credits.html" %}
   </article>
+{% endblock %}
+
+{% block extra_js %}
+  {% if turnstile_site_key %}
+    {# Cloudflare Turnstile only loads on the About page, for the contact form. #}
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+  <script src="{% static 'js/contact_form.js' %}" defer></script>
 {% endblock %}

@@ -149,13 +149,36 @@ Tests live in `website/tests/`. Run them all with `python manage.py test website
 
 ## Editing the About page
 
-The About page is assembled in `templates/about.html` from four components:
-`about_intro.html`, `about_newsletter.html`, `about_using.html`, and `about_credits.html`
+The About page is assembled in `templates/about.html` from five components:
+`about_intro.html`, `about_newsletter.html`, `about_using.html`, `about_contact.html` and `about_credits.html`
 in `templates/components/`. Edit those components to replace the draft copy.
 Marked placeholders reserve space for the Bluesky profile, Substack welcome letter
 and newsletter signup, and personal credits. No external embeds load until you add
 their official embed code. Counts are calculated from public articles and their
 distinct publications, independently of feed filters and cached site article counts.
+
+## Contact form
+
+The About page ends with a contact form (`templates/components/about_contact.html`)
+that posts to `/about/contact/`. Visitors give a name, email, a reason (Advertising,
+Suggest a site or Other) and a message. Each message is saved as a
+`ContactMessage` (admin: **Contact messages**, with a **Handled** tick box) and
+emailed to `CONTACT_EMAIL`, with the visitor as the Reply-To. A failed email never
+loses the message; the admin shows **Email sent** for each one.
+
+Spam protection lives in `website/contact.py`:
+
+- **Honeypot**: a hidden `website` field. Bots that fill it see a fake success and nothing is saved.
+- **Signed timer**: messages sent within 3 seconds of loading, or after 2 hours, are rejected.
+- **Rate limit**: 3 messages per visitor per hour, using a hashed IP in the cache. No IP is stored.
+- **Cloudflare Turnstile**: verified server-side. The script only loads on About.
+
+Without Turnstile keys the check is skipped while `DEBUG` is on, and the form
+refuses messages when `DEBUG` is off. Locally, emails print to the runserver
+terminal. Settings: `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `CONTACT_EMAIL`,
+`CLIENT_IP_HEADER`, `CONTACT_RATE_LIMIT` and the `EMAIL_*` variables (see
+`deployment_guide.md`). The default cache is per-process memory, so with several
+web workers the rate limit is per worker until Redis is added.
 
 ## Editing the footer
 
@@ -172,9 +195,9 @@ modular templates describe actual click fields, filter/repeat-click cookies,
 Django session/CSRF cookies, external images, Google Fonts and Substack.
 It explicitly flags unfinished hosting-log/backup retention and automated
 click-maintenance scheduling rather than promising a deletion deadline.
-The requested contact direction points to About, but clearly states that the
-contact form is not available yet. Complete these operational details and the
-contact route, review the copy before launch, and revisit it when adding embeds.
+It also covers the About-page contact form: what it stores, the hashed-IP rate
+limit, Cloudflare Turnstile and manual message deletion. Complete the operational
+details, review the copy before launch, and revisit it when adding embeds.
 This page is not a consent banner or a guarantee of legal compliance.
 
 ## Article cards
@@ -362,9 +385,18 @@ and ID. Undated/future articles and hidden articles/publications are excluded.
 Sites with **Auto Post** disabled are excluded unless the article has **Manual
 Post** enabled; that override never bypasses hiding.
 
-Posts contain `Reconnect Recommends`, the publication name, an optional clickable
-Bluesky mention, and a lowercase category hashtag without spaces or a trailing
-apostrophe-s. Store only the publication's handle in Sites.bluesky (an initial
+Posts contain `🟨 Reconnect Recommends:`, then `✍️ By: <publication>` with an
+optional clickable Bluesky mention on the same line, then a lowercase category
+hashtag without spaces or a trailing apostrophe-s, each separated by a blank line:
+
+```
+🟨 Reconnect Recommends:
+
+✍️ By: Example Blog, @example.bsky.social
+
+#videogames
+```
+ Store only the publication's handle in Sites.bluesky (an initial
 `@` is accepted), not a profile URL. Handle resolution failures stop the run
 rather than silently omitting a requested mention.
 

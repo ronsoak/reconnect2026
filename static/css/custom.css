@@ -971,6 +971,144 @@ input:focus-visible {
   border: 0;
 }
 
+/* About page contact form */
+.contact-form {
+  margin-top: 1.25rem;
+}
+
+.contact-form .label {
+  margin-bottom: 0.35rem;
+  color: var(--ink);
+  font: 600 0.95rem/1.3 "Manrope", sans-serif;
+}
+
+.contact-form .field:not(:last-child) {
+  margin-bottom: 1.25rem;
+}
+
+.contact-form .input,
+.contact-form .textarea {
+  border-color: var(--line);
+  border-radius: var(--radius);
+  box-shadow: none;
+  font-size: 1rem;
+}
+
+.contact-form .input:focus-visible,
+.contact-form .textarea:focus-visible,
+.contact-form__choice input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.contact-form .help {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.contact-form .help.is-danger {
+  color: #a23b2c;
+  font-weight: 600;
+}
+
+.contact-form__reasons {
+  border: 0;
+  margin-inline: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.contact-form__choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.contact-form__choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.contact-form__choice:hover {
+  border-color: var(--accent);
+}
+
+.contact-form__choice:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--surface-muted);
+}
+
+.contact-form__choice input {
+  accent-color: var(--accent);
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+}
+
+.contact-form__trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-form__challenge {
+  margin-bottom: 1.25rem;
+}
+
+.contact-form__submit {
+  min-height: 2.75rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: #fff;
+  background: var(--accent);
+  font: 700 0.95rem/1.2 "Manrope", sans-serif;
+  transition: background-color 150ms ease;
+}
+
+.contact-form__submit:hover,
+.contact-form__submit:focus-visible {
+  border-color: var(--accent-deep);
+  color: #fff;
+  background: var(--accent-deep);
+}
+
+.contact-form__privacy {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.contact-form__status,
+.contact-form__alert {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--accent);
+  background: var(--surface-muted);
+}
+
+.contact-form__alert {
+  margin-bottom: 1.25rem;
+  border-left-color: #a23b2c;
+  background: #f7e6e2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-form__choice,
+  .contact-form__submit {
+    transition: none;
+  }
+}
+
 .publications-page {
   width: 100%;
 }

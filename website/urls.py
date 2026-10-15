@@ -7,6 +7,7 @@ from .sitemaps import SiteArticlesSitemap, StaticPagesSitemap
 from .rss import ArticlesFeed
 from .views import (
     about,
+    contact,
     home,
     go_advert,
     go_article,
@@ -42,6 +43,7 @@ urlpatterns = [
     path('go/rss/<int:pk>/', go_article_from_rss, name='rss_article_click'),
     path('go/ad/<int:pk>/', go_advert, name='go_advert'),
     path('about/', about, name='about'),
+    path('about/contact/', contact, name='contact'),
     path('privacy/', privacy, name='privacy'),
     path('robots.txt', robots_txt, name='robots_txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

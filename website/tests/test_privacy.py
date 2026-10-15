@@ -15,11 +15,14 @@ class PrivacyTests(TestCase):
             "up to 100", "calendar date", "do not store your IP address",
             "Google Fonts", "https://substack.com/privacy",
             "Automated aggregation and deletion schedules are not yet configured",
-            "contact form is planned but not yet available",
+            "Cloudflare Turnstile", "turnstile-privacy-policy",
+            "Your IP address is not saved with your message",
+            "Contact messages are kept",
         ):
             with self.subTest(text=text):
                 self.assertContains(response, text)
-        self.assertContains(response, 'href="/about/"')
+        self.assertContains(response, 'href="/about/#contact"')
+        self.assertNotContains(response, "not yet available")
         self.assertFalse(response.cookies)
         self.assertNotContains(response, "<iframe")
 
@@ -28,6 +31,9 @@ class PrivacyTests(TestCase):
             with self.subTest(path=path):
                 html = self.client.get(path).content.decode()
                 before_footer, footer = html.split('<footer class="footer site-footer">')
-                self.assertNotIn('href="/privacy/"', before_footer)
+                header = before_footer.split("<main")[0]
+                self.assertNotIn('href="/privacy/"', header)
                 self.assertIn('href="/privacy/"', footer)
         self.assertContains(self.client.get("/sitemap.xml"), "/privacy/")
+        # The contact form links to the policy beside the form it describes.
+        self.assertContains(self.client.get("/about/"), 'href="/privacy/"', count=2)

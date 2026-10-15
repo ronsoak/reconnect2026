@@ -133,6 +133,30 @@ MEDIA_URL = '/media/'
 # (e.g. MEDIA_ROOT=/data/media), otherwise uploads are lost on every deploy.
 MEDIA_ROOT = config("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 
+# Contact form (About page). See website/contact.py for how these are used.
+# Turnstile keys come from Cloudflare > Turnstile. Without them the check is
+# skipped while DEBUG is on, and the form refuses messages in production.
+TURNSTILE_SITE_KEY = config("TURNSTILE_SITE_KEY", default="")
+TURNSTILE_SECRET_KEY = config("TURNSTILE_SECRET_KEY", default="")
+CONTACT_EMAIL = config("CONTACT_EMAIL", default="alex@antranaut.com")
+CONTACT_MIN_SECONDS = config("CONTACT_MIN_SECONDS", default=3, cast=int)
+CONTACT_MAX_AGE = config("CONTACT_MAX_AGE", default=60 * 60 * 2, cast=int)
+CONTACT_RATE_LIMIT = config("CONTACT_RATE_LIMIT", default=3, cast=int)
+# Header holding the visitor's real IP behind a proxy, e.g. HTTP_X_REAL_IP on Railway.
+CLIENT_IP_HEADER = config("CLIENT_IP_HEADER", default="")
+
+# Outgoing email. The console backend prints emails to the terminal locally;
+# set EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend in production.
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = config("EMAIL_HOST", default="localhost")
+EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
+EMAIL_TIMEOUT = 15
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="Reconnect <noreply@localhost>")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
 # API: public, read-only, JSON only, with a basic per-visitor limit
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],

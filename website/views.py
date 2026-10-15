@@ -10,7 +10,9 @@ from django.http import HttpResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.conf import settings
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 
 from .feed import (
     arrange_large_cards,
@@ -19,6 +21,14 @@ from .feed import (
     build_ordered_feed,
     search_articles,
     visible_articles,
+)
+from .contact import (
+    ContactForm,
+    is_rate_limited,
+    record_submission,
+    send_notification,
+    turnstile_enabled,
+    verify_turnstile,
 )
 from .models import Adverts, Articles, Clicks, FrontPageNotice, Logic, Sites
 from .widgets import dynamic_widgets
@@ -247,13 +257,47 @@ def go_advert(request, pk):
     return redirect_with_click_cookie(advert.site_url, cookie_value)
 
 
-def about(request):
+def render_about(request, contact_form=None, status=200):
     context = filter_context(request)
     context["hide_filters"] = True
     articles = visible_articles()
     context["article_count"] = articles.count()
     context["site_count"] = articles.order_by().values("site_id").distinct().count()
-    return render(request, "about.html", context)
+    context["contact_form"] = contact_form or ContactForm()
+    context["contact_sent"] = request.GET.get("sent") == "1"
+    context["turnstile_site_key"] = settings.TURNSTILE_SITE_KEY if turnstile_enabled() else ""
+    return render(request, "about.html", context, status=status)
+
+
+def about(request):
+    return render_about(request)
+
+
+@require_POST
+def contact(request):
+    sent_url = f"{reverse('about')}?sent=1#contact"
+    form = ContactForm(request.POST)
+
+    # Bots that fill the hidden field are told it worked, so they learn nothing.
+    if form.is_honeypot_filled:
+        return HttpResponseRedirect(sent_url)
+
+    if is_rate_limited(request):
+        form.is_valid()
+        form.add_error(None, "You've sent a few messages recently. Please try again in an hour.")
+        return render_about(request, form, status=429)
+
+    if not form.is_valid():
+        return render_about(request, form, status=400)
+
+    if not verify_turnstile(request):
+        form.add_error(None, "We couldn't confirm you're human. Please complete the check and send again.")
+        return render_about(request, form, status=400)
+
+    contact_message = form.save()
+    record_submission(request)
+    send_notification(contact_message)
+    return HttpResponseRedirect(sent_url)
 
 
 def privacy(request):

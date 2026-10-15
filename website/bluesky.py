@@ -50,7 +50,7 @@ def eligible_articles():
 
 def post_text(article, mention_did=None):
     """Facet offsets are UTF-8 bytes, not Python character offsets."""
-    text = f"🟨 Reconnect Recommends:\n\n✍️ By: {article.site.name}\n"
+    text = f"🟨 Reconnect Recommends:\n\n✍️ By: {article.site.name}"
     facets = []
     handle = article.site.bluesky.strip().lstrip("@")
     if handle:
@@ -67,8 +67,8 @@ def post_text(article, mention_did=None):
         raise BlueskyError("The category must produce a non-numeric hashtag.")
     if len(tag) > 64:
         raise BlueskyError("The category hashtag exceeds Bluesky's 64-character limit.")
-    start = len((text + "\n").encode("utf-8"))
-    text += f"\n#{tag}"
+    start = len((text + "\n\n").encode("utf-8"))
+    text += f"\n\n#{tag}"
     facets.append({
         "index": {"byteStart": start, "byteEnd": len(text.encode("utf-8"))},
         "features": [{"$type": "app.bsky.richtext.facet#tag", "tag": tag}],
