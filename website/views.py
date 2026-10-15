@@ -1,6 +1,5 @@
 import random
 import time
-from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.core import signing
@@ -22,6 +21,7 @@ from .feed import (
     visible_articles,
 )
 from .models import Adverts, Articles, Clicks, FrontPageNotice, Logic, Sites
+from .widgets import dynamic_widgets
 
 
 FILTER_COOKIE = "reconnect_filters"
@@ -97,23 +97,7 @@ def home(request):
     context = filter_context(request)
     category_ids, tag_ids = filter_ids(context)
     context["cards"] = build_dynamic_feed(category_ids=category_ids, tag_ids=tag_ids)
-    today = timezone.localdate()
-    recent_articles = visible_articles(category_ids, tag_ids).filter(
-        published__gte=today - timedelta(days=7), published__lte=today,
-    )
-    recent_ids = list(recent_articles.order_by().values_list("pk", flat=True))
-    ticker_ids = random.sample(recent_ids, min(10, len(recent_ids)))
-    ticker_articles = recent_articles.in_bulk(ticker_ids)
-    context["ticker_articles"] = [ticker_articles[pk] for pk in ticker_ids]
-    context["ticker_target"] = random.random()
-    if len(context["cards"]) >= 10:
-        public_site_ids = visible_articles(category_ids, tag_ids).order_by().values("site_id")
-        context["newest_additions"] = list(
-            Sites.objects.filter(pk__in=public_site_ids).order_by("-pk")[:10]
-        )
-        if context["newest_additions"]:
-            # Insert after 10-49 existing cards: the widget itself occupies position 11-50.
-            context["newest_additions_after"] = random.randint(10, min(49, len(context["cards"])))
+    context.update(dynamic_widgets(context["cards"], category_ids, tag_ids))
     context["active_feed"] = "dynamic"
     context["front_page_notice"] = FrontPageNotice.objects.filter(is_active=True).first()
     return remember_filters(render(request, "home.html", context), context, request)

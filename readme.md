@@ -186,11 +186,10 @@ seven days through today, respecting Category and Focus. Titles link through the
 normal article click tracker. There is no visible heading.
 
 `templates/components/article_ticker.html` renders a static list without
-JavaScript. `static/js/ticker.js` places it in a full-width grid row near a random
-target, preferring a natural boundary with no tall cards crossing it and a filled
-row above. If none exists, an explicit row forces a clean break (some empty grid
-cells may remain above). Placement is recalculated for viewport changes and
-image-failure card-size changes. The ticker is additional to the card quota.
+JavaScript. `static/js/feed_widgets.js` coordinates its full-width row with the
+other widgets; `static/js/ticker.js` only manages the scrolling text.
+Explicit row boundaries prevent tall cards crossing the ticker (some empty grid
+cells may remain above). The ticker is additional to the card quota.
 
 Titles are separated by `|`. Motion is a linear CSS transform at about 40 pixels
 per second and pauses on mouse hover, without a visible pause button.
@@ -198,6 +197,36 @@ Keyboard focus presents a static, horizontally
 scrollable list. Reduced motion presents a wrapped static list. Repeated visual
 titles are excluded from screen readers and the tab order. No recent matching
 articles means no ticker; other feeds do not include it.
+
+## Highlight Reel and widget spacing
+
+The Dynamic feed samples up to three articles from the top 50 by **clicks
+received during the current calendar month**, regardless of publication date
+or lifetime rank. Both Article and RSS click events count; advert clicks do not.
+Only public articles matching Category and Focus qualify. Articles without a
+click this month are excluded. This uses current-month `Clicks` records, not
+`Analytics` snapshots, avoiding double-counting when a month is aggregated.
+Keep current-month click records; the normal purge policy retains them.
+
+The full-width carousel uses existing article cards and local image fallbacks.
+It does not autoplay: swipe, horizontal scrolling, keyboard navigation, and
+Previous/Next buttons control it. Reduced motion makes button navigation instant.
+Without JavaScript, the carousel remains horizontally scrollable.
+
+Widgets are additional to the ordinary card quota. Their source positions are
+spread across the feed, jittered, and their order shuffled on refresh; Newest
+Additions stays after 10-49 ordinary cards. There must be at least **10 ordinary
+article/advert cards and two fully occupied grid rows between visible widgets**.
+The shared layout recalculates on resize and ordinary card image failures,
+reserving clean full-width rows for the ticker and reel. Ordinary cards retain
+their order and sizes; small cards can fill beside Newest Additions.
+
+Short feeds first omit excess widgets in this priority order: retain Newest
+Additions, then ticker, then Highlight Reel. Fewer than ten ordinary cards
+omits all widgets. The browser omits later widgets if their targets cannot meet
+the complete-row spacing rule at that viewport. With JavaScript disabled,
+source-order card spacing remains, but exact filled-row spacing is not measured.
+No monthly clicked articles means no reel.
 
 ## Management scripts
 

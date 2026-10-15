@@ -7,9 +7,17 @@
       {% else %}
         {% include "components/article_card.html" %}
       {% endif %}
-      {% if newest_additions and forloop.counter == newest_additions_after %}
-        {% include "components/newest_additions.html" %}
-      {% endif %}
+      {% for widget in widget_slots %}
+        {% if forloop.parentloop.counter == widget.after %}
+          {% if widget.kind == "newest" %}
+            {% include "components/newest_additions.html" %}
+          {% elif widget.kind == "ticker" %}
+            {% include "components/article_ticker.html" %}
+          {% elif widget.kind == "highlight" %}
+            {% include "components/highlight_reel.html" %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
     {% endfor %}
   </div>
 {% elif not hide_empty %}

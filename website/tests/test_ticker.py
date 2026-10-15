@@ -22,7 +22,7 @@ class TickerTests(TestCase):
             Articles(
                 site=cls.site, title=f"Article {index}", url=f"https://example.com/{index}",
                 published=today - timedelta(days=index % 8), image_url="",
-            ) for index in range(15)
+            ) for index in range(30)
         ])
 
     def test_ten_unique_recent_articles_and_tracked_links(self):
@@ -55,7 +55,8 @@ class TickerTests(TestCase):
         Articles.objects.filter(pk=articles[3].pk).update(published=today + timedelta(days=1))
         Articles.objects.filter(pk=articles[4].pk).update(published=today - timedelta(days=8))
         selected = {article.pk for article in self.client.get("/").context["ticker_articles"]}
-        self.assertEqual(selected, {article.pk for article in articles[5:]})
+        self.assertTrue(selected.issubset({article.pk for article in articles[5:]}))
+        self.assertEqual(len(selected), 10)
         Sites.objects.filter(pk=self.site.pk).update(hidden=True)
         self.assertFalse(self.client.get("/").context["ticker_articles"])
 

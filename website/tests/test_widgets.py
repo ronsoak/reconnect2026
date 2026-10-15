@@ -63,9 +63,11 @@ class NewestAdditionsTests(TestCase):
 
     def test_actual_markup_position_at_both_random_boundaries(self):
         for after in (10, 49):
-            with self.subTest(after=after), patch("website.views.random.randint", return_value=after) as choose:
+            with self.subTest(after=after), patch(
+                "website.widgets.widget_slots",
+                return_value=[{"kind": "newest", "after": after}],
+            ):
                 response = self.client.get("/")
-            choose.assert_called_once_with(10, 49)
             html = response.content.decode()
             before_widget = html.split('id="newest-additions-title"')[0]
             self.assertEqual(before_widget.count('class="feed-card__link"'), after)
@@ -75,7 +77,7 @@ class NewestAdditionsTests(TestCase):
         keep = list(Articles.objects.order_by("pk").values_list("pk", flat=True)[:10])
         Articles.objects.exclude(pk__in=keep).delete()
         response = self.client.get("/")
-        self.assertEqual(response.context["newest_additions_after"], 10)
+        self.assertEqual(response.context["widget_slots"], [{"kind": "newest", "after": 10}])
         self.assertContains(response, "Newest Additions")
 
     def test_short_and_empty_feeds_omit_widget(self):

@@ -15,12 +15,15 @@
       <p class="page-lede">Independent writing from across tabletop and video games.</p>
     </header>
     {% include "components/feed_grid.html" %}
-    {% if ticker_articles %}{% include "components/article_ticker.html" %}{% endif %}
     {% include "components/pagination.html" %}
   </section>
   {% if active_feed == "dynamic" %}{% include "components/refresh_button.html" %}{% endif %}
 {% endblock %}
 
 {% block extra_js %}
-  {% if ticker_articles %}<script src="{% static 'js/ticker.js' %}" defer></script>{% endif %}
+  {% if widget_slots %}
+    <script src="{% static 'js/feed_widgets.js' %}" defer></script>
+    {% if ticker_articles %}<script src="{% static 'js/ticker.js' %}" defer></script>{% endif %}
+    {% if highlight_cards %}<script src="{% static 'js/highlight_reel.js' %}" defer></script>{% endif %}
+  {% endif %}
 {% endblock %}
