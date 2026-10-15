@@ -386,8 +386,7 @@ input:focus-visible {
   grid-auto-rows: minmax(17rem, auto);
 }
 
-[data-feed-widget][hidden],
-.highlight-reel__controls[hidden] {
+[data-feed-widget][hidden] {
   display: none;
 }
 
@@ -395,6 +394,7 @@ input:focus-visible {
   grid-column: 1 / -1;
   min-width: 0;
   align-self: start;
+  container-type: inline-size;
 }
 
 .highlight-reel__header {
@@ -411,33 +411,25 @@ input:focus-visible {
   font-size: clamp(1.5rem, 3vw, 2rem);
 }
 
-.highlight-reel__controls {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.highlight-reel__slides {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
+.highlight-reel__cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--feed-gap);
 }
 
-.highlight-reel__slide {
-  flex: 0 0 100%;
+.highlight-reel__item {
   min-width: 0;
-  scroll-snap-align: start;
 }
 
-.highlight-reel__slide > .feed-card {
-  height: clamp(24rem, 55vw, 35rem);
+.highlight-reel__item > .feed-card {
+  height: 30rem;
   margin: 0;
 }
 
-.highlight-reel__slides:focus-visible {
-  outline: 2px solid var(--accent-deep);
-  outline-offset: 3px;
+@container (min-width: 600px) {
+  .highlight-reel__cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .article-ticker {

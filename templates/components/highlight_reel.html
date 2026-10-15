@@ -1,14 +1,10 @@
-<section class="highlight-reel" data-feed-widget="highlight" aria-labelledby="highlight-reel-title" aria-roledescription="carousel">
+<section class="highlight-reel" data-feed-widget="highlight" aria-labelledby="highlight-reel-title">
   <header class="highlight-reel__header">
     <h2 id="highlight-reel-title">Highlight Reel</h2>
-    <div class="highlight-reel__controls" hidden>
-      <button type="button" class="button is-small" data-direction="-1" aria-label="Previous highlight" aria-controls="highlight-slides">Previous</button>
-      <button type="button" class="button is-small" data-direction="1" aria-label="Next highlight" aria-controls="highlight-slides">Next</button>
-    </div>
   </header>
-  <div class="highlight-reel__slides" id="highlight-slides" tabindex="0" aria-label="Highlighted articles">
+  <div class="highlight-reel__cards">
     {% for card in highlight_cards %}
-      <div class="highlight-reel__slide" role="group" aria-roledescription="slide" aria-label="{{ forloop.counter }} of {{ highlight_cards|length }}">
+      <div class="highlight-reel__item">
         {% include "components/article_card.html" %}
       </div>
     {% endfor %}

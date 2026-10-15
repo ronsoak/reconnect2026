@@ -87,7 +87,10 @@ class HighlightTests(TestCase):
         self.assertEqual(len({card.item.pk for card in cards}), 3)
         self.assertContains(response, 'id="highlight-reel-title"', count=1)
         self.assertContains(response, 'src="/static/js/feed_widgets.js"')
-        self.assertContains(response, 'src="/static/js/highlight_reel.js"')
+        self.assertContains(response, 'class="highlight-reel__item"', count=3)
+        self.assertNotContains(response, 'aria-roledescription="carousel"')
+        self.assertNotContains(response, 'src="/static/js/highlight_reel.js"')
+        self.assertNotContains(response, 'aria-label="Next highlight"')
         for card in cards:
             self.assertContains(response, f'href="/go/{card.item.pk}/"')
         for path in ("/newest/", "/popular/", "/search/?q=Highlight"):

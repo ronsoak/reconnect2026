@@ -208,10 +208,11 @@ click this month are excluded. This uses current-month `Clicks` records, not
 `Analytics` snapshots, avoiding double-counting when a month is aggregated.
 Keep current-month click records; the normal purge policy retains them.
 
-The full-width carousel uses existing article cards and local image fallbacks.
-It does not autoplay: swipe, horizontal scrolling, keyboard navigation, and
-Previous/Next buttons control it. Reduced motion makes button navigation instant.
-Without JavaScript, the carousel remains horizontally scrollable.
+The full-width Highlight Reel uses existing article cards and local image
+fallbacks. All three cards display together in equal-width columns when the
+widget has at least 600px of available width; on phones they stack vertically.
+There are no carousel controls or horizontal scrolling, and the card layout
+works without JavaScript.
 
 Widgets are additional to the ordinary card quota. Their source positions are
 spread across the feed, jittered, and their order shuffled on refresh; Newest
