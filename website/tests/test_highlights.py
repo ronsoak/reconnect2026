@@ -93,7 +93,7 @@ class HighlightTests(TestCase):
         self.assertNotContains(response, 'aria-label="Next highlight"')
         for card in cards:
             self.assertContains(response, f'href="/go/{card.item.pk}/"')
-        for path in ("/newest/", "/popular/", "/search/?q=Highlight"):
+        for path in ("/search/?q=Highlight",):
             self.assertNotContains(self.client.get(path), 'id="highlight-reel-title"')
 
     def test_no_clicks_omits_reel_and_small_pool_uses_available_articles(self):

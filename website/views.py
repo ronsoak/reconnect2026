@@ -115,6 +115,7 @@ def ordered_feed(request, order):
     context["cards"], context["page_obj"] = build_ordered_feed(
         order, category_ids=category_ids, tag_ids=tag_ids, page=request.GET.get("page", 1)
     )
+    context.update(dynamic_widgets(context["cards"], category_ids, tag_ids))
     context["active_feed"] = order
     return remember_filters(render(request, "home.html", context), context, request)
 

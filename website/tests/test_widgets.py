@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.utils import timezone
 
-from website.models import Articles, Logic, Sites
+from website.models import Articles, Clicks, Logic, Sites
 
 
 class NewestAdditionsTests(TestCase):
@@ -90,7 +90,48 @@ class NewestAdditionsTests(TestCase):
             self.assertNotContains(response, 'id="newest-additions-title"')
 
     def test_other_pages_have_no_widget(self):
-        for path in ("/newest/", "/popular/", "/search/?q=Article",
+        for path in ("/search/?q=Article",
                      f"/publications/{self.sites[0].pk}/", "/publications/", "/about/"):
             with self.subTest(path=path):
                 self.assertNotContains(self.client.get(path), 'id="newest-additions-title"')
+
+    def test_ordered_feeds_include_all_widgets_on_each_page_without_changing_order(self):
+        click_type = Logic.objects.create(logic_type="CLICK_TYPE", value="Article")
+        Clicks.objects.bulk_create([
+            Clicks(type=click_type, article=str(article.pk), date=timezone.localdate())
+            for article in Articles.objects.order_by("pk")[:3]
+        ])
+        for feed in ("newest", "popular"):
+            for page in (1, 2):
+                with self.subTest(feed=feed, page=page):
+                    response = self.client.get(f"/{feed}/?page={page}")
+                    self.assertContains(response, 'id="newest-additions-title"', count=1)
+                    self.assertContains(response, 'aria-label="Recent articles"', count=1)
+                    self.assertContains(response, 'id="highlight-reel-title"', count=1)
+                    self.assertContains(response, 'src="/static/js/feed_widgets.js"')
+                    self.assertNotContains(response, 'class="refresh-button')
+                    self.assertEqual(response.context["page_obj"].number, page)
+                    self.assertEqual(
+                        [card.item.pk for card in response.context["cards"]],
+                        [article.pk for article in response.context["page_obj"].object_list],
+                    )
+
+    def test_ordered_widgets_respect_filters_and_short_page_omission(self):
+        for feed in ("newest", "popular"):
+            response = self.client.get(
+                f"/{feed}/?apply=1&category={self.other_category.pk}&tag={self.tag.pk}"
+            )
+            self.assertEqual(
+                [site.pk for site in response.context["newest_additions"]],
+                [self.sites[0].pk],
+            )
+            self.assertTrue(all(
+                article.site_id == self.sites[0].pk
+                for article in response.context["ticker_articles"]
+            ))
+        keep = list(Articles.objects.values_list("pk", flat=True)[:9])
+        Articles.objects.exclude(pk__in=keep).delete()
+        for feed in ("newest", "popular"):
+            response = self.client.get(f"/{feed}/?reset=1", follow=True)
+            self.assertFalse(response.context["widget_slots"])
+            self.assertNotContains(response, 'data-feed-widget=')

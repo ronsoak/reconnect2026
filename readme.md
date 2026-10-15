@@ -173,7 +173,7 @@ dates remain available for sorting, RSS, the API and newsletter exports.
 
 ## Newest Additions widget
 
-The Dynamic page includes `templates/components/newest_additions.html` as a
+Dynamic, Newest and Popular include `templates/components/newest_additions.html` as a
 medium (one column by two rows) card. It lists up to ten public publications
 with public articles, newest site ID first, respecting Category and Focus
 filters. Links open each publication's article page.
@@ -181,13 +181,13 @@ filters. Links open each publication's article page.
 The widget is additional to the article/advert quota. On each refresh its
 position is randomly chosen from 11 through 50 (or the end of a shorter feed),
 after at least ten existing cards. Feeds with fewer than ten cards omit it.
-Newest, Popular, search and publication-specific feeds do not include it.
+Search and publication-specific feeds do not include it.
 Placement refers to source/card order; the dense responsive grid may fill gaps
 with later cards.
 
 ## Article ticker
 
-The Dynamic feed includes up to ten random public articles published in the past
+Dynamic, Newest and Popular include up to ten random public articles published in the past
 seven days through today, respecting Category and Focus. Titles link through the
 normal article click tracker. There is no visible heading.
 
@@ -202,11 +202,11 @@ per second and pauses on mouse hover, without a visible pause button.
 Keyboard focus presents a static, horizontally
 scrollable list. Reduced motion presents a wrapped static list. Repeated visual
 titles are excluded from screen readers and the tab order. No recent matching
-articles means no ticker; other feeds do not include it.
+articles means no ticker; search and publication-specific feeds do not include it.
 
 ## Highlight Reel and widget spacing
 
-The Dynamic feed samples up to three articles from the top 50 by **clicks
+Dynamic, Newest and Popular sample up to three articles from the top 50 by **clicks
 received during the current calendar month**, regardless of publication date
 or lifetime rank. Both Article and RSS click events count; advert clicks do not.
 Only public articles matching Category and Focus qualify. Articles without a
@@ -225,6 +225,8 @@ for readable contrast even on bright artwork. Regular feed cards are unchanged.
 Missing/broken images retain the existing local fallback and text-card behavior.
 
 Widgets are additional to the ordinary card quota. Their source positions are
+planned independently on every page, including later pagination pages on Newest
+and Popular, without changing the ordinary articles' ordering or pagination. Positions are
 spread across the feed, jittered, and their order shuffled on refresh; Newest
 Additions stays after 10-49 ordinary cards. There must be at least **10 ordinary
 article/advert cards and two fully occupied grid rows between visible widgets**.

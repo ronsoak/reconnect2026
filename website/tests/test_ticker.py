@@ -68,7 +68,7 @@ class TickerTests(TestCase):
         self.assertNotContains(self.client.get("/"), 'aria-label="Recent articles"')
 
     def test_other_feeds_do_not_include_ticker(self):
-        for path in ("/newest/", "/popular/", "/search/?q=Article",
+        for path in ("/search/?q=Article",
                      "/publications/", f"/publications/{self.site.pk}/", "/about/"):
             with self.subTest(path=path):
                 self.assertNotContains(self.client.get(path), 'aria-label="Recent articles"')
