@@ -4,10 +4,14 @@
     <input type="hidden" name="apply" value="1">
     <div class="filter-bar__controls">
       <div class="filter-bar__choices">
-        {% include "components/filter_multiselect.html" with label="Category" name="category" items=categories selected=selected_categories %}
-        {% include "components/filter_multiselect.html" with label="Focus" name="tag" items=tags selected=selected_tags %}
-        <button class="button filter-bar__apply" type="submit">Apply</button>
-        <a class="button filter-bar__reset" href="{% if active_feed %}{{ request.path }}{% else %}{% url 'home' %}{% endif %}?reset=1">Reset</a>
+        <div class="filter-bar__pair">
+          {% include "components/filter_multiselect.html" with label="Category" name="category" items=categories selected=selected_categories %}
+          {% include "components/filter_multiselect.html" with label="Focus" name="tag" items=tags selected=selected_tags %}
+        </div>
+        <div class="filter-bar__pair">
+          <button class="button filter-bar__apply" type="submit">Apply</button>
+          <a class="button filter-bar__reset" href="{% if active_feed %}{{ request.path }}{% else %}{% url 'home' %}{% endif %}?reset=1">Reset</a>
+        </div>
       </div>
       <div class="filter-bar__feeds">{% include "components/feed_tabs.html" %}</div>
     </div>

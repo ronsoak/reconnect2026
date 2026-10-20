@@ -156,7 +156,10 @@ options when present, stays pinned to the top while scrolling. Its markup is in
 The logo is `static/images/branding/reconnect_full_title.svg`; its width scales
 with the screen via `.site-brand__logo`.
 Site colours are CSS variables at the top of `static/css/custom.css`, matching
-the brand palette in agents.md. Category labels render through
+the brand palette in agents.md. The feed options bar joins Category/Focus and
+Apply/Reset into two pairs, with rounded outer ends and square inner corners.
+On phones both pairs expand to fill their row, while dropdown panels fit below it.
+Category labels render through
 `templates/components/category_pill.html` as a coloured dot followed by the
 category name. It adds a `category-pill--<slug>` class (e.g.
 `category-pill--video-games`) that sets the dot colour; add a matching rule in

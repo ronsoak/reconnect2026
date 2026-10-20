@@ -436,6 +436,33 @@ input:focus-visible {
   text-decoration: none;
 }
 
+.filter-bar__pair {
+  display: flex;
+  align-items: stretch;
+}
+
+.filter-bar__pair > .filter-multiselect:first-child .button,
+.filter-bar__pair > .button:first-child {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.filter-bar__pair > .filter-multiselect:last-child .button,
+.filter-bar__pair > .button:last-child {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.filter-bar__pair > :last-child {
+  margin-inline-start: -1px;
+}
+
+.filter-bar__pair .button:hover,
+.filter-bar__pair .button:focus-visible {
+  position: relative;
+  z-index: 1;
+}
+
 .filter-multiselect {
   position: relative;
 }
@@ -1771,7 +1798,34 @@ input:focus-visible {
   }
 
   .filter-bar__choices {
-    flex-wrap: wrap;
+    position: relative;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .filter-bar__pair {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .filter-bar__pair > *,
+  .filter-bar__pair .filter-multiselect__button {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .filter-bar__pair .filter-multiselect {
+    position: static;
+    display: flex;
+  }
+
+  .filter-bar__pair .filter-multiselect__button {
+    justify-content: center;
+  }
+
+  .filter-bar__pair .filter-multiselect__menu {
+    width: 100%;
+    max-width: 100%;
   }
 
   .filter-bar__feeds {

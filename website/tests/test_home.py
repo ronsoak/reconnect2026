@@ -188,6 +188,15 @@ class OrderedFeedTests(TestCase):
         self.assertEqual(self.titles(response), ["Card only"])
         self.assertContains(response, 'href="/popular/"')
 
+    def test_feed_options_render_two_joined_pairs(self):
+        for url in ("/", "/newest/", "/popular/"):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertContains(response, 'class="filter-bar__pair"', count=2)
+                self.assertContains(response, 'aria-controls="category-filter-menu"')
+                self.assertContains(response, 'aria-controls="tag-filter-menu"')
+                self.assertContains(response, f'href="{url}?reset=1"')
+
     def test_bad_page_numbers_fall_back_safely(self):
         self.assertEqual(self.client.get("/newest/?page=abc").status_code, 200)
         self.assertEqual(self.client.get("/newest/?page=999").status_code, 200)
