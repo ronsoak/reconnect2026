@@ -159,6 +159,8 @@ Site colours are CSS variables at the top of `static/css/custom.css`, matching
 the brand palette in agents.md. The feed options bar joins Category/Focus and
 Apply/Reset into two pairs, with rounded outer ends and square inner corners.
 On phones both pairs expand to fill their row, while dropdown panels fit below it.
+Apply uses the same light background as Reset. The search placeholder is hidden
+at phone widths (768px and below); entered search text remains visible.
 Category labels render through
 `templates/components/category_pill.html` as a coloured dot followed by the
 category name. It adds a `category-pill--<slug>` class (e.g.

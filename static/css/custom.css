@@ -422,14 +422,15 @@ input:focus-visible {
 }
 
 .filter-bar__apply {
-  border-color: var(--accent) !important;
-  color: #fff !important;
-  background: var(--accent) !important;
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--surface);
 }
 
 .filter-bar__apply:hover {
-  border-color: var(--accent-deep) !important;
-  background: var(--accent-deep) !important;
+  border-color: var(--accent);
+  color: var(--accent-deep);
+  background: var(--surface);
 }
 
 .filter-bar__reset {
@@ -1792,6 +1793,10 @@ input:focus-visible {
 }
 
 @media screen and (max-width: 768px) {
+  .site-search__input::placeholder {
+    opacity: 0;
+  }
+
   .filter-bar__controls {
     flex-direction: column;
     align-items: stretch;
