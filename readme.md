@@ -156,7 +156,9 @@ options when present, stays pinned to the top while scrolling. Its markup is in
 The logo is `static/images/branding/reconnect_full_title.svg`; its width scales
 with the screen via `.site-brand__logo`.
 Site colours are CSS variables at the top of `static/css/custom.css`, matching
-the brand palette in agents.md. The feed options bar joins Category/Focus and
+the brand palette in agents.md. Highlight Reel and ticker backgrounds use the
+full-strength brand green (#00ef6c), with dark headings and ticker text.
+The feed options bar joins Category/Focus and
 Apply/Reset into two pairs, with rounded outer ends and square inner corners.
 On phones both pairs expand to fill their row, while dropdown panels fit below it.
 Apply uses the same light background as Reset. The search placeholder is hidden
