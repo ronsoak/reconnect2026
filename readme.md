@@ -159,6 +159,25 @@ All counts and pool sizes must be positive integers. Day windows can be zero.
 Percentages must each be 0-100 and total at most 100. Invalid values stop startup
 with a configuration error naming the setting.
 
+Operational upper bounds are enforced at startup, not silently clamped:
+
+| Settings | Maximum |
+|---|---:|
+| Website/API Dynamic and ordered feed sizes | 1,000 |
+| Website/API search page sizes | 1,000 |
+| Publications directory and individual-publication page sizes | 500 |
+| Total browsable articles per publication | 10,000 |
+| RSS items | 1,000 |
+| Dynamic popular and Highlight Reel candidate pools | 10,000 |
+| Weekly/monthly newsletter top counts | 1,000 |
+| Ticker titles | 100 |
+| Random minimum age, ticker lookback and Bluesky lookback | 3,650 days |
+
+These are configuration guardrails, not performance guarantees. Dynamic rounding
+can still exceed its configured target slightly; widgets remain additional.
+API request rates retain their positive-count/unit validation without an upper
+ceiling. All existing defaults remain unchanged.
+
 ### Public response sizes
 
 | Variable | Default | Meaning |

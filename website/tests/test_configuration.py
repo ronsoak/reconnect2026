@@ -20,6 +20,41 @@ from website.widgets import dynamic_widgets, highlight_pool
 
 
 class EnvironmentValidationTests(SimpleTestCase):
+    LIMITS = {
+        "WEB_DYNAMIC_FEED_SIZE": 1000,
+        "WEB_ORDERED_FEED_PAGE_SIZE": 1000,
+        "API_DYNAMIC_FEED_SIZE": 1000,
+        "API_ORDERED_FEED_PAGE_SIZE": 1000,
+        "WEB_SEARCH_PAGE_SIZE": 1000,
+        "API_SEARCH_PAGE_SIZE": 1000,
+        "PUBLICATIONS_PAGE_SIZE": 500,
+        "PUBLICATION_ARTICLES_PAGE_SIZE": 500,
+        "PUBLICATION_ARTICLES_LIMIT": 10000,
+        "RSS_FEED_ITEM_LIMIT": 1000,
+        "FEED_RANDOM_MIN_AGE_DAYS": 3650,
+        "FEED_POPULAR_POOL_SIZE": 10000,
+        "NEWSLETTER_WEEKLY_TOP_COUNT": 1000,
+        "NEWSLETTER_MONTHLY_TOP_COUNT": 1000,
+        "TICKER_ARTICLE_COUNT": 100,
+        "TICKER_LOOKBACK_DAYS": 3650,
+        "HIGHLIGHT_POOL_SIZE": 10000,
+        "BLUESKY_LOOKBACK_DAYS": 3650,
+    }
+
+    def test_upper_boundaries_are_accepted(self):
+        values = {name: str(maximum) for name, maximum in self.LIMITS.items()}
+        with patch.dict(os.environ, values):
+            loaded = runpy.run_path(str(Path(settings.BASE_DIR) / "reconnect/settings.py"))
+        for name, maximum in self.LIMITS.items():
+            with self.subTest(name=name):
+                self.assertEqual(loaded[name], maximum)
+
+    def test_values_above_each_upper_boundary_fail_at_startup(self):
+        for name, maximum in self.LIMITS.items():
+            with self.subTest(name=name), patch.dict(os.environ, {name: str(maximum + 1)}):
+                with self.assertRaisesMessage(ImproperlyConfigured, name):
+                    runpy.run_path(str(Path(settings.BASE_DIR) / "reconnect/settings.py"))
+
     def test_invalid_environment_values_fail_at_startup(self):
         settings_path = Path(settings.BASE_DIR) / "reconnect/settings.py"
         cases = (
