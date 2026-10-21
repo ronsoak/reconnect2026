@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from unittest import mock
 
 from django.test import TestCase
 from django.utils import timezone
@@ -50,13 +51,30 @@ class HomeFeedTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["cards"]), 24)
 
-    def test_missing_image_makes_a_text_card_with_a_placeholder(self):
+    @mock.patch("website.feed.fallback_image_url", return_value="")
+    def test_missing_image_without_fallback_uses_a_text_placeholder(self, fallback):
         Articles.objects.all().update(image_url="")
         response = self.client.get("/")
-        self.assertContains(response, "feed-card--text")
-        self.assertContains(response, "feed-card__image--placeholder")
-        self.assertContains(response, "Cover image unavailable")
-        self.assertNotContains(response, "<img")
+        card_count = len(response.context["cards"])
+        self.assertEqual(card_count, 24)
+        self.assertContains(response, "feed-card--small feed-card--text", count=card_count)
+        self.assertContains(response, "feed-card__image--placeholder", count=card_count)
+        self.assertContains(response, "Cover image unavailable", count=card_count)
+        self.assertNotContains(response, "/static/images/article-fallbacks/")
+        self.assertContains(response, 'class="site-brand__logo"')
+
+    @mock.patch("website.feed.fallback_image_url", return_value="/static/images/article-fallbacks/test.jpg")
+    def test_missing_image_uses_local_artwork_and_keeps_cards_small(self, fallback):
+        Articles.objects.all().update(image_url="")
+        response = self.client.get("/")
+        card_count = len(response.context["cards"])
+        self.assertEqual(card_count, 24)
+        self.assertContains(response, "feed-card--small feed-card--text", count=card_count)
+        self.assertContains(
+            response, 'src="/static/images/article-fallbacks/test.jpg"', count=card_count,
+        )
+        self.assertNotContains(response, "feed-card__image--placeholder")
+        self.assertNotContains(response, "Cover image unavailable")
 
     def test_empty_state_when_nothing_matches(self):
         Articles.objects.all().delete()

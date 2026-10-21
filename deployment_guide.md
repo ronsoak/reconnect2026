@@ -21,7 +21,7 @@ The settings file is still set up for local development. Do not deploy until the
 - [ ] **Serve static files:** add `whitenoise` and its middleware, so the Bulma and CSS files load when `DEBUG` is off.
 - [ ] Make sure `db.sqlite3`, `media/` and `staticfiles/` are in `.gitignore` and not pushed to GitHub.
 - [ ] Pin the Python version (for example a `.python-version` file containing `3.14`) so Railway builds with the version you tested on.
-- [ ] Fix the SSRF concern in `ingest_batch` (on your feature list).
+- [x] Guard feed and article-page fetching in `ingest_batch` against non-public destinations through `safe_fetch`; regression coverage is in `website/tests/test_safe_fetch.py`.
 - [ ] Run `python manage.py test website` locally. Everything should pass.
 - [ ] Commit and push to GitHub.
 

@@ -59,8 +59,8 @@ Reconnect has a read-only JSON API so other people can build on the same feed, f
 | `/api/feed/` | The article feed, with adverts |
 | `/api/search/` | Search articles by title or site name |
 | `/api/filters/` | Lists the category and tag ids the feed accepts |
-| `/feeds/all.rss` | RSS feed of the 50 newest visible articles |
-| `/feeds/category/<category_id>.rss` | RSS feed of the 50 newest visible articles in a category |
+| `/feeds/all.rss` | Up to `RSS_FEED_ITEM_LIMIT` newest dated public articles (default 150) |
+| `/feeds/category/<category_id>.rss` | Same configured RSS limit, restricted to a category |
 
 API endpoints accept `GET` only and return JSON. RSS endpoints return RSS XML.
 
@@ -307,7 +307,8 @@ group lifts above the footer so it never covers it.
 ## Newest Sites widget
 
 Dynamic, Newest and Popular include `templates/components/newest_additions.html`, titled
-"Newest Sites", on a warm amber background. On tablet and desktop it is a medium
+"Newest Sites", on a brand-green background at 50% opacity with dark text.
+On tablet and desktop it is a medium
 (one column by two rows) card; on the two-column phone grid it spans the full
 row at one row tall. It lists up to five public publications
 with public articles, newest site ID first, respecting Category and Focus
@@ -325,7 +326,8 @@ with later cards.
 Dynamic, Newest and Popular include up to `TICKER_ARTICLE_COUNT` random public articles
 (default ten), published from today minus `TICKER_LOOKBACK_DAYS` (default seven)
 through today inclusive, respecting Category and Focus. Titles link through the
-normal article click tracker. There is no visible heading.
+normal article click tracker. There is no visible heading. The ticker uses the
+full-strength brand-green background (#00ef6c) with dark text.
 
 `templates/components/article_ticker.html` renders a static list without
 JavaScript. `static/js/feed_widgets.js` coordinates its full-width row with the
@@ -355,9 +357,9 @@ The full-width Highlight Reel uses existing article cards and local image
 fallbacks. All three cards display together in equal-width columns when the
 widget has at least 600px of available width; on phones they become a swipeable
 row that snaps one card at a time, with the next card peeking in.
-There are no carousel controls or horizontal scrolling, and the card layout
-works without JavaScript.
-Horizontal divider lines frame a dark blue-grey widget background with a white
+There are no carousel controls; native horizontal scrolling and snapping work
+without JavaScript on narrow layouts.
+Horizontal divider lines frame a full-strength brand-green background with a dark
 heading and inset padding. Highlight images cover the full
 card, with white text over a dark bottom scrim (at least 82% black behind text)
 for readable contrast even on bright artwork. Regular feed cards are unchanged.

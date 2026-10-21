@@ -55,13 +55,15 @@ class ImageCardTests(TestCase):
     def render(self, article):
         return render_to_string("components/article_card.html", {"card": FeedCard("article", article, "small")})
 
-    def test_card_without_a_valid_image_uses_a_cover_placeholder(self):
+    @mock.patch("website.feed.fallback_image_url", return_value="")
+    def test_card_without_a_valid_image_or_fallback_uses_a_cover_placeholder(self, fallback):
         for index, url in enumerate(("", "/static/og-image.png"), start=1):
-            html = self.render(self.article(url, index))
-            self.assertIn("feed-card--text", html)
-            self.assertNotIn("<img", html)
-            self.assertIn("feed-card__image--placeholder", html)
-            self.assertIn("Cover image unavailable", html)
+            with self.subTest(url=url):
+                html = self.render(self.article(url, index))
+                self.assertIn("feed-card--small feed-card--text", html)
+                self.assertNotIn("<img", html)
+                self.assertIn("feed-card__image--placeholder", html)
+                self.assertIn("Cover image unavailable", html)
 
     def test_card_with_an_image_shows_it(self):
         html = self.render(self.article("https://example.com/a.jpg"))
@@ -69,12 +71,15 @@ class ImageCardTests(TestCase):
         self.assertNotIn('feed-card--small feed-card--text', html)
 
     def test_missing_image_uses_fallback_asset_when_available(self):
-        article = self.article("", 1)
-        with mock.patch("website.feed.fallback_image_url", return_value="/static/images/article-fallbacks/a.jpg"):
-            html = self.render(article)
-        self.assertIn('src="/static/images/article-fallbacks/a.jpg"', html)
-        self.assertIn("feed-card--small feed-card--text", html)
-        self.assertNotIn("Cover image unavailable", html)
+        for index, url in enumerate(("", "/static/og-image.png"), start=1):
+            with self.subTest(url=url):
+                article = self.article(url, index)
+                with mock.patch("website.feed.fallback_image_url", return_value="/static/images/article-fallbacks/a.jpg"):
+                    html = self.render(article)
+                self.assertIn('src="/static/images/article-fallbacks/a.jpg"', html)
+                self.assertIn("feed-card--small feed-card--text", html)
+                self.assertNotIn("feed-card__image--placeholder", html)
+                self.assertNotIn("Cover image unavailable", html)
 
     def test_check_images_blanks_only_bad_addresses(self):
         good = self.article("https://example.com/a.jpg", 1)
