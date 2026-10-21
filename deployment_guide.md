@@ -64,6 +64,15 @@ Set these under the web service's **Variables** tab.
 
 After deploying, send a test message from the About page. It should appear in the admin under **Contact messages** with **Email sent** ticked, and arrive in the inbox.
 
+Optional feed/API response sizes, editorial selection windows, RSS limits,
+newsletter counts and API throttling are documented in
+[Runtime tuning](readme.md#runtime-tuning). The local `.env` contains commented
+entries with current defaults, but Railway does not automatically read it.
+Copy only the required keys to Railway Variables (or shared variables), and
+restart/redeploy affected services. In particular, the Bluesky cron service needs
+`BLUESKY_LOOKBACK_DAYS` if you change it from seven days. Keep the same editorial
+settings across services when consistent selection is intended.
+
 Add your own notes here:
 
 -

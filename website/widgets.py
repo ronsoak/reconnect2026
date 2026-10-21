@@ -3,6 +3,7 @@
 import random
 from datetime import timedelta
 
+from django.conf import settings
 from django.db.models import CharField, Count
 from django.db.models.functions import Cast
 from django.utils import timezone
@@ -28,7 +29,7 @@ def highlight_pool(category_ids=None, tag_ids=None, today=None):
             article__in=public_ids,
         )
         .order_by().values("article").annotate(total=Count("pk"))
-        .order_by("-total", "article")[:50]
+        .order_by("-total", "article")[:settings.HIGHLIGHT_POOL_SIZE]
     )
     by_id = articles.in_bulk([int(row["article"]) for row in counts])
     pool = []
@@ -74,9 +75,9 @@ def dynamic_widgets(cards, category_ids=None, tag_ids=None):
     today = timezone.localdate()
     articles = visible_articles(category_ids, tag_ids)
     recent_ids = list(articles.filter(
-        published__gte=today - timedelta(days=7), published__lte=today,
+        published__gte=today - timedelta(days=settings.TICKER_LOOKBACK_DAYS), published__lte=today,
     ).order_by().values_list("pk", flat=True))
-    ticker_ids = random.sample(recent_ids, min(10, len(recent_ids)))
+    ticker_ids = random.sample(recent_ids, min(settings.TICKER_ARTICLE_COUNT, len(recent_ids)))
     ticker = articles.in_bulk(ticker_ids)
     newest = list(Sites.objects.filter(
         pk__in=articles.order_by().values("site_id"),

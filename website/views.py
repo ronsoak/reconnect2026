@@ -36,9 +36,6 @@ from .widgets import dynamic_widgets
 
 FILTER_COOKIE = "reconnect_filters"
 FILTER_COOKIE_MAX_AGE = 60 * 60 * 24 * 365  # 12 months
-SITE_DIRECTORY_PAGE_SIZE = 100
-SITE_ARTICLE_PAGE_SIZE = 50
-SITE_ARTICLE_LIMIT = 250
 SITE_ARTICLE_SORTS = {"newest", "popular", "random"}
 SITE_ARTICLE_ORDERS = (
     ("newest", "Newest"),
@@ -263,6 +260,7 @@ def render_about(request, contact_form=None, status=200):
     articles = visible_articles()
     context["article_count"] = articles.count()
     context["site_count"] = articles.order_by().values("site_id").distinct().count()
+    context["rss_feed_item_limit"] = settings.RSS_FEED_ITEM_LIMIT
     context["contact_form"] = contact_form or ContactForm()
     context["contact_sent"] = request.GET.get("sent") == "1"
     context["turnstile_site_key"] = settings.TURNSTILE_SITE_KEY if turnstile_enabled() else ""
@@ -338,7 +336,7 @@ def publications(request):
     else:
         sites = sites.order_by("name", "pk")
 
-    page_obj = Paginator(sites, SITE_DIRECTORY_PAGE_SIZE).get_page(request.GET.get("page", 1))
+    page_obj = Paginator(sites, settings.PUBLICATIONS_PAGE_SIZE).get_page(request.GET.get("page", 1))
     query_params = request.GET.copy()
     query_params.pop("page", None)
     context = {
@@ -371,7 +369,9 @@ def site_articles(request, site_id):
     else:
         articles = articles.order_by("-published", "run_id", "pk")
 
-    page_obj = Paginator(articles[:SITE_ARTICLE_LIMIT], SITE_ARTICLE_PAGE_SIZE).get_page(
+    page_obj = Paginator(
+        articles[:settings.PUBLICATION_ARTICLES_LIMIT], settings.PUBLICATION_ARTICLES_PAGE_SIZE
+    ).get_page(
         request.GET.get("page", 1)
     )
     rng = random.Random()

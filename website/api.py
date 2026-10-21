@@ -15,6 +15,7 @@
 # Tests
 #   python manage.py test website.test_api
 # ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+from django.conf import settings
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
@@ -27,11 +28,16 @@ from .serializers import CardSerializer, LogicOptionSerializer
 FEEDS = ("dynamic", "newest", "popular")
 
 
+class PublicAnonRateThrottle(AnonRateThrottle):
+    def get_rate(self):
+        return settings.API_ANON_THROTTLE_RATE
+
+
 class PublicReadOnlyView(APIView):
     """GET only, no login, JSON only."""
 
     permission_classes = [AllowAny]
-    throttle_classes = [AnonRateThrottle]
+    throttle_classes = [PublicAnonRateThrottle]
     http_method_names = ["get", "head", "options"]
 
 
@@ -60,10 +66,14 @@ class FeedView(PublicReadOnlyView):
 
         categories, tags = id_list(request, "category"), id_list(request, "tag")
         if feed == "dynamic":
-            cards, details = build_dynamic_feed(category_ids=categories, tag_ids=tags), {}
+            cards = build_dynamic_feed(
+                category_ids=categories, tag_ids=tags, feed_size=settings.API_DYNAMIC_FEED_SIZE
+            )
+            details = {}
         else:
             cards, page_obj = build_ordered_feed(
-                feed, category_ids=categories, tag_ids=tags, page=request.query_params.get("page", 1)
+                feed, category_ids=categories, tag_ids=tags, page=request.query_params.get("page", 1),
+                page_size=settings.API_ORDERED_FEED_PAGE_SIZE,
             )
             details = page_details(page_obj)
 
@@ -75,7 +85,9 @@ class SearchView(PublicReadOnlyView):
 
     def get(self, request):
         query = request.query_params.get("q", "").strip()[:200]
-        cards, page_obj, _ = search_articles(query, page=request.query_params.get("page", 1))
+        cards, page_obj, _ = search_articles(
+            query, page=request.query_params.get("page", 1), page_size=settings.API_SEARCH_PAGE_SIZE
+        )
         return Response({"query": query, **page_details(page_obj), "cards": CardSerializer(cards, many=True).data})
 
 

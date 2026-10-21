@@ -20,7 +20,7 @@ from website.models import Articles
 
 
 class Command(BaseCommand):
-    help = "Post one public, unposted article from the past seven days to Bluesky, oldest first."
+    help = "Post one public, unposted article within BLUESKY_LOOKBACK_DAYS, oldest first."
 
     def add_arguments(self, parser):
         parser.add_argument("--dry-run", action="store_true", help="Preview without network calls or writes.")

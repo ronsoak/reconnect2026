@@ -12,7 +12,7 @@
   <p>Article links take you to the original publication. Browse the <a href="{% url 'publications' %}">Publications directory</a> to find a site's own website, RSS feed, and articles.</p>
 
   <h3>Read through RSS</h3>
-  <p>Copy a feed link from the <a href="{% url 'publications' %}">Publications page</a> into your preferred RSS reader. Follow all articles or choose a category. Reconnect's feeds include the 50 newest articles with publication dates; individual publications also have their own source feeds.</p>
+  <p>Copy a feed link from the <a href="{% url 'publications' %}">Publications page</a> into your preferred RSS reader. Follow all articles or choose a category. Reconnect's feeds include up to {{ rss_feed_item_limit }} of the newest articles with publication dates; individual publications also have their own source feeds.</p>
 
   <h3>Use the API</h3>
   <p>The public, read-only API returns JSON without requiring an account. Start with these endpoints:</p>

@@ -18,7 +18,7 @@ def newsletter_export(request):
     period = "month" if request.GET.get("period") == "month" else "week"
     which = "last" if request.GET.get("which") == "last" else "this"
     start, end, top_count = period_range(period, which)
-    data = build_newsletter(start, end, top_count)
+    data = build_newsletter(start, end, top_count, period=period)
 
     if request.GET.get("download"):
         response = HttpResponse(render_markdown(data), content_type="text/markdown; charset=utf-8")

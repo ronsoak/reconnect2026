@@ -8,6 +8,7 @@ import time
 from urllib.parse import urlsplit
 import warnings
 
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -41,7 +42,11 @@ def eligible_articles():
     today = timezone.localdate()
     return (
         visible_articles()
-        .filter(bluesky=False, published__gte=today - timedelta(days=7), published__lte=today)
+        .filter(
+            bluesky=False,
+            published__gte=today - timedelta(days=settings.BLUESKY_LOOKBACK_DAYS),
+            published__lte=today,
+        )
         .filter(Q(site__auto_post=True) | Q(manual_post=True))
         .select_related("site", "site__category")
         .order_by("published", "created", "pk")

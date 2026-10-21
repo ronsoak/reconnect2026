@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
+import re
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -157,8 +160,54 @@ EMAIL_TIMEOUT = 15
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="Reconnect <noreply@localhost>")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
+
+def env_integer(name, default, minimum=1, maximum=None):
+    """Read a bounded integer, reporting the setting name without its value."""
+    try:
+        value = config(name, default=default, cast=int)
+    except (TypeError, ValueError) as exc:
+        raise ImproperlyConfigured(f"{name} must be an integer.") from exc
+    if value < minimum or (maximum is not None and value > maximum):
+        bounds = f"{minimum} to {maximum}" if maximum is not None else f"at least {minimum}"
+        raise ImproperlyConfigured(f"{name} must be {bounds}.")
+    return value
+
+
+# Public response sizes. Feed sizes include adverts, but not website widgets.
+WEB_DYNAMIC_FEED_SIZE = env_integer("WEB_DYNAMIC_FEED_SIZE", 100)
+WEB_ORDERED_FEED_PAGE_SIZE = env_integer("WEB_ORDERED_FEED_PAGE_SIZE", 100)
+API_DYNAMIC_FEED_SIZE = env_integer("API_DYNAMIC_FEED_SIZE", 100)
+API_ORDERED_FEED_PAGE_SIZE = env_integer("API_ORDERED_FEED_PAGE_SIZE", 100)
+WEB_SEARCH_PAGE_SIZE = env_integer("WEB_SEARCH_PAGE_SIZE", 250)
+API_SEARCH_PAGE_SIZE = env_integer("API_SEARCH_PAGE_SIZE", 250)
+PUBLICATIONS_PAGE_SIZE = env_integer("PUBLICATIONS_PAGE_SIZE", 100)
+PUBLICATION_ARTICLES_PAGE_SIZE = env_integer("PUBLICATION_ARTICLES_PAGE_SIZE", 50)
+PUBLICATION_ARTICLES_LIMIT = env_integer("PUBLICATION_ARTICLES_LIMIT", 250)
+RSS_FEED_ITEM_LIMIT = env_integer("RSS_FEED_ITEM_LIMIT", 150)
+
+# Popular uses the remaining percentage; keep the combined shares <= 100.
+FEED_NEW_PERCENT = env_integer("FEED_NEW_PERCENT", 50, minimum=0, maximum=100)
+FEED_RANDOM_PERCENT = env_integer("FEED_RANDOM_PERCENT", 30, minimum=0, maximum=100)
+if FEED_NEW_PERCENT + FEED_RANDOM_PERCENT > 100:
+    raise ImproperlyConfigured("FEED_NEW_PERCENT and FEED_RANDOM_PERCENT must total at most 100.")
+FEED_RANDOM_MIN_AGE_DAYS = env_integer("FEED_RANDOM_MIN_AGE_DAYS", 7, minimum=0)
+FEED_POPULAR_POOL_SIZE = env_integer("FEED_POPULAR_POOL_SIZE", 100)
+NEWSLETTER_WEEKLY_TOP_COUNT = env_integer("NEWSLETTER_WEEKLY_TOP_COUNT", 30)
+NEWSLETTER_MONTHLY_TOP_COUNT = env_integer("NEWSLETTER_MONTHLY_TOP_COUNT", 60)
+TICKER_ARTICLE_COUNT = env_integer("TICKER_ARTICLE_COUNT", 10)
+TICKER_LOOKBACK_DAYS = env_integer("TICKER_LOOKBACK_DAYS", 7, minimum=0)
+HIGHLIGHT_POOL_SIZE = env_integer("HIGHLIGHT_POOL_SIZE", 50)
+BLUESKY_LOOKBACK_DAYS = env_integer("BLUESKY_LOOKBACK_DAYS", 7, minimum=0)
+
+API_ANON_THROTTLE_RATE = config("API_ANON_THROTTLE_RATE", default="120/min")
+if not re.fullmatch(r"[1-9][0-9]*/(s|sec|second|m|min|minute|h|hour|d|day)", API_ANON_THROTTLE_RATE):
+    raise ImproperlyConfigured(
+        "API_ANON_THROTTLE_RATE must be a positive request count per second, minute, hour or day "
+        "(for example 120/min)."
+    )
+
 # API: public, read-only, JSON only, with a basic per-visitor limit
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_THROTTLE_RATES": {"anon": "120/min"},
+    "DEFAULT_THROTTLE_RATES": {"anon": API_ANON_THROTTLE_RATE},
 }

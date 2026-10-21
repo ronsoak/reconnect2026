@@ -12,19 +12,18 @@
 # Use from the Django shell:
 #   from website.newsletter import period_range, build_newsletter, render_markdown
 #   start, end, top_count = period_range("month", "last")
-#   data = build_newsletter(start, end, top_count)
+#   data = build_newsletter(start, end, top_count, period="month")
 #   print(render_markdown(data))
 import re
 import calendar
 from datetime import date, timedelta
 
+from django.conf import settings
 from django.db.models import Count
 from django.utils import timezone
 
 from website.models import Articles, Clicks, Logic
 
-TOP_COUNT = 30
-MONTH_TOP_COUNT = 60
 EXCLUDED_TERM_TYPE = "NEWSLETTER_EXCLUDED_TERM"
 
 
@@ -48,9 +47,9 @@ def period_range(period, which, today=None):
     """Returns (start, end, top_count) for a 'week' or 'month' and 'this' or 'last'."""
     if period == "month":
         start, end = month_range_for(which, today)
-        return start, end, MONTH_TOP_COUNT
+        return start, end, settings.NEWSLETTER_MONTHLY_TOP_COUNT
     start = week_start_for(which, today)
-    return start, start + timedelta(days=6), TOP_COUNT
+    return start, start + timedelta(days=6), settings.NEWSLETTER_WEEKLY_TOP_COUNT
 
 
 def excluded_pattern():
@@ -60,11 +59,17 @@ def excluded_pattern():
     return re.compile("|".join(parts), re.IGNORECASE) if parts else None
 
 
-def build_newsletter(start, end=None, top_count=TOP_COUNT):
+def build_newsletter(start, end=None, top_count=None, *, period="week"):
     """Returns the period's dates, the top articles and the remaining articles.
 
     end defaults to six days after start, which is a Monday to Sunday week.
+    Pass period="month" for monthly exports; the period is independent of top_count.
     """
+    if top_count is None:
+        top_count = (
+            settings.NEWSLETTER_MONTHLY_TOP_COUNT if period == "month"
+            else settings.NEWSLETTER_WEEKLY_TOP_COUNT
+        )
     end = end or start + timedelta(days=6)
     articles = (
         Articles.objects.filter(
@@ -101,7 +106,10 @@ def build_newsletter(start, end=None, top_count=TOP_COUNT):
     remaining = [a for a in articles if a.pk not in top_ids]
     remaining.sort(key=lambda a: (-(a.rank or 0), -a.published.toordinal(), a.pk))
 
-    return {"start": start, "end": end, "top_count": top_count, "top": top, "remaining": remaining}
+    return {
+        "start": start, "end": end, "period": period,
+        "top_count": top_count, "top": top, "remaining": remaining,
+    }
 
 
 def _line(article, number=None):
@@ -118,8 +126,8 @@ def _line(article, number=None):
 def render_markdown(data):
     start, end, top_count = data["start"], data["end"], data["top_count"]
     # A full calendar month reads better as "Month Year" than as a date range
-    monthly = top_count == MONTH_TOP_COUNT
-    period = "month" if monthly else "week"
+    period = data["period"]
+    monthly = period == "month"
     title = f"{start:%B %Y}" if monthly else f"{start:%d %b} to {end:%d %b %Y}"
     lines = [f"# Reconnect Recap: {title}", ""]
     lines.append(f"## Top {top_count} by clicks this {period}")

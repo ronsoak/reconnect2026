@@ -1,9 +1,9 @@
 from datetime import date, timedelta
 
+from django.conf import settings
 from django.test import TestCase
 
 from website.models import Adverts, Articles, Logic, Sites
-from website.views import SITE_ARTICLE_LIMIT, SITE_ARTICLE_PAGE_SIZE, SITE_DIRECTORY_PAGE_SIZE
 
 
 class PublicationsDirectoryTests(TestCase):
@@ -112,7 +112,7 @@ class PublicationsDirectoryTests(TestCase):
         self.assertEqual(invalid.context["sort"], "alpha")
 
     def test_directory_is_paginated_and_keeps_filters_in_pagination_links(self):
-        for index in range(SITE_DIRECTORY_PAGE_SIZE):
+        for index in range(settings.PUBLICATIONS_PAGE_SIZE):
             site = self.make_site(
                 f"Site {index:02}",
                 f"https://site-{index}.example.com",
@@ -123,7 +123,7 @@ class PublicationsDirectoryTests(TestCase):
 
         response = self.client.get(f"/publications/?category={self.video_games.pk}&sort=alpha")
 
-        self.assertEqual(response.context["page_obj"].paginator.per_page, SITE_DIRECTORY_PAGE_SIZE)
+        self.assertEqual(response.context["page_obj"].paginator.per_page, settings.PUBLICATIONS_PAGE_SIZE)
         self.assertTrue(response.context["page_obj"].has_next())
         self.assertIn(f"category={self.video_games.pk}", response.context["extra_query"])
         self.assertIn("sort=alpha", response.context["extra_query"])
@@ -173,7 +173,7 @@ class PublicationArticlePageTests(PublicationsDirectoryTests):
         self.assertEqual(self.client.get("/publications/999999/").status_code, 404)
 
     def test_site_articles_are_capped_at_250_and_paginated(self):
-        for index in range(SITE_ARTICLE_LIMIT):
+        for index in range(settings.PUBLICATION_ARTICLES_LIMIT):
             self.make_article(
                 self.alpha_site,
                 f"Extra article {index}",
@@ -182,8 +182,8 @@ class PublicationArticlePageTests(PublicationsDirectoryTests):
 
         response = self.client.get(f"/publications/{self.alpha_site.pk}/?page=5")
 
-        self.assertEqual(response.context["page_obj"].paginator.count, SITE_ARTICLE_LIMIT)
-        self.assertEqual(len(response.context["cards"]), SITE_ARTICLE_PAGE_SIZE)
+        self.assertEqual(response.context["page_obj"].paginator.count, settings.PUBLICATION_ARTICLES_LIMIT)
+        self.assertEqual(len(response.context["cards"]), settings.PUBLICATION_ARTICLES_PAGE_SIZE)
 
     def test_active_adverts_are_not_included_in_publication_feeds(self):
         today = date.today()

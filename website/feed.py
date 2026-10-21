@@ -22,26 +22,13 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.utils import timezone
 
 from .images import fallback_image_url, is_valid_image_url
 from .models import Adverts, Articles, FrontPageNotice, Sites
-
-# Total cards on the page, adverts included. Rounding up can push the total a little over.
-FEED_SIZE = 100
-
-# Share of the article slots given to each bucket. Popular takes whatever percentage is left.
-NEW_PERCENT = 50
-RANDOM_PERCENT = 30
-POPULAR_PERCENT = 100 - NEW_PERCENT - RANDOM_PERCENT
-
-# Random articles must be older than this many days.
-RANDOM_MIN_AGE_DAYS = 7
-
-# Popular articles are drawn at random from this many of the highest ranked articles.
-POPULAR_POOL_SIZE = 100
 
 # Share of the articles given the large and medium card sizes. The rest are small.
 LARGE_PERCENT = 10
@@ -148,8 +135,8 @@ def pick_newest(pool, count):
 
 
 def pick_random(pool, count, exclude_ids, today, rng):
-    """Random articles older than RANDOM_MIN_AGE_DAYS. Only ids are loaded, then the chosen rows are fetched."""
-    cutoff = today - timedelta(days=RANDOM_MIN_AGE_DAYS)
+    """Random articles older than FEED_RANDOM_MIN_AGE_DAYS; fetch rows only after sampling ids."""
+    cutoff = today - timedelta(days=settings.FEED_RANDOM_MIN_AGE_DAYS)
     candidate_ids = list(
         pool.filter(published__lt=cutoff)
         .exclude(pk__in=exclude_ids)
@@ -165,7 +152,7 @@ def pick_popular(pool, count, exclude_ids, rng):
     Random articles from the top of the rank order.
     Articles already picked are skipped, so the next ranked article takes their place.
     """
-    pool_size = max(POPULAR_POOL_SIZE, count)
+    pool_size = max(settings.FEED_POPULAR_POOL_SIZE, count)
     candidates = list(
         pool.exclude(pk__in=exclude_ids)
         .select_related("site__category")
@@ -317,7 +304,7 @@ def insert_adverts(article_cards, advert_slots, at_end, rng, prioritise=False):
 # ===== ===== ===== ===== ===== =====
 # Dynamic feed
 # ===== ===== ===== ===== ===== =====
-def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=FEED_SIZE, today=None, rng=None):
+def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=None, today=None, rng=None):
     """
     Returns the list of FeedCard objects for the dynamic front page.
 
@@ -325,6 +312,8 @@ def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=FEED_SIZE, tod
     feed_size: total cards wanted, adverts included.
     today / rng: only passed in by tests, to get repeatable results.
     """
+    if feed_size is None:
+        feed_size = settings.WEB_DYNAMIC_FEED_SIZE
     rng = rng or random.Random()
     today = today or timezone.localdate()
 
@@ -337,9 +326,10 @@ def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=FEED_SIZE, tod
         at_end = True
 
     article_total = max(feed_size - len(advert_slots), 0)
-    new_count = ceil_percent(article_total, NEW_PERCENT)
-    random_count = ceil_percent(article_total, RANDOM_PERCENT)
-    popular_count = ceil_percent(article_total, POPULAR_PERCENT)
+    new_count = ceil_percent(article_total, settings.FEED_NEW_PERCENT)
+    random_count = ceil_percent(article_total, settings.FEED_RANDOM_PERCENT)
+    popular_percent = 100 - settings.FEED_NEW_PERCENT - settings.FEED_RANDOM_PERCENT
+    popular_count = ceil_percent(article_total, popular_percent)
 
     # Each bucket skips what the earlier buckets picked.
     pool = visible_articles(category_ids, tag_ids)
@@ -369,7 +359,7 @@ def build_dynamic_feed(category_ids=None, tag_ids=None, feed_size=FEED_SIZE, tod
 # ===== ===== ===== ===== ===== =====
 # Newest and Popular feeds (paginated)
 # ===== ===== ===== ===== ===== =====
-def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size=FEED_SIZE, today=None, rng=None):
+def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size=None, today=None, rng=None):
     """
     One page of the Newest ("newest") or Popular ("popular") feed.
 
@@ -377,6 +367,8 @@ def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size
     page_size cards in total: the adverts' slots come out of the article count, the same as
     the dynamic feed. Newest is by published date (run_id lowest first for ties), popular is by rank.
     """
+    if page_size is None:
+        page_size = settings.WEB_ORDERED_FEED_PAGE_SIZE
     rng = rng or random.Random()
     today = today or timezone.localdate()
 
@@ -410,11 +402,10 @@ def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size
 # ===== ===== ===== ===== ===== =====
 # Search
 # ===== ===== ===== ===== ===== =====
-SEARCH_PAGE_SIZE = 250
 SEARCH_MAX_TERMS = 10
 
 
-def search_articles(query, page=1, page_size=SEARCH_PAGE_SIZE):
+def search_articles(query, page=1, page_size=None):
     """
     Visible articles whose title or site name contains any of the search terms (case insensitive).
 
@@ -422,6 +413,8 @@ def search_articles(query, page=1, page_size=SEARCH_PAGE_SIZE):
     then the newest. Filters do not apply here. No adverts are included.
     Returns (cards, paginator_page, terms); every card is the small size.
     """
+    if page_size is None:
+        page_size = settings.WEB_SEARCH_PAGE_SIZE
     terms = (query or "").split()[:SEARCH_MAX_TERMS]
     if not terms:
         return [], None, []

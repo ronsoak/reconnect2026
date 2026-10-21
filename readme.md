@@ -50,7 +50,7 @@ python manage.py test website
 
 ## Public API
 
-Reconnect has a read-only JSON API so other people can build on the same feed, for example a reader app, a bot or a personal dashboard. The website itself does not use it, it calls the same feed code directly. Anyone can use it without logging in, and there is a limit of 120 requests a minute per visitor.
+Reconnect has a read-only JSON API so other people can build on the same feed, for example a reader app, a bot or a personal dashboard. The website itself does not use it, it calls the same feed code directly. Anyone can use it without logging in, and the default limit is 120 requests a minute per visitor (`API_ANON_THROTTLE_RATE`).
 
 ### Endpoints
 
@@ -79,14 +79,14 @@ Publication pages list each site's visible articles and offer newest, popular, a
 
 A category choice together with a tag choice is an "and". The API does not use the website's saved-filters cookie. The parameters are the only input.
 
-`dynamic` returns about 100 cards in random order and gives a different batch each time. `newest` and `popular` return 100 cards per page along with `page`, `num_pages` and `count`.
+By default, `dynamic` returns about 100 cards in random order and gives a different batch each time. `newest` and `popular` return 100 cards per page along with `page`, `num_pages` and `count`. These API sizes can be configured independently of the website (see Runtime tuning below).
 
 ### Search parameters
 
 | Parameter | Meaning |
 |-----------|---------|
 | `q` | Search words. An article only needs to match some of them, case does not matter |
-| `page` | Page number, 250 results per page |
+| `page` | Page number, 250 results per page by default (`API_SEARCH_PAGE_SIZE`) |
 
 Search ignores the filters and returns no adverts. Hidden articles and sites are never returned.
 
@@ -146,6 +146,67 @@ Every card has a `kind` (`article` or `advert`), a `size` (`small`, `medium` or 
 `size` is a layout hint for the website's grid, so other apps can ignore it. Clicks, boosts and hidden flags are never exposed. An unknown `feed` value returns a `400` error.
 
 Tests live in `website/tests/`. Run them all with `python manage.py test website`, or one file with `python manage.py test website.tests.test_api`
+
+## Runtime tuning
+
+Set these optional variables in the local `.env` file, or in Railway's Variables
+tab. The local file includes descriptive comments and is ignored by Git.
+Environment variables take precedence over the file. Restart/redeploy the web
+service and any affected command/cron services after changes; this is not a
+live admin configuration. Missing variables use the defaults below.
+
+All counts and pool sizes must be positive integers. Day windows can be zero.
+Percentages must each be 0-100 and total at most 100. Invalid values stop startup
+with a configuration error naming the setting.
+
+### Public response sizes
+
+| Variable | Default | Meaning |
+|---|---:|---|
+| `WEB_DYNAMIC_FEED_SIZE` | 100 | Dynamic website card target, including adverts but excluding widgets |
+| `WEB_ORDERED_FEED_PAGE_SIZE` | 100 | Newest/Popular website cards per page, including adverts |
+| `API_DYNAMIC_FEED_SIZE` | 100 | Independent Dynamic API card target |
+| `API_ORDERED_FEED_PAGE_SIZE` | 100 | Independent Newest/Popular API cards per page |
+| `WEB_SEARCH_PAGE_SIZE` | 250 | Website search results per page |
+| `API_SEARCH_PAGE_SIZE` | 250 | API search results per page |
+| `API_ANON_THROTTLE_RATE` | `120/min` | Anonymous API requests per visitor/IP; positive count per second, minute, hour or day, e.g. `30/second` |
+| `PUBLICATIONS_PAGE_SIZE` | 100 | Publications directory entries per page |
+| `PUBLICATION_ARTICLES_PAGE_SIZE` | 50 | Articles per individual publication page |
+| `PUBLICATION_ARTICLES_LIMIT` | 250 | Total articles browsable per publication, for every sort mode |
+| `RSS_FEED_ITEM_LIMIT` | 150 | Newest dated public articles per all-articles/category RSS feed |
+
+Dynamic percentage rounding can put the feed slightly above its target; tight
+filters and limited eligible articles can return fewer cards. Widgets are
+additional to the website quota. Search sizes limit each page, not the total
+number of matches. A publication page size larger than its total limit results
+in one page. API pagination metadata reflects the configured size and adverts
+still take slots from the ordinary article quota.
+
+### Editorial selection
+
+| Variable | Default | Meaning |
+|---|---:|---|
+| `FEED_NEW_PERCENT` | 50 | Newest-article share of Dynamic article slots, web and API |
+| `FEED_RANDOM_PERCENT` | 30 | Older-random share; Popular receives the remaining percentage |
+| `FEED_RANDOM_MIN_AGE_DAYS` | 7 | Random articles must be strictly older than today minus this many days; zero means before today |
+| `FEED_POPULAR_POOL_SIZE` | 100 | Top-ranked pool sampled for the Dynamic popular bucket; grows to its quota if needed |
+| `NEWSLETTER_WEEKLY_TOP_COUNT` | 30 | Maximum weekly top-by-clicks articles |
+| `NEWSLETTER_MONTHLY_TOP_COUNT` | 60 | Maximum monthly top-by-clicks articles |
+| `TICKER_ARTICLE_COUNT` | 10 | Maximum unique articles selected for the ticker |
+| `TICKER_LOOKBACK_DAYS` | 7 | Ticker dates from today minus this many days through today, inclusive |
+| `HIGHLIGHT_POOL_SIZE` | 50 | Top current-month Article/RSS click leaders from which the reel samples up to three |
+| `BLUESKY_LOOKBACK_DAYS` | 7 | Eligible publication dates from today minus this many days through today, inclusive |
+
+Zero ticker/Bluesky lookback selects today only. Hidden-content, date, filtering,
+deduplication and per-site posting rules still apply. These settings do not change
+card sizes, advert spacing, widget spacing, the five Newest Sites, the three-card
+reel layout, or the one-article-per-run Bluesky limit. Newsletter counts affect
+only the top section; all remaining eligible articles are still exported.
+Weekly and monthly counts may be equal without changing their labels.
+
+API throttling uses Django's configured cache; its existing local-memory default
+is per process, not a shared deployment-wide limiter.
+Tests: `python manage.py test website.tests.test_configuration`.
 
 ## Editing the About page
 
@@ -261,8 +322,9 @@ with later cards.
 
 ## Article ticker
 
-Dynamic, Newest and Popular include up to ten random public articles published in the past
-seven days through today, respecting Category and Focus. Titles link through the
+Dynamic, Newest and Popular include up to `TICKER_ARTICLE_COUNT` random public articles
+(default ten), published from today minus `TICKER_LOOKBACK_DAYS` (default seven)
+through today inclusive, respecting Category and Focus. Titles link through the
 normal article click tracker. There is no visible heading.
 
 `templates/components/article_ticker.html` renders a static list without
@@ -280,7 +342,8 @@ articles means no ticker; search and publication-specific feeds do not include i
 
 ## Highlight Reel and widget spacing
 
-Dynamic, Newest and Popular sample up to three articles from the top 50 by **clicks
+Dynamic, Newest and Popular sample up to three articles from the top
+`HIGHLIGHT_POOL_SIZE` (default 50) by **clicks
 received during the current calendar month**, regardless of publication date
 or lifetime rank. Both Article and RSS click events count; advert clicks do not.
 Only public articles matching Category and Focus qualify. Articles without a
@@ -408,7 +471,7 @@ python manage.py post_bluesky
 ```
 
 Each run selects the oldest unposted public article with a publication date from
-today minus seven days through today (inclusive), breaking ties by creation time
+today minus `BLUESKY_LOOKBACK_DAYS` (default seven) through today (inclusive), breaking ties by creation time
 and ID. Undated/future articles and hidden articles/publications are excluded.
 Sites with **Auto Post** disabled are excluded unless the article has **Manual
 Post** enabled; that override never bypasses hiding.

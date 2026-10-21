@@ -1,11 +1,12 @@
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 
 from website.models import Articles, Clicks, Logic, Sites
 from website.newsletter import (
-    MONTH_TOP_COUNT, TOP_COUNT, build_newsletter, month_range_for, period_range, render_markdown, week_start_for,
+    build_newsletter, month_range_for, period_range, render_markdown, week_start_for,
 )
 
 # Monday 5 Oct 2026 to Sunday 11 Oct 2026
@@ -32,8 +33,8 @@ class MonthTests(TestCase):
         self.assertEqual(month_range_for("this", date(2028, 2, 10)), (date(2028, 2, 1), date(2028, 2, 29)))
 
     def test_period_range_top_counts(self):
-        self.assertEqual(period_range("week", "this", date(2026, 10, 7))[2], TOP_COUNT)
-        self.assertEqual(period_range("month", "this", date(2026, 10, 7))[2], MONTH_TOP_COUNT)
+        self.assertEqual(period_range("week", "this", date(2026, 10, 7))[2], settings.NEWSLETTER_WEEKLY_TOP_COUNT)
+        self.assertEqual(period_range("month", "this", date(2026, 10, 7))[2], settings.NEWSLETTER_MONTHLY_TOP_COUNT)
 
 
 class NewsletterTests(TestCase):
@@ -106,10 +107,10 @@ class NewsletterTests(TestCase):
         self.assertEqual(self.build()["top"], [])
 
     def test_top_section_is_capped(self):
-        for i in range(TOP_COUNT + 2):
+        for i in range(settings.NEWSLETTER_WEEKLY_TOP_COUNT + 2):
             self.article(f"Article {i}", clicks=1)
         data = self.build()
-        self.assertEqual(len(data["top"]), TOP_COUNT)
+        self.assertEqual(len(data["top"]), settings.NEWSLETTER_WEEKLY_TOP_COUNT)
         self.assertEqual(len(data["remaining"]), 2)
 
     def test_markdown_has_both_sections_and_details(self):
@@ -150,3 +151,14 @@ class NewsletterAdminPageTests(TestCase):
     def test_admin_front_page_links_to_the_export(self):
         self.client.force_login(self.admin)
         self.assertContains(self.client.get("/backdoor/"), "/backdoor/newsletter/")
+
+    @override_settings(NEWSLETTER_WEEKLY_TOP_COUNT=4, NEWSLETTER_MONTHLY_TOP_COUNT=4)
+    def test_equal_configured_counts_keep_preview_and_download_periods(self):
+        self.client.force_login(self.admin)
+        for period in ("week", "month"):
+            with self.subTest(period=period):
+                preview = self.client.get(f"/backdoor/newsletter/?period={period}")
+                self.assertEqual(preview.context["top_count"], 4)
+                self.assertEqual(preview.context["period"], period)
+                download = self.client.get(f"/backdoor/newsletter/?period={period}&download=1")
+                self.assertIn(f"## Top 4 by clicks this {period}", download.content.decode())

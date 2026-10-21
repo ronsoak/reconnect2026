@@ -1,5 +1,6 @@
 from datetime import datetime, time
 
+from django.conf import settings
 from django.contrib.syndication.views import Feed
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -7,9 +8,6 @@ from django.utils import timezone
 
 from .feed import visible_articles
 from .models import Logic
-
-
-RSS_FEED_ITEM_LIMIT = 150
 
 
 class ArticlesFeed(Feed):
@@ -43,7 +41,7 @@ class ArticlesFeed(Feed):
         return (
             articles.filter(published__isnull=False)
             .select_related("site", "site__category")
-            .order_by("-published", "run_id", "pk")[:RSS_FEED_ITEM_LIMIT]
+            .order_by("-published", "run_id", "pk")[:settings.RSS_FEED_ITEM_LIMIT]
         )
 
     def item_title(self, item):

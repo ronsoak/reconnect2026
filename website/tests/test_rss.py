@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from django.test import TestCase
 
 from website.models import Articles, Clicks, Logic, Sites
-from website.rss import RSS_FEED_ITEM_LIMIT
+from django.conf import settings
 
 
 class ArticlesFeedTests(TestCase):
@@ -99,7 +99,7 @@ class ArticlesFeedTests(TestCase):
         self.assertEqual(titles, ["Dated article"])
 
     def test_feed_is_limited_to_fifty_items(self):
-        for index in range(RSS_FEED_ITEM_LIMIT + 2):
+        for index in range(settings.RSS_FEED_ITEM_LIMIT + 2):
             self.add_article(
                 self.site,
                 f"Article {index}",
@@ -108,7 +108,7 @@ class ArticlesFeedTests(TestCase):
 
         items = self.items(self.client.get("/feeds/all.rss"))
 
-        self.assertEqual(len(items), RSS_FEED_ITEM_LIMIT)
+        self.assertEqual(len(items), settings.RSS_FEED_ITEM_LIMIT)
 
     def test_rss_link_counts_and_records_click_then_deduplicates(self):
         article = self.add_article(self.site, "Clicked article")
