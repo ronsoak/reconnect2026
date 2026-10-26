@@ -1,11 +1,16 @@
 <section class="about-page__section" aria-labelledby="about-using-title">
   <h2 id="about-using-title">Using Reconnect</h2>
 
-  <h3>Discover articles</h3>
+  <h3>The Front Page</h3>
+  <p>The front page comes in three different flavours depending on your mood.</p>
   <ul>
-    <li><a href="{% url 'home' %}">Dynamic</a> mixes new, older, and popular articles. Refresh it for another selection.</li>
-    <li><a href="{% url 'newest' %}">Newest</a> shows the latest articles first.</li>
-    <li><a href="{% url 'popular' %}">Popular</a> orders articles by rank, influenced by reader clicks.</li>
+    <li><a href="{% url 'home' %}">Dynamic</a>: Reconnect's default view, mixes new, older, and popular articles to provide an evergreen showcase of articles. Click refresh at any point to get a new array of articles.</li>
+    <li><a href="{% url 'newest' %}">Newest</a>: Shows the latest articles ingested into the platform, use this to see a the bleeding edge of content as it comes out.</li>
+    <li><a href="{% url 'popular' %}">Popular</a>: Shows you trending articles on the platform, influenced by user clicks.</li>
+  </ul>
+  <h3>Filtering the feed</h3>
+  <p></p>
+   <ul>
     <li>Choose Category and Focus options, then select Apply to narrow the feed. Reset clears your choices.</li>
     <li>Use the search bar on any page to find article titles or publication names. Search ignores your feed filters.</li>
   </ul>
