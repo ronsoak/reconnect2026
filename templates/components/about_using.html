@@ -9,15 +9,27 @@
     <li><a href="{% url 'popular' %}">Popular</a>: Shows you trending articles on the platform, influenced by user clicks.</li>
   </ul>
   <h3>Filtering the feed</h3>
-  <p></p>
    <ul>
-    <li>Choose Category and Focus options, then select Apply to narrow the feed. Reset clears your choices.</li>
-    <li>Use the search bar on any page to find article titles or publication names. Search ignores your feed filters.</li>
+    <li>Select your chosen category to limit the feed to Articles from Sites that match your desired topic, i.e. TCGs. Please note Sites can only have one category.</li>
+    <li>You can further refine your results by selecting a Sites focus, i.e. Retro. A site can have multiple focuses.</li>
+    <li>Click Apply to action your choices, or Reset back to the default</li>
   </ul>
+  <h3>Searching the Site</h3>
+    <li>Enter keywords into the Search bar on any page to get a page of results for your search terms.</li>
+    <li>Search ignores your filters for category and focus.</li>
+    <li>Enjoy the silly placeholder text.</li>
+
   <p>Article links take you to the original publication. Browse the <a href="{% url 'publications' %}">Publications directory</a> to find a site's own website, RSS feed, and articles.</p>
 
-  <h3>Read through RSS</h3>
-  <p>Copy a feed link from the <a href="{% url 'publications' %}">Publications page</a> into your preferred RSS reader. Follow all articles or choose a category. Reconnect's feeds include up to {{ rss_feed_item_limit }} of the newest articles with publication dates; individual publications also have their own source feeds.</p>
+  <h3>Subscrbing via RSS</h3>
+  <p>Reconnect is powered by the cutting edge technology of RSS, and so its only seems fit to offer that back to the users.</p>
+  <p>Located on the <a href="{% url 'publications' %}">Publications page</a>, you can:</p>
+  <ul>
+    <li>Subscribe to a feed of everything coming through Reconnect, no matter what the category.</li>
+    <li>Subscribe to a single category's feed, i.e. Video Games.</li>
+    <li>Subscribe to a specific Sites RSS feed by finding them in the directory.</li>
+  </ul>
+  <p>Simply copy a feed link from the <a href="{% url 'publications' %}">Publications page</a> into your preferred RSS reader. Reconnect's feeds include up to {{ rss_feed_item_limit }} of the newest articles with publication dates; individual publications will have their own limitations and format.</p>
 
   <h3>Use the API</h3>
   <p>The public, read-only API returns JSON without requiring an account. Start with these endpoints:</p>
