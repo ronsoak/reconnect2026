@@ -1268,6 +1268,7 @@ input:focus-visible {
 .about-page iframe {
   display: block;
   max-width: 100%;
+  margin-inline: auto;
   border: 0;
 }
 
