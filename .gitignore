@@ -19,6 +19,7 @@ media/
 
 # Files -- remove later
 *.csv 
+*.numbers
 
 # VS Code
 .vscode/
