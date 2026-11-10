@@ -28,11 +28,13 @@ class DormantSitesTests(TestCase):
         self.category = Logic.objects.create(logic_type="CATEGORY", value="Games")
 
     def make_site(self, name="dormant", **kwargs):
-        return Sites.objects.create(
+        site = Sites.objects.create(
             name=name, url=f"https://{name}.example.com",
-            rss_feed=f"https://{name}.example.com/feed", category=self.category,
+            rss_feed=f"https://{name}.example.com/feed",
             description="Publication", hidden=True, dormant=True, **kwargs,
         )
+        site.categories.add(self.category)
+        return site
 
     def make_article(self, site, **kwargs):
         return Articles.objects.create(
@@ -220,8 +222,9 @@ class HideSitesDormancyTests(TestCase):
         category = Logic.objects.create(logic_type="CATEGORY", value="Games")
         self.site = Sites.objects.create(
             name="Inactive", url="https://example.com", rss_feed="https://example.com/feed",
-            category=category, description="Publication", last_article=271,
+            description="Publication", last_article=271,
         )
+        self.site.categories.add(category)
         self.article = Articles.objects.create(
             site=self.site, title="Old", url="https://example.com/old", image_url="",
         )

@@ -100,9 +100,11 @@ class ConfigurableContentTests(TestCase):
         cls.sites = [
             Sites.objects.create(
                 name=f"Site {index}", url=f"https://site{index}.example.com",
-                rss_feed=f"https://site{index}.example.com/rss", category=cls.category,
+                rss_feed=f"https://site{index}.example.com/rss",
             ) for index in range(3)
         ]
+        for site in cls.sites:
+            site.categories.add(cls.category)
         cls.articles = [
             Articles.objects.create(
                 site=cls.sites[index % 3], title=f"Writing {index}",

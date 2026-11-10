@@ -3,7 +3,7 @@
 #
 # Read-only JSON endpoints that reuse the same feed code as the website.
 # Filters are repeated parameters and are never taken from the cookie:
-#   category = ids of Logic rows (site types), tag = ids of Logic rows (genres)
+#   category = category ids, tag = focus ids
 #
 # Examples
 #   curl "http://127.0.0.1:8000/api/feed/"

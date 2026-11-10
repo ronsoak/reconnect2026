@@ -112,6 +112,7 @@ curl "http://127.0.0.1:8000/api/search/?q=zelda+dragons"
 ### Response
 
 Every card has a `kind` (`article` or `advert`), a `size` (`small`, `medium` or `large`) and an `item`.
+Article items contain `categories`, an array of category names for the publication.
 
 ```json
 {
@@ -131,7 +132,7 @@ Every card has a `kind` (`article` or `advert`), a `size` (`small`, `medium` or 
         "published": "2026-10-06",
         "site": "Site name",
         "site_id": 114,
-        "category": "Video Games"
+        "categories": ["Video Games", "Geek Culture"]
       }
     },
     {

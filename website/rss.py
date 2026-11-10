@@ -37,10 +37,11 @@ class ArticlesFeed(Feed):
     def items(self, obj=None):
         articles = visible_articles()
         if obj is not None:
-            articles = articles.filter(site__category=obj)
+            articles = articles.filter(site__categories=obj)
         return (
             articles.filter(published__isnull=False)
-            .select_related("site", "site__category")
+            .select_related("site")
+            .prefetch_related("site__categories")
             .order_by("-published", "run_id", "pk")[:settings.RSS_FEED_ITEM_LIMIT]
         )
 
@@ -48,7 +49,8 @@ class ArticlesFeed(Feed):
         return item.title
 
     def item_description(self, item):
-        return f"{item.site.name} · {item.site.category.value}"
+        categories = ", ".join(category.value for category in item.site.categories.all())
+        return f"{item.site.name} · {categories}"
 
     def item_link(self, item):
         return reverse("rss_article_click", kwargs={"pk": item.pk})

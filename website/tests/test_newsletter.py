@@ -50,8 +50,9 @@ class NewsletterTests(TestCase):
         slug = name.lower().replace(" ", "-")
         site = Sites.objects.create(
             name=name, url=f"https://{slug}.example.com", rss_feed=f"https://{slug}.example.com/feed",
-            category=cls.category, description="Test site", **extra,
+            description="Test site", **extra,
         )
+        site.categories.add(cls.category)
         site.tags.set([cls.tag])
         return site
 
@@ -116,10 +117,12 @@ class NewsletterTests(TestCase):
     def test_markdown_has_both_sections_and_details(self):
         self.article("Hot", clicks=3)
         self.article("Quiet")
+        geek = Logic.objects.create(logic_type="CATEGORY", value="Geek Culture")
+        self.site.categories.add(geek)
         text = render_markdown(self.build())
         self.assertIn("## Top 30 by clicks this week", text)
         self.assertIn("1. [Hot](https://x.example.com/Hot)", text)
-        self.assertIn("Blog | Video Games | News | 3 clicks", text)
+        self.assertIn("Blog | Geek Culture, Video Games | News | 3 clicks", text)
         self.assertIn("- [Quiet](https://x.example.com/Quiet)", text)
 
 

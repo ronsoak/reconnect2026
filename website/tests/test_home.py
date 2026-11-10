@@ -15,12 +15,14 @@ class HomeFeedTests(TestCase):
         cls.small = Logic.objects.create(logic_type="AD_SIZE", value="Feed Small")
         cls.video_site = Sites.objects.create(
             name="Video Site", url="https://video.example.com",
-            rss_feed="https://video.example.com/feed", category=cls.video, description="x",
+            rss_feed="https://video.example.com/feed", description="x",
         )
+        cls.video_site.categories.add(cls.video)
         cls.card_site = Sites.objects.create(
             name="Card Site", url="https://cards.example.com",
-            rss_feed="https://cards.example.com/feed", category=cls.cards, description="x",
+            rss_feed="https://cards.example.com/feed", description="x",
         )
+        cls.card_site.categories.add(cls.cards)
         today = timezone.localdate()
         for site in (cls.video_site, cls.card_site):
             Articles.objects.bulk_create([
@@ -152,12 +154,14 @@ class OrderedFeedTests(TestCase):
         cls.small = Logic.objects.create(logic_type="AD_SIZE", value="Feed Small")
         cls.video_site = Sites.objects.create(
             name="Video Site", url="https://video.example.com",
-            rss_feed="https://video.example.com/feed", category=cls.video, description="x",
+            rss_feed="https://video.example.com/feed", description="x",
         )
+        cls.video_site.categories.add(cls.video)
         cls.card_site = Sites.objects.create(
             name="Card Site", url="https://cards.example.com",
-            rss_feed="https://cards.example.com/feed", category=cls.cards, description="x",
+            rss_feed="https://cards.example.com/feed", description="x",
         )
+        cls.card_site.categories.add(cls.cards)
         today = timezone.localdate()
         # 120 video articles, article 0 the newest. Article 119 has the most clicks.
         Articles.objects.bulk_create([
@@ -233,12 +237,14 @@ class SearchTests(TestCase):
         cat = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
         cls.site = Sites.objects.create(
             name="Pixel Press", url="https://p.example.com", rss_feed="https://p.example.com/feed",
-            category=cat, description="x",
+            description="x",
         )
+        cls.site.categories.add(cat)
         cls.hidden_site = Sites.objects.create(
             name="Secret Zelda", url="https://s.example.com", rss_feed="https://s.example.com/feed",
-            category=cat, description="x", hidden=True,
+            description="x", hidden=True,
         )
+        cls.hidden_site.categories.add(cat)
         today = timezone.localdate()
         make = lambda title, site, days=0, **kw: Articles.objects.create(
             title=title, url=f"https://x.example.com/{title}", image_url="", site=site,

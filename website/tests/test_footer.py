@@ -18,9 +18,10 @@ class FooterTests(TestCase):
     def test_count_ignores_filters_and_excludes_hidden_content(self):
         category = Logic.objects.create(logic_type="CATEGORY", value="Games")
         site = Sites.objects.create(
-            name="Publication", category=category, description="Writing",
+            name="Publication", description="Writing",
             url="https://example.com", rss_feed="https://example.com/feed",
         )
+        site.categories.add(category)
         for index, (hidden, site_hide) in enumerate(((False, False), (True, False), (False, True))):
             Articles.objects.create(
                 site=site, title="Article", url=f"https://example.com/{index}",

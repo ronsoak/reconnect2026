@@ -16,8 +16,9 @@ class ClickTrackingTests(TestCase):
         cls.article_type = Logic.objects.create(logic_type="CLICK_TYPE", value="Article")
         cls.site = Sites.objects.create(
             name="Site", url="https://s.example.com", rss_feed="https://s.example.com/feed",
-            category=cat, description="x",
+            description="x",
         )
+        cls.site.categories.add(cat)
         cls.article = Articles.objects.create(
             title="A", url="https://s.example.com/a", image_url="", site=cls.site,
             published=timezone.localdate(),
@@ -96,8 +97,9 @@ class AdvertClickTests(TestCase):
         cat = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
         site = Sites.objects.create(
             name="Site", url="https://s.example.com", rss_feed="https://s.example.com/feed",
-            category=cat, description="x",
+            description="x",
         )
+        site.categories.add(cat)
         cls.article = Articles.objects.create(
             title="A", url="https://s.example.com/a", image_url="", site=site, published=timezone.localdate(),
         )

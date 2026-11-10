@@ -51,10 +51,10 @@ class FeedTestCase(TestCase):
             name=name,
             url=f"https://{name.lower().replace(' ', '-')}.example.com",
             rss_feed=f"https://{name.lower().replace(' ', '-')}.example.com/feed",
-            category=category,
             description="Test site",
             hidden=hidden,
         )
+        site.categories.add(category)
         site.tags.set(tags)
         return site
 
@@ -117,6 +117,13 @@ class FeedFilterTests(FeedTestCase):
     def test_multiple_categories_are_an_or(self):
         cards = self.feed(category_ids=[self.video.pk, self.cards.pk], feed_size=60)
         self.assertEqual(self.site_ids(cards), {self.video_site.pk, self.card_site.pk})
+
+    def test_site_matching_multiple_selected_categories_is_not_duplicated(self):
+        self.video_site.categories.add(self.cards)
+        cards = self.feed(category_ids=[self.video.pk, self.cards.pk], feed_size=60)
+        article_ids = [card.item.pk for card in self.article_cards(cards)]
+        self.assertEqual(len(article_ids), len(set(article_ids)))
+        self.assertEqual(len(article_ids), 60)
 
     def test_multiple_tags_are_an_or_without_duplicates(self):
         cards = self.feed(tag_ids=[self.news.pk, self.industry.pk], feed_size=100)

@@ -11,9 +11,10 @@ class LastArticleTests(TestCase):
         category = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
         site = Sites.objects.create(
             name="Empty", url="https://empty.example.com",
-            rss_feed="https://empty.example.com/feed", category=category,
+            rss_feed="https://empty.example.com/feed",
             description="Test site",
         )
+        site.categories.add(category)
         call_command("last_article", stdout=StringIO())
         site.refresh_from_db()
         self.assertEqual(site.last_article, 9999)

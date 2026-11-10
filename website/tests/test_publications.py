@@ -46,11 +46,11 @@ class PublicationsDirectoryTests(TestCase):
             name=name,
             url=url,
             rss_feed=f"{url}/feed",
-            category=category,
             site_type=cls.site_type,
             description=f"About {name}",
             hidden=hidden,
         )
+        site.categories.add(category)
         site.tags.set(tags)
         return site
 
@@ -94,6 +94,14 @@ class PublicationsDirectoryTests(TestCase):
         self.assertEqual(
             [site.pk for site in response.context["page_obj"]],
             [self.zulu_site.pk],
+        )
+
+    def test_publication_matches_each_assigned_category(self):
+        self.alpha_site.categories.add(self.tabletop)
+        response = self.client.get(f"/publications/?category={self.tabletop.pk}")
+        self.assertEqual(
+            {site.pk for site in response.context["page_obj"]},
+            {self.alpha_site.pk, self.zulu_site.pk},
         )
 
     def test_sort_options_are_supported(self):

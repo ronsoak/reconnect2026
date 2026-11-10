@@ -37,8 +37,9 @@ class HighlightTests(TestCase):
         cls.advert_type = Logic.objects.create(logic_type="CLICK_TYPE", value="Advert")
         cls.site = Sites.objects.create(
             name="Publication", url="https://example.com",
-            rss_feed="https://example.com/rss", category=cls.category,
+            rss_feed="https://example.com/rss",
         )
+        cls.site.categories.add(cls.category)
         cls.site.tags.add(cls.focus)
         cls.today = timezone.localdate()
         cls.articles = [

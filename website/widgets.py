@@ -18,7 +18,10 @@ WIDGET_MIN_CARDS = 10
 def highlight_pool(category_ids=None, tag_ids=None, today=None):
     """Current-month click events, including RSS, not lifetime rank or publication date."""
     today = today or timezone.localdate()
-    articles = visible_articles(category_ids, tag_ids).select_related("site", "site__category")
+    articles = (
+        visible_articles(category_ids, tag_ids)
+        .select_related("site").prefetch_related("site__categories")
+    )
     public_ids = articles.order_by().annotate(
         click_id=Cast("pk", output_field=CharField()),
     ).values("click_id")
@@ -78,7 +81,7 @@ def dynamic_widgets(cards, category_ids=None, tag_ids=None):
         published__gte=today - timedelta(days=settings.TICKER_LOOKBACK_DAYS), published__lte=today,
     ).order_by().values_list("pk", flat=True))
     ticker_ids = random.sample(recent_ids, min(settings.TICKER_ARTICLE_COUNT, len(recent_ids)))
-    ticker = articles.in_bulk(ticker_ids)
+    ticker = articles.select_related("site").prefetch_related("site__categories").in_bulk(ticker_ids)
     newest = list(Sites.objects.filter(
         pk__in=articles.order_by().values("site_id"),
     ).order_by("-pk")[:5])

@@ -117,7 +117,7 @@ def visible_articles(category_ids=None, tag_ids=None):
     """
     sites = Sites.objects.filter(hidden=False)
     if category_ids:
-        sites = sites.filter(category_id__in=category_ids)
+        sites = sites.filter(categories__id__in=category_ids)
     if tag_ids:
         sites = sites.filter(tags__id__in=tag_ids)
     return Articles.objects.filter(
@@ -130,7 +130,8 @@ def visible_articles(category_ids=None, tag_ids=None):
 def pick_newest(pool, count):
     """Newest first by published date. Articles sharing a date go by run_id, lowest first."""
     return list(
-        pool.select_related("site__category").order_by("-published", "run_id", "pk")[:count]
+        pool.select_related("site").prefetch_related("site__categories")
+        .order_by("-published", "run_id", "pk")[:count]
     )
 
 
@@ -144,7 +145,10 @@ def pick_random(pool, count, exclude_ids, today, rng):
         .values_list("pk", flat=True)
     )
     chosen_ids = rng.sample(candidate_ids, min(count, len(candidate_ids)))
-    return list(Articles.objects.filter(pk__in=chosen_ids).select_related("site__category"))
+    return list(
+        Articles.objects.filter(pk__in=chosen_ids)
+        .select_related("site").prefetch_related("site__categories")
+    )
 
 
 def pick_popular(pool, count, exclude_ids, rng):
@@ -155,7 +159,7 @@ def pick_popular(pool, count, exclude_ids, rng):
     pool_size = max(settings.FEED_POPULAR_POOL_SIZE, count)
     candidates = list(
         pool.exclude(pk__in=exclude_ids)
-        .select_related("site__category")
+        .select_related("site").prefetch_related("site__categories")
         .order_by("-rank", "-published", "run_id", "pk")[:pool_size]
     )
     return rng.sample(candidates, min(count, len(candidates)))
@@ -382,7 +386,11 @@ def build_ordered_feed(order, category_ids=None, tag_ids=None, page=1, page_size
         ordering = ("-rank", "-published", "run_id", "pk")
     else:
         ordering = ("-published", "run_id", "pk")
-    pool = visible_articles(category_ids, tag_ids).select_related("site__category").order_by(*ordering)
+    pool = (
+        visible_articles(category_ids, tag_ids)
+        .select_related("site").prefetch_related("site__categories")
+        .order_by(*ordering)
+    )
 
     paginator = Paginator(pool, articles_per_page)
     page_obj = paginator.get_page(page)
@@ -430,7 +438,7 @@ def search_articles(query, page=1, page_size=None):
         Articles.objects.filter(hidden=False, site_hide=False, site__hidden=False)
         .filter(matches)
         .annotate(match_score=score)
-        .select_related("site__category")
+        .select_related("site").prefetch_related("site__categories")
         .order_by("-match_score", "-published", "run_id", "pk")
     )
     page_obj = Paginator(results, page_size).get_page(page)

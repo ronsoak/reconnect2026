@@ -45,8 +45,8 @@ class SitesAdmin(ModelAdmin):
 @admin.register(Sites)
 class SiteAdmin(ModelAdmin):
     form = SitesAdminForm  # Use the custom form
-    list_display = ('name', 'hidden', 'dormant','article_count','last_article', 'site_type', 'category')
-    list_filter = ['modifier', 'hidden', 'dormant','article_count','last_article', 'category', 'load_error', 'recap', 'auto_post']
+    list_display = ('name', 'hidden', 'dormant','article_count','last_article', 'site_type', 'categories_display')
+    list_filter = ['modifier', 'hidden', 'dormant','article_count','last_article', 'categories', 'load_error', 'recap', 'auto_post']
     list_per_page = 500
     actions = ['hide_site']
     show_facets = admin.ShowFacets.ALWAYS
@@ -55,6 +55,13 @@ class SiteAdmin(ModelAdmin):
     # Methods
     def get_ordering(self, request):
         return ['name']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("categories")
+
+    @admin.display(description="Categories")
+    def categories_display(self, obj):
+        return ", ".join(category.value for category in obj.categories.all())
 
     def hide_site(self, request, queryset):
         queryset.update(hidden=True, dormant=False)

@@ -47,7 +47,8 @@ class ImageCardTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cat = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
-        cls.site = Sites.objects.create(name="S", url="https://s.example.com", rss_feed="https://s.example.com/f", category=cat, description="x")
+        cls.site = Sites.objects.create(name="S", url="https://s.example.com", rss_feed="https://s.example.com/f", description="x")
+        cls.site.categories.add(cat)
 
     def article(self, image_url, n=1):
         return Articles.objects.create(title=f"T{n}", url=f"https://s.example.com/{n}", site=self.site, image_url=image_url, run_id=1)

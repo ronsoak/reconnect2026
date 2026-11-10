@@ -48,7 +48,7 @@ def eligible_articles():
             published__lte=today,
         )
         .filter(Q(site__auto_post=True) | Q(manual_post=True))
-        .select_related("site", "site__category")
+        .select_related("site").prefetch_related("site__categories")
         .order_by("published", "created", "pk")
     )
 
@@ -66,18 +66,36 @@ def post_text(article, mention_did=None):
                 "index": {"byteStart": start, "byteEnd": len(text.encode("utf-8"))},
                 "features": [{"$type": "app.bsky.richtext.facet#mention", "did": mention_did}],
             })
-    category = re.sub(r"['\u2019]s$", "", article.site.category.value.strip(), flags=re.IGNORECASE)
-    tag = "".join(character for character in category.lower() if character.isalnum())
-    if not tag or tag.isdecimal():
-        raise BlueskyError("The category must produce a non-numeric hashtag.")
-    if len(tag) > 64:
-        raise BlueskyError("The category hashtag exceeds Bluesky's 64-character limit.")
-    start = len((text + "\n\n").encode("utf-8"))
-    text += f"\n\n#{tag}"
-    facets.append({
-        "index": {"byteStart": start, "byteEnd": len(text.encode("utf-8"))},
-        "features": [{"$type": "app.bsky.richtext.facet#tag", "tag": tag}],
-    })
+    tags = []
+    for category in article.site.categories.all():
+        value = category.value.strip()
+        if value.casefold() == "geek culture":
+            tag = "geek"
+        else:
+            value = re.sub(r"['\u2019]s$", "", value, flags=re.IGNORECASE)
+            tag = "".join(character for character in value.lower() if character.isalnum())
+        if not tag or tag.isdecimal():
+            raise BlueskyError("Each category must produce a non-numeric hashtag.")
+        if len(tag) > 64:
+            raise BlueskyError("A category hashtag exceeds Bluesky's 64-character limit.")
+        if tag not in tags:
+            tags.append(tag)
+    if not tags:
+        raise BlueskyError("At least one category is required for a Bluesky post.")
+
+    text += "\n\n" + "\n".join(f"#{tag}" for tag in tags)
+    # Facet offsets count UTF-8 bytes, including the separators between hashtags.
+    cursor = len(text[:text.index("\n\n#") + 2].encode("utf-8"))
+    for tag in tags:
+        tag_text = f"#{tag}"
+        facets.append({
+            "index": {
+                "byteStart": cursor,
+                "byteEnd": cursor + len(tag_text.encode("utf-8")),
+            },
+            "features": [{"$type": "app.bsky.richtext.facet#tag", "tag": tag}],
+        })
+        cursor += len(tag_text.encode("utf-8")) + 1
     # Counting codepoints is conservative: never silently shorten a publication's name.
     if len(text) > 300 or len(text.encode("utf-8")) > 3000:
         raise BlueskyError("Post text is too long; shorten the publication name or category.")

@@ -55,7 +55,7 @@ class Sites(models.Model):
     url             = models.URLField(blank=False, null=False, help_text="Top level URL of the Site", verbose_name="Site URL")
     rss_feed        = models.URLField(blank=False, null=False, help_text="The URL of the Feed", verbose_name="Feed URL")
     site_type       = models.ForeignKey('Logic',on_delete=models.PROTECT,limit_choices_to={'logic_type': 'SITE_TYPE'},related_name='site_type',verbose_name="Type",help_text="Select a type for this site",null=True,)
-    category        = models.ForeignKey('Logic',on_delete=models.PROTECT,limit_choices_to={'logic_type': 'CATEGORY'},related_name='site_category',verbose_name="Category",help_text="Select a category for this site",)
+    categories      = models.ManyToManyField('Logic',through="SiteCategory",limit_choices_to={'logic_type': 'CATEGORY'},related_name='site_categories',verbose_name="Categories",help_text="Select one or more categories for this site",)
     tags            = models.ManyToManyField('Logic',limit_choices_to={'logic_type': 'TAG'},related_name='site_tag',verbose_name="Tags",help_text="Select tags for this site",)
     bluesky         = models.CharField(max_length=256, blank=True, null=False, help_text="Bluesky Handle", verbose_name="Bluesky")
     modifier        = models.FloatField(default=2, blank=True, help_text="Rank Modifier", verbose_name="Modifier Value")
@@ -77,8 +77,7 @@ class Sites(models.Model):
         constraints = [models.UniqueConstraint(fields=["url"], name='unique_site_url')]
         indexes = [
             models.Index(fields=['name']),        # For searching or ordering by name
-            # Visible sites in a category, and the ingest batch lookup
-            models.Index(fields=['hidden', 'category'], name='site_hidden_category_idx'),
+            # Visible sites and the ingest batch lookup
             models.Index(fields=['batch_num', 'hidden', 'load_error'], name='site_batch_idx'),
         ]
     # Methods
@@ -92,6 +91,21 @@ class Sites(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class SiteCategory(models.Model):
+    site = models.ForeignKey(Sites, on_delete=models.CASCADE, related_name="category_links")
+    category = models.ForeignKey(
+        Logic, on_delete=models.PROTECT, related_name="site_category_links",
+        limit_choices_to={"logic_type": "CATEGORY"},
+    )
+
+    class Meta:
+        db_table = "site_categories"
+        constraints = [
+            models.UniqueConstraint(fields=["site", "category"], name="unique_site_category")
+        ]
+
 
 # ===== ===== ===== ===== ===== ===== ===== ===== 
 # Articles 

@@ -18,8 +18,9 @@ class AggregateClicksTests(TestCase):
         cat = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
         cls.site = Sites.objects.create(
             name="Site", url="https://s.example.com", rss_feed="https://s.example.com/feed",
-            category=cat, description="x",
+            description="x",
         )
+        cls.site.categories.add(cat)
 
     def click(self, kind, object_id, day, site=None):
         Clicks.objects.create(type=kind, article=str(object_id), site=site, date=day)

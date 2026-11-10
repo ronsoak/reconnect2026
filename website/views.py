@@ -323,10 +323,10 @@ def publications(request):
         )
     ).filter(visible_article_count__gt=0)
     if selected_categories:
-        sites = sites.filter(category_id__in=selected_categories)
+        sites = sites.filter(categories__id__in=selected_categories)
     if selected_tags:
         sites = sites.filter(tags__pk__in=selected_tags)
-    sites = sites.select_related("category", "site_type").prefetch_related("tags").distinct()
+    sites = sites.select_related("site_type").prefetch_related("categories", "tags").distinct()
     if sort == "newest":
         sites = sites.order_by("-pk")
     elif sort == "reverse":
@@ -354,14 +354,14 @@ def publications(request):
 
 def site_articles(request, site_id):
     site = get_object_or_404(
-        Sites.objects.filter(hidden=False).select_related("category", "site_type").prefetch_related("tags"),
+        Sites.objects.filter(hidden=False).select_related("site_type").prefetch_related("categories", "tags"),
         pk=site_id,
     )
     order = request.GET.get("order", "newest")
     if order not in SITE_ARTICLE_SORTS:
         order = "newest"
 
-    articles = visible_articles().filter(site=site).select_related("site__category")
+    articles = visible_articles().filter(site=site).select_related("site").prefetch_related("site__categories")
     if order == "popular":
         articles = articles.order_by("-rank", "-published", "run_id", "pk")
     elif order == "random":

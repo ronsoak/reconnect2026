@@ -18,8 +18,9 @@ class NewestAdditionsTests(TestCase):
             site = Sites.objects.create(
                 name=f"Publication {index}", url=f"https://site{index}.example.com",
                 rss_feed=f"https://site{index}.example.com/feed",
-                category=cls.category, description="Writing", article_count=0,
+                description="Writing", article_count=0,
             )
+            site.categories.add(cls.category)
             cls.sites.append(site)
             Articles.objects.bulk_create([
                 Articles(
@@ -29,7 +30,7 @@ class NewestAdditionsTests(TestCase):
                 ) for number in range(15)
             ])
         cls.sites[0].tags.add(cls.tag)
-        Sites.objects.filter(pk=cls.sites[0].pk).update(category=cls.other_category)
+        cls.sites[0].categories.set([cls.other_category])
 
     def test_five_newest_public_sites_and_links(self):
         response = self.client.get("/")

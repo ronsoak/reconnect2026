@@ -17,7 +17,10 @@ class ArticleCardTests(SimpleTestCase):
                         image_url="https://example.com/cover.jpg",
                         site=SimpleNamespace(
                             name="Example publication",
-                            category=SimpleNamespace(value="Games"),
+                            categories=SimpleNamespace(all=lambda: [
+                                SimpleNamespace(value=value)
+                                for value in ("Games", "Tabletop", "Geek Culture")
+                            ]),
                         ),
                     )
                     html = render_to_string(
@@ -29,3 +32,6 @@ class ArticleCardTests(SimpleTestCase):
                     self.assertNotIn("<time", html)
                     self.assertNotIn("2026-10-15", html)
                     self.assertNotIn("15 Oct 2026", html)
+                    self.assertIn("Games", html)
+                    self.assertIn("Tabletop", html)
+                    self.assertNotIn("Geek Culture", html)

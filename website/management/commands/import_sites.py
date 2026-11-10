@@ -8,6 +8,7 @@
 #   Dry Run:    python manage.py import_sites --file website/reconnect2026_test.csv --dry-run
 #   1st Error:  python manage.py import_sites --file website/reconnect2026_test.csv --stop-on-first-error
 #
+# The category column accepts one or more category names separated by semicolons.
 # Optional column: recap (true/false). If the column is missing or a cell is blank,
 # new sites default to true and existing sites are left unchanged.
 #
@@ -91,10 +92,17 @@ class Command(BaseCommand):
                         logic_type="SITE_TYPE",
                         value=row["site_type"].strip(),
                     )
-                    category = Logic.objects.get(
-                        logic_type="CATEGORY",
-                        value=row["category"].strip(),
-                    )
+                    category_values = [
+                        value.strip()
+                        for value in row["category"].split(";")
+                        if value.strip()
+                    ]
+                    if not category_values:
+                        raise ValueError("At least one category is required.")
+                    categories = [
+                        Logic.objects.get(logic_type="CATEGORY", value=value)
+                        for value in category_values
+                    ]
 
                     tag_values = [
                         value.strip()
@@ -111,7 +119,6 @@ class Command(BaseCommand):
                         "name": row["name"].strip(),
                         "rss_feed": row["rss_feed"].strip(),
                         "site_type": site_type,
-                        "category": category,
                         "bluesky": row["bluesky"].strip(),
                         "modifier": float(row["modifier"]),
                         "batch_num": int(row["batch_num"]),
@@ -144,6 +151,7 @@ class Command(BaseCommand):
                             url=site_url,
                             defaults=defaults,
                         )
+                        site.categories.set(categories)
                         if tag_values:
                             site.tags.set(tags)
 

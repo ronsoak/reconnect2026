@@ -16,12 +16,14 @@ class ApiTests(TestCase):
         cls.small = Logic.objects.create(logic_type="AD_SIZE", value="Feed Small")
         cls.video_site = Sites.objects.create(
             name="Video Site", url="https://v.example.com", rss_feed="https://v.example.com/feed",
-            category=cls.video, description="x",
+            description="x",
         )
+        cls.video_site.categories.add(cls.video)
         cls.card_site = Sites.objects.create(
             name="Card Site", url="https://c.example.com", rss_feed="https://c.example.com/feed",
-            category=cls.cards, description="x",
+            description="x",
         )
+        cls.card_site.categories.add(cls.cards)
         today = timezone.localdate()
         for site in (cls.video_site, cls.card_site):
             Articles.objects.bulk_create([
@@ -36,12 +38,20 @@ class ApiTests(TestCase):
     def test_feed_defaults_to_dynamic_and_hides_internal_fields(self):
         data = self.client.get("/api/feed/").json()
         self.assertEqual(data["feed"], "dynamic")
-        card = data["cards"][0]
-        self.assertEqual(set(card), {"kind", "size", "item"})
+        self.assertTrue(data["cards"])
+        article_card = next(card for card in data["cards"] if card["kind"] == "article")
+        self.assertEqual(set(article_card), {"kind", "size", "item"})
         self.assertEqual(
-            set(card["item"]),
-            {"id", "title", "url", "image_url", "published", "site", "site_id", "category"},
+            set(article_card["item"]),
+            {"id", "title", "url", "image_url", "published", "site", "site_id", "categories"},
         )
+        self.assertTrue(all(isinstance(value, str) for value in article_card["item"]["categories"]))
+
+    def test_api_article_contains_all_categories(self):
+        geek = Logic.objects.create(logic_type="CATEGORY", value="Geek Culture")
+        self.video_site.categories.add(geek)
+        data = self.client.get(f"/api/feed/?feed=newest&category={self.video.pk}").json()
+        self.assertEqual(set(data["cards"][0]["item"]["categories"]), {"Video Games", "Geek Culture"})
 
     def test_multiple_categories_are_an_or(self):
         url = f"/api/feed/?feed=newest&category={self.video.pk}&category={self.cards.pk}"

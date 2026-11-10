@@ -29,8 +29,9 @@ class BlueskyFixtures:
         category = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
         self.site = Sites.objects.create(
             name="Example", url="https://example.com",
-            rss_feed="https://example.com/feed", category=category, description="Writing",
+            rss_feed="https://example.com/feed", description="Writing",
         )
+        self.site.categories.add(category)
         self.article = self.make_article()
 
     def make_article(self, **kwargs):
@@ -69,9 +70,17 @@ class BlueskyTests(BlueskyFixtures, TestCase):
         text, facets = post_text(self.article)
         self.assertEqual(text, "🟨 Reconnect Recommends:\n\n✍️ By: Example\n\n#videogames")
         self.assertEqual(facets[0]["features"][0]["tag"], "videogames")
-        for category in ("TCG's", "TCG\u2019s"):
-            self.site.category.value = category
+        for value in ("TCG's", "TCG\u2019s"):
+            category, _ = Logic.objects.get_or_create(logic_type="CATEGORY", value=value)
+            self.site.categories.set([category])
             self.assertTrue(post_text(self.article)[0].endswith("#tcg"))
+
+    def test_text_uses_all_categories_and_maps_geek_culture(self):
+        geek = Logic.objects.create(logic_type="CATEGORY", value="Geek Culture")
+        self.site.categories.add(geek)
+        text, facets = post_text(self.article)
+        self.assertTrue(text.endswith("#geek\n#videogames"))
+        self.assertEqual([facet["features"][0]["tag"] for facet in facets], ["geek", "videogames"])
 
     def test_generated_record_keys_are_valid_tids(self):
         self.assertRegex(new_record_key(), r"^[234567abcdefghij][234567abcdefghijklmnopqrstuvwxyz]{12}$")

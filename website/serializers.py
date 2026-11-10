@@ -20,11 +20,14 @@ class LogicOptionSerializer(serializers.ModelSerializer):
 class ArticleSerializer(serializers.ModelSerializer):
     site = serializers.CharField(source="site.name")
     site_id = serializers.IntegerField(source="site.pk")
-    category = serializers.CharField(source="site.category.value")
+    categories = serializers.SerializerMethodField()
 
     class Meta:
         model = Articles
-        fields = ["id", "title", "url", "image_url", "published", "site", "site_id", "category"]
+        fields = ["id", "title", "url", "image_url", "published", "site", "site_id", "categories"]
+
+    def get_categories(self, article):
+        return [category.value for category in article.site.categories.all()]
 
 
 class AdvertSerializer(serializers.ModelSerializer):

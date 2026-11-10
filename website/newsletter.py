@@ -80,8 +80,8 @@ def build_newsletter(start, end=None, top_count=None, *, period="week"):
             site__hidden=False,
             site__recap=True,
         )
-        .select_related("site__category")
-        .prefetch_related("site__tags")
+        .select_related("site")
+        .prefetch_related("site__categories", "site__tags")
     )
 
     pattern = excluded_pattern()
@@ -118,7 +118,9 @@ def _line(article, number=None):
     prefix = f"{number}. " if number else "- "
     return (
         f"{prefix}[{title}]({article.url})\n"
-        f"   {article.site.name} | {article.site.category.value} | {tags or 'No tags'} "
+        f"   {article.site.name} | "
+        f"{', '.join(category.value for category in article.site.categories.all())} "
+        f"| {tags or 'No tags'} "
         f"| {article.week_clicks} clicks"
     )
 

@@ -27,15 +27,16 @@ class AboutPageTests(TestCase):
         category = Logic.objects.create(logic_type="CATEGORY", value="Video Games")
 
         def make_site(name, hidden=False):
-            return Sites.objects.create(
+            site = Sites.objects.create(
                 name=name,
                 url=f"https://{name}.example.com",
                 rss_feed=f"https://{name}.example.com/feed",
-                category=category,
                 description="Test publication",
                 hidden=hidden,
                 article_count=999,
             )
+            site.categories.add(category)
+            return site
 
         site = make_site("public")
         hidden_site = make_site("hidden", hidden=True)

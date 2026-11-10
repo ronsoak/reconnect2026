@@ -39,6 +39,10 @@ class ImportSitesCommandTests(TestCase):
             logic_type="CATEGORY",
             value="Video Games",
         )
+        self.second_category = Logic.objects.create(
+            logic_type="CATEGORY",
+            value="Geek Culture",
+        )
         self.old_tag = Logic.objects.create(logic_type="TAG", value="News")
         self.new_tag = Logic.objects.create(logic_type="TAG", value="Reviews")
 
@@ -92,9 +96,9 @@ class ImportSitesCommandTests(TestCase):
             url="https://example.com",
             rss_feed="https://example.com/old-feed.xml",
             site_type=self.site_type,
-            category=self.category,
             description="Old description",
         )
+        site.categories.add(self.category)
         site.tags.add(self.old_tag)
 
         self.run_import(self.make_row(), dry_run=True)
@@ -110,9 +114,9 @@ class ImportSitesCommandTests(TestCase):
             url="https://example.com",
             rss_feed="https://example.com/old-feed.xml",
             site_type=self.site_type,
-            category=self.category,
             description="Old description",
         )
+        site.categories.add(self.category)
         site.tags.add(self.old_tag)
 
         self.run_import(self.make_row())
@@ -123,6 +127,12 @@ class ImportSitesCommandTests(TestCase):
         self.assertEqual(site.modifier, 2.5)
         self.assertEqual(set(site.tags.all()), {self.new_tag})
         self.assertEqual(Sites.objects.count(), 1)
+        self.assertEqual(set(site.categories.all()), {self.category})
+
+    def test_import_supports_multiple_categories(self):
+        self.run_import(self.make_row(category="Video Games; Geek Culture"))
+        site = Sites.objects.get()
+        self.assertEqual(set(site.categories.all()), {self.category, self.second_category})
 
     def test_blank_tags_leave_existing_tags_unchanged(self):
         site = Sites.objects.create(
@@ -130,9 +140,9 @@ class ImportSitesCommandTests(TestCase):
             url="https://example.com",
             rss_feed="https://example.com/old-feed.xml",
             site_type=self.site_type,
-            category=self.category,
             description="Old description",
         )
+        site.categories.add(self.category)
         site.tags.add(self.old_tag)
 
         self.run_import(self.make_row(tags=""))
@@ -151,9 +161,9 @@ class ProtectedDeleteTests(TestCase):
             url="https://example.com",
             rss_feed="https://example.com/feed.xml",
             site_type=site_type,
-            category=category,
             description="A test publication",
         )
+        site.categories.add(category)
         article = Articles.objects.create(
             title="Example Article",
             url="https://example.com/article",
@@ -181,9 +191,9 @@ class ImportArticlesCommandTests(TestCase):
             name="Example Site",
             url="https://example.com",
             rss_feed="https://example.com/feed.xml",
-            category=category,
             description="A test publication",
         )
+        self.site.categories.add(category)
         self.article = Articles.objects.create(
             title="Original Title",
             url="https://example.com/article",

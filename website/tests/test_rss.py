@@ -17,16 +17,16 @@ class ArticlesFeedTests(TestCase):
             name="Game Journal",
             url="https://journal.example.com",
             rss_feed="https://journal.example.com/feed",
-            category=cls.video_games,
             description="Game writing",
         )
+        cls.site.categories.add(cls.video_games)
         cls.tabletop_site = Sites.objects.create(
             name="Tabletop Journal",
             url="https://tabletop.example.com",
             rss_feed="https://tabletop.example.com/feed",
-            category=cls.tabletop,
             description="Tabletop writing",
         )
+        cls.tabletop_site.categories.add(cls.tabletop)
 
     def add_article(self, site, title, **values):
         values.setdefault("published", date.today())
@@ -60,14 +60,20 @@ class ArticlesFeedTests(TestCase):
         self.assertEqual(items[0].find("guid").attrib["isPermaLink"], "false")
 
     def test_category_feed_only_contains_articles_from_that_category(self):
+        self.site.categories.add(self.tabletop)
         video_article = self.add_article(self.site, "Video article")
-        self.add_article(self.tabletop_site, "Tabletop article")
+        tabletop_article = self.add_article(self.tabletop_site, "Tabletop article")
 
         response = self.client.get(f"/feeds/category/{self.video_games.pk}.rss")
 
         self.assertEqual(
             [item.findtext("title") for item in self.items(response)],
             [video_article.title],
+        )
+        response = self.client.get(f"/feeds/category/{self.tabletop.pk}.rss")
+        self.assertEqual(
+            {item.findtext("title") for item in self.items(response)},
+            {video_article.title, tabletop_article.title},
         )
 
     def test_feeds_exclude_hidden_articles_and_hidden_sites(self):
@@ -77,10 +83,10 @@ class ArticlesFeedTests(TestCase):
             name="Hidden Journal",
             url="https://hidden.example.com",
             rss_feed="https://hidden.example.com/feed",
-            category=self.video_games,
             description="Hidden writing",
             hidden=True,
         )
+        hidden_site.categories.add(self.video_games)
         self.add_article(hidden_site, "Hidden site article")
 
         response = self.client.get("/feeds/all.rss")
@@ -131,10 +137,10 @@ class ArticlesFeedTests(TestCase):
             name="Hidden Journal",
             url="https://hidden.example.com",
             rss_feed="https://hidden.example.com/feed",
-            category=self.video_games,
             description="Hidden writing",
             hidden=True,
         )
+        hidden_site.categories.add(self.video_games)
         hidden_site_article = self.add_article(hidden_site, "Hidden site article")
 
         self.assertEqual(self.client.get(f"/go/rss/{hidden_article.pk}/").status_code, 404)

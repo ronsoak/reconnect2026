@@ -14,8 +14,9 @@ class TickerTests(TestCase):
         cls.focus = Logic.objects.create(logic_type="TAG", value="Industry")
         cls.site = Sites.objects.create(
             name="Publication", url="https://example.com",
-            rss_feed="https://example.com/feed", category=cls.category, description="Writing",
+            rss_feed="https://example.com/feed", description="Writing",
         )
+        cls.site.categories.add(cls.category)
         cls.site.tags.add(cls.focus)
         today = timezone.localdate()
         Articles.objects.bulk_create([
