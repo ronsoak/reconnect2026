@@ -46,6 +46,15 @@ LOGIC = {
         "Medium",
         "Blogspot",
         "Website",
+        "Ghost",
+        "WordPress",
+        "Jekyll",
+        "Bear Blog",
+        "Buttondown",
+        "Beehiiv",
+        "Pika",
+        "Kirby",
+        "Squarespace",
     ],
 
     "TAG": [

@@ -17,9 +17,6 @@ media/
 # Environment variables
 .env
 
-# Files -- remove later
-*.csv 
-*.numbers
 
 # VS Code
 .vscode/
