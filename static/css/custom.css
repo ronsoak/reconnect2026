@@ -404,6 +404,7 @@ input:focus-visible {
 }
 
 .filter-bar .button,
+.site-directory__filters .button,
 .filter-multiselect__button {
   min-height: 2.55rem;
   padding-inline: 1.1rem;
@@ -416,6 +417,7 @@ input:focus-visible {
 }
 
 .filter-bar .button:hover,
+.site-directory__filters .button:hover,
 .filter-multiselect__button:hover {
   border-color: var(--accent);
   color: var(--accent-deep);
@@ -1480,7 +1482,7 @@ input:focus-visible {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
   padding: 0.8rem;
   border: 1px solid var(--line);
@@ -1489,19 +1491,52 @@ input:focus-visible {
 
 .site-directory__sort {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  margin-inline-start: auto;
+  color: var(--ink);
+  font: 700 0.68rem/1.2 "DM Sans", sans-serif;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.site-directory__select-wrap {
+  position: relative;
+  display: block;
+}
+
+.site-directory__select-wrap::after {
+  position: absolute;
+  top: 50%;
+  right: 0.95rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
   color: var(--muted);
-  font-size: 0.85rem;
+  content: "";
+  pointer-events: none;
+  transform: translateY(-70%) rotate(45deg);
 }
 
 .site-directory__select {
-  width: auto;
+  width: 14rem;
   min-height: 2.55rem;
-  border-color: var(--line);
-  border-radius: var(--radius);
+  padding: 0.4rem 2.4rem 0.4rem 0.8rem;
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: var(--pill);
   box-shadow: none;
   color: var(--ink);
+  background-color: var(--surface);
+  font: 600 0.84rem/1.2 "DM Sans", sans-serif;
+  cursor: pointer;
+}
+
+.site-directory__select:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .site-directory__grid {
@@ -1860,11 +1895,18 @@ input:focus-visible {
 
   .site-directory__sort {
     flex: 1 1 100%;
+    flex-direction: row;
+    align-items: center;
     justify-content: space-between;
   }
 
+  .site-directory__select-wrap {
+    flex: 1 1 auto;
+    margin-inline-start: 0.75rem;
+  }
+
   .site-directory__select {
-    flex: 1;
+    width: 100%;
   }
 
   .site-main {
@@ -1892,6 +1934,7 @@ input:focus-visible {
   }
 
   .filter-bar .button,
+  .site-directory__filters .button,
   .filter-multiselect__button {
     min-height: 2.45rem;
     padding-inline: 0.75rem;

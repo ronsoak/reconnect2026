@@ -36,19 +36,25 @@
       </div>
 
       <form method="get" action="{% url 'publications' %}" class="site-directory__filters">
-        {% include "components/filter_multiselect.html" with label="Category" name="category" items=categories selected=selected_categories %}
-        {% include "components/filter_multiselect.html" with label="Focus" name="tag" items=tags selected=selected_tags %}
+        <div class="filter-bar__pair" role="group" aria-label="Filter publications">
+          {% include "components/filter_multiselect.html" with label="Category" name="category" items=categories selected=selected_categories %}
+          {% include "components/filter_multiselect.html" with label="Focus" name="tag" items=tags selected=selected_tags %}
+        </div>
+        <div class="filter-bar__pair" role="group" aria-label="Apply or reset filters">
+          <button class="button filter-bar__apply" type="submit">Apply</button>
+          <a class="button filter-bar__reset" href="{% url 'publications' %}">Reset</a>
+        </div>
         <label class="site-directory__sort">
           <span>Sort by</span>
-          <select name="sort" class="select">
-            <option value="alpha" {% if sort == "alpha" %}selected{% endif %}>Alphabetical</option>
-            <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest</option>
-            <option value="reverse" {% if sort == "reverse" %}selected{% endif %}>Reverse alphabetical</option>
-            <option value="random" {% if sort == "random" %}selected{% endif %}>Random</option>
-          </select>
+          <span class="site-directory__select-wrap">
+            <select name="sort" class="site-directory__select">
+              <option value="alpha" {% if sort == "alpha" %}selected{% endif %}>Name (A–Z)</option>
+              <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest added</option>
+              <option value="reverse" {% if sort == "reverse" %}selected{% endif %}>Name (Z–A)</option>
+              <option value="random" {% if sort == "random" %}selected{% endif %}>Random order</option>
+            </select>
+          </span>
         </label>
-        <button class="button filter-bar__apply" type="submit">Apply</button>
-        <a class="button filter-bar__reset" href="{% url 'publications' %}">Reset</a>
       </form>
 
       {% if page_obj %}

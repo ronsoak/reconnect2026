@@ -119,6 +119,14 @@ class PublicationsDirectoryTests(TestCase):
         )
         self.assertEqual(invalid.context["sort"], "alpha")
 
+    def test_filter_controls_use_joined_pairs_and_a_styled_sort_select(self):
+        response = self.client.get("/publications/")
+        self.assertContains(response, 'aria-label="Filter publications"')
+        self.assertContains(response, 'aria-label="Apply or reset filters"')
+        self.assertContains(response, 'class="site-directory__select"')
+        self.assertContains(response, "Name (A–Z)")
+        self.assertContains(response, "Name (Z–A)")
+
     def test_directory_is_paginated_and_keeps_filters_in_pagination_links(self):
         for index in range(settings.PUBLICATIONS_PAGE_SIZE):
             site = self.make_site(
