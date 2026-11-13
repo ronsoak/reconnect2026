@@ -34,7 +34,8 @@
   {% if report %}
     <h2 class="text-xl font-semibold mb-2">{{ report.heading }}: {{ report.selection }}</h2>
     <p class="mb-2">{{ report.start|date:"F Y" }} to {{ report.end|date:"F Y" }} &middot; <strong>{{ report.total }} recorded clicks</strong> across available months.</p>
-    <p class="mb-4">Recorded clicks are not unique visitors, impressions or click-through rates. Publication totals combine Article and RSS clicks. Hidden content and expired adverts are included.</p>
+    <p class="mb-4">Recorded clicks are not unique visitors, impressions or click-through rates. Publication and article totals combine Article and RSS clicks. Hidden content and expired adverts are included.</p>
+    {% if report.kind == "articles" %}<p class="mb-4">Articles with recorded data in the selected months are listed, regardless of publication date. Filter by publication above to narrow the results.</p>{% endif %}
     {% if report.incomplete %}
       <p class="mb-4 p-3 border rounded-default" role="status">Some months are unavailable or have unverified completion. N/A does not mean zero. Period totals include only available recorded activity; imported baselines are excluded.</p>
     {% endif %}
@@ -76,6 +77,7 @@
             <tr class="border-b">
               <th scope="col" class="text-left p-2">Name</th>
               {% if report.kind == "adverts" %}<th scope="col" class="text-left p-2">Campaign dates</th>{% endif %}
+              {% if report.kind == "articles" %}<th scope="col" class="text-left p-2">Publication</th>{% endif %}
               {% for column in report.columns %}<th scope="col" class="text-right p-2">{{ column.label }}</th>{% endfor %}
               <th scope="col" class="text-right p-2">Total</th>
             </tr>
@@ -85,11 +87,12 @@
               <tr class="border-b">
                 <th scope="row" class="text-left p-2">{% if row.url %}<a href="{{ row.url }}" class="underline">{{ row.name }}</a>{% else %}{{ row.name }}{% endif %}</th>
                 {% if report.kind == "adverts" %}<td class="p-2">{{ row.campaign|default:"Unavailable" }}</td>{% endif %}
+                {% if report.kind == "articles" %}<td class="p-2">{{ row.publication }}</td>{% endif %}
                 {% for cell in row.cells %}<td class="text-right p-2">{{ cell.clicks|default_if_none:"N/A" }}</td>{% endfor %}
                 <td class="text-right font-semibold p-2">{{ row.total }}</td>
               </tr>
             {% empty %}
-              <tr><td class="p-2">No matching adverts or publications.</td></tr>
+              <tr><td class="p-2">{% if report.kind == "articles" %}No matching recorded articles.{% else %}No matching adverts or publications.{% endif %}</td></tr>
             {% endfor %}
           </tbody>
         </table>

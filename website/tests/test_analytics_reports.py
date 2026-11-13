@@ -228,3 +228,79 @@ class AnalyticsReportTests(TestCase):
         self.assertEqual(len(page.context["report"]["rows"]), 54)
         self.assertIn("Extra 51", download.content.decode())
         self.assertContains(self.client.get("/backdoor/"), "/backdoor/analytics-reports/")
+
+    def test_article_report_combines_monthly_clicks_and_resolves_publications(self):
+        self.summary(date(2026, 9, 1), 5, site=self.site)
+        self.summary(date(2026, 9, 1), 3, kind=self.rss_type, site=self.site)
+        self.summary(date(2026, 9, 1), 90, kind=self.advert_type, object_id=self.advert.pk)
+        self.summary(date(2026, 10, 1), 500, site=self.site, baseline=True)
+        self.complete(date(2026, 9, 1))
+        data = self.report(kind="articles", end=date(2026, 10, 1), include_baseline=True)
+        self.assertEqual(data["heading"], "Article analytics")
+        self.assertEqual(data["total"], 8)
+        self.assertEqual(len(data["rows"]), 1)
+        row = data["rows"][0]
+        self.assertEqual((row["name"], row["publication"], row["url"]),
+                         (self.article.title, self.site.name, self.article.url))
+        self.assertEqual(row["cells"], [{"clicks": 8}, {"clicks": None}])
+        self.assertEqual(data["baseline_rows"][0]["clicks"], 500)
+        self.assertEqual(data["top_articles"], [])
+        self.assertIn("| Name | Publication | Sep 2026 |", render_report_markdown(data))
+
+    def test_article_report_filters_saved_raw_and_baseline_by_publication(self):
+        self.summary(date(2026, 9, 1), 3, site=self.site)
+        self.summary(date(2026, 9, 1), 99, object_id=999, site=self.other_site)
+        self.summary(date(2026, 10, 1), 500, object_id=999, site=self.other_site, baseline=True)
+        for kind in (self.article_type, self.rss_type):
+            Clicks.objects.create(type=kind, article=str(self.article.pk), site=self.site, date=TODAY)
+        Clicks.objects.create(type=self.article_type, article="999", site=self.other_site, date=TODAY)
+        data = self.report(
+            kind="articles", end=date(2026, 11, 1),
+            object_id=str(self.site.pk), include_baseline=True,
+        )
+        self.assertEqual(data["total"], 5)
+        self.assertEqual([row["id"] for row in data["rows"]], [self.article.pk])
+        self.assertEqual(data["rows"][0]["cells"][-1]["clicks"], 2)
+        self.assertEqual(data["baseline_rows"], [])
+        self.assertEqual(data["selection"], self.site.name)
+        self.assertNotIn(self.other_site.name, render_report_markdown(data))
+
+    def test_article_report_retains_deleted_article_and_its_stored_publication(self):
+        self.summary(date(2026, 9, 1), 4, site=self.site, object_id=999)
+        data = self.report(kind="articles")
+        self.assertEqual(data["rows"][0]["name"], "Deleted / unknown article #999")
+        self.assertEqual(data["rows"][0]["publication"], self.site.name)
+        self.assertEqual(data["total"], 4)
+
+    def test_articles_tab_exports_all_articles_not_only_top_twenty_or_first_page(self):
+        for index in range(53):
+            article = Articles.objects.create(
+                title=f"Monthly article {index:02}", url=f"https://site.example.com/{index}",
+                image_url="", site=self.site,
+            )
+            self.summary(date(2026, 9, 1), index + 1, object_id=article.pk, site=self.site)
+        self.client.force_login(self.admin)
+        params = {
+            "report": "articles", "period": "month", "month": "2026-09",
+            "object_id": self.site.pk,
+        }
+        page = self.client.get("/backdoor/analytics-reports/", params)
+        self.assertContains(page, "Article analytics")
+        self.assertContains(page, "Publication")
+        self.assertEqual(len(page.context["page"]), 50)
+        self.assertEqual(len(page.context["report"]["rows"]), 53)
+        self.assertEqual(page.context["report"]["rows"][0]["name"], "Monthly article 52")
+        download = self.client.get("/backdoor/analytics-reports/", {**params, "download": "1"})
+        self.assertEqual(download.content.decode(), render_report_markdown(page.context["report"]))
+        self.assertIn("Monthly article 00", download.content.decode())
+        self.assertIn("Monthly article 52", download.content.decode())
+        self.assertIn("analytics-articles-", download["Content-Disposition"])
+
+    def test_article_form_uses_publication_choices_not_an_article_dropdown(self):
+        form = AnalyticsReportForm({
+            "report": "articles", "period": "month", "month": "2026-09",
+            "object_id": str(self.site.pk),
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.fields["object_id"].label, "Publication")
+        self.assertEqual(form.fields["object_id"].choices[0], ("", "All publications"))

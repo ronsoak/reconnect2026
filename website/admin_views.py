@@ -72,7 +72,7 @@ def analytics_report(request):
             return response
         page = Paginator(data["rows"], 50).get_page(request.GET.get("page"))
     tabs = []
-    for kind, label in (("adverts", "Adverts"), ("sites", "Publications")):
+    for kind, label in (("adverts", "Adverts"), ("sites", "Publications"), ("articles", "Articles")):
         query = request.GET.copy()
         for key in ("object_id", "page", "download"):
             query.pop(key, None)

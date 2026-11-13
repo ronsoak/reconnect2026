@@ -472,11 +472,16 @@ snapshot is not proof that its raw clicks have been aggregated.
 
 Open **Analytics reports** on the admin home page, or visit
 `/backdoor/analytics-reports/`. Staff need the **Can view Analytics** permission.
-The page provides Advert and Publication reports for a selected calendar month,
+The page provides Advert, Publication and Article reports for a selected calendar month,
 calendar year, or 12 months ending in the selected month. Select an individual
 advert for a client-only download, or a publication for its monthly comparison
 and top 20 articles. The preview paginates results at 50; **Download Markdown**
 exports all matching results with the same filters, totals and availability notes.
+The **Articles** tab lists all articles with recorded data in the selected months,
+ranked by clicks, with titles, links and publication names. It combines Article
+and RSS clicks and can be filtered by publication; it is not limited to the top 20
+or to articles published during that month. Baseline-only records appear only
+when the separate historical totals option is enabled.
 
 Advert reports resolve advert titles, destinations and campaign dates.
 Publication reports combine Article and RSS click types and show article titles
