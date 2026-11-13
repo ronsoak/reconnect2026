@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.template import Context, Template
 from django.test import TestCase
 
@@ -5,6 +7,26 @@ from website.models import Articles, Logic, Sites
 
 
 class FooterTests(TestCase):
+    def test_home_header_and_footer_counts_use_thousands_separators(self):
+        for count, formatted in ((999, "999"), (1000, "1,000"), (1234567, "1,234,567")):
+            with self.subTest(count=count), mock.patch(
+                "website.templatetags.footer_tags.visible_articles",
+            ) as articles:
+                articles.return_value.count.return_value = count
+                response = self.client.get("/")
+                self.assertContains(
+                    response,
+                    f'<span class="site-header__count-total">{formatted}</span>',
+                    html=True,
+                )
+                self.assertContains(
+                    response,
+                    f'<span class="site-header__count-animated" aria-hidden="true">{formatted}</span>',
+                    html=True,
+                )
+                self.assertContains(response, f'data-header-count="{count}"')
+                self.assertContains(response, f"<strong>{formatted}</strong>", html=True)
+
     def test_footer_appears_on_public_pages_with_links_and_credits(self):
         for path in ("/", "/newest/", "/popular/", "/search/", "/publications/", "/about/"):
             with self.subTest(path=path):

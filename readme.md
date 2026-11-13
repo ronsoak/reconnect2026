@@ -66,6 +66,8 @@ API endpoints accept `GET` only and return JSON. RSS endpoints return RSS XML.
 
 RSS links route through Reconnect so article clicks from feed readers are included in click analytics.
 Visit `/publications/` for the all-articles and category feeds, and to browse visible publications.
+The directory defaults to random order; the sort control also offers alphabetical,
+reverse alphabetical and newest-added ordering.
 Publication pages list each site's visible articles and offer newest, popular, and random ordering.
 
 ### Feed parameters
@@ -250,7 +252,12 @@ category name. It adds a `category-pill--<slug>` class (e.g.
 `category-pill--video-games`) that sets the dot colour; add a matching rule in
 custom.css when a new category is created, otherwise the dot is neutral grey.
 The header's second row shows the subtitle and the public article count (the
-same count as the footer).
+same count as the footer). Both counts use thousands separators, e.g. 59,056.
+On each page load, the header number counts up over 250ms with an ease-out finish;
+the footer number stays static. The final header value reserves its width and
+remains available to screen readers throughout. Reduced-motion preferences skip
+the count-up (or finish it immediately if enabled mid-animation); without
+JavaScript the final value is shown normally.
 The main menu (`templates/components/menu.html`) shows Home, Publications and
 About as outlined round buttons, highlighting the current section. At 768px and
 below `static/js/menu.js` collapses them behind a hamburger toggle (Escape or an

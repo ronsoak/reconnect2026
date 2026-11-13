@@ -10,7 +10,7 @@
       <a href="{% url 'rss_feed_all' %}">RSS feed</a>
     </nav>
     <p class="site-footer__count" data-footer-count>
-      <strong>{{ total_articles }}</strong>
+      <strong>{{ total_articles|floatformat:"0g" }}</strong>
       article{{ total_articles|pluralize }} to discover
     </p>
     <div class="site-footer__credits">

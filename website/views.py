@@ -311,9 +311,9 @@ def publications(request):
         value for value in request.GET.getlist("tag")
         if value.isascii() and value.isdigit()
     ]
-    sort = request.GET.get("sort", "alpha")
+    sort = request.GET.get("sort", "random")
     if sort not in {"alpha", "newest", "reverse", "random"}:
-        sort = "alpha"
+        sort = "random"
 
     sites = Sites.objects.filter(hidden=False).annotate(
         visible_article_count=Count(

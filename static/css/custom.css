@@ -129,6 +129,28 @@ input:focus-visible {
   white-space: nowrap;
 }
 
+.site-header__count-number {
+  display: inline-grid;
+  text-align: right;
+}
+
+.site-header__count-number > span {
+  grid-area: 1 / 1;
+}
+
+.site-header__count-animated {
+  visibility: hidden;
+}
+
+/* The accessible final value reserves space throughout the count-up. */
+.site-header__count-number.is-counting .site-header__count-total {
+  opacity: 0;
+}
+
+.site-header__count-number.is-counting .site-header__count-animated {
+  visibility: visible;
+}
+
 .site-brand {
   grid-area: brand;
   display: block;

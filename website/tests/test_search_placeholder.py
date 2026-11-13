@@ -73,4 +73,5 @@ class HeaderTaglineTests(TestCase):
         response = self.client.get(reverse("privacy"))
         self.assertContains(response, '<p class="site-header__tagline">For all things games writing</p>', html=True)
         self.assertContains(response, 'class="site-header__count"')
-        self.assertRegex(response.content.decode(), r'site-header__count">\d+ Articles?<')
+        self.assertRegex(response.content.decode(), r'site-header__count-total">[\d,]+</span>')
+        self.assertRegex(response.content.decode(), r'</span>\s+Articles?\s+</p>')

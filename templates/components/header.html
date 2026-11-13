@@ -8,7 +8,13 @@
       </a>
       {% include "components/menu.html" %}
       <p class="site-header__tagline">For all things games writing</p>
-      <p class="site-header__count">{{ header_article_count }} Article{{ header_article_count|pluralize }}</p>
+      <p class="site-header__count">
+        <span class="site-header__count-number" data-header-count="{{ header_article_count|stringformat:'d' }}">
+          <span class="site-header__count-total">{{ header_article_count|floatformat:"0g" }}</span>
+          <span class="site-header__count-animated" aria-hidden="true">{{ header_article_count|floatformat:"0g" }}</span>
+        </span>
+        Article{{ header_article_count|pluralize }}
+      </p>
       {% include "components/search_bar.html" %}
     </div>
   </div>

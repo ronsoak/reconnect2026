@@ -72,11 +72,11 @@ class PublicationsDirectoryTests(TestCase):
         self.assertContains(response, "2 publications")
         self.assertNotContains(response, "visible")
         self.assertEqual(
-            [site.name for site in response.context["page_obj"]],
-            ["Alpha Games", "Zulu Tabletop"],
+            {site.name for site in response.context["page_obj"]},
+            {"Alpha Games", "Zulu Tabletop"},
         )
         self.assertEqual(
-            response.context["page_obj"][0].visible_article_count,
+            next(site for site in response.context["page_obj"] if site.pk == self.alpha_site.pk).visible_article_count,
             2,
         )
         self.assertNotContains(response, "Hidden Site")
@@ -105,6 +105,7 @@ class PublicationsDirectoryTests(TestCase):
         )
 
     def test_sort_options_are_supported(self):
+        alphabetical = self.client.get("/publications/?sort=alpha")
         reverse_alpha = self.client.get("/publications/?sort=reverse")
         newest = self.client.get("/publications/?sort=newest")
         invalid = self.client.get("/publications/?sort=unknown")
@@ -117,7 +118,17 @@ class PublicationsDirectoryTests(TestCase):
             [site.pk for site in newest.context["page_obj"]],
             [self.zulu_site.pk, self.alpha_site.pk],
         )
-        self.assertEqual(invalid.context["sort"], "alpha")
+        self.assertEqual(
+            [site.name for site in alphabetical.context["page_obj"]],
+            ["Alpha Games", "Zulu Tabletop"],
+        )
+        self.assertEqual(invalid.context["sort"], "random")
+
+    def test_directory_defaults_to_random_order(self):
+        response = self.client.get("/publications/")
+        self.assertEqual(response.context["sort"], "random")
+        self.assertEqual(response.context["page_obj"].paginator.object_list.query.order_by, ("?",))
+        self.assertContains(response, '<option value="random" selected>Random order</option>', html=True)
 
     def test_filter_controls_use_joined_pairs_and_a_styled_sort_select(self):
         response = self.client.get("/publications/")
