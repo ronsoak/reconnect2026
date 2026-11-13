@@ -7,5 +7,12 @@
   <p class="mb-3">Preview this week's recap and download it as a markdown file.</p>
   <a href="{% url 'newsletter_export' %}" class="px-3 py-2 rounded-default bg-primary-600 text-white">Open newsletter export</a>
 </div>
+{% if perms.website.view_analytics %}
+<div class="mb-6 p-4 border rounded-default">
+  <h2 class="text-lg font-semibold mb-1">Analytics reports</h2>
+  <p class="mb-3">Review monthly advert and publication clicks, compare a year, and download Markdown reports.</p>
+  <a href="{% url 'analytics_report' %}" class="px-3 py-2 rounded-default bg-primary-600 text-white">Open analytics reports</a>
+</div>
+{% endif %}
 {{ block.super }}
 {% endblock %}

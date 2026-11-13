@@ -1,0 +1,141 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="analytics-report">
+  <nav aria-label="Report type" class="mb-6 flex flex-wrap gap-2">
+    {% for tab in tabs %}
+      <a href="?{{ tab.query }}" class="px-3 py-2 border rounded-default {% if form.report.value == tab.kind %}bg-primary-600 text-white{% endif %}" {% if form.report.value == tab.kind %}aria-current="page"{% endif %}>{{ tab.label }}</a>
+    {% endfor %}
+  </nav>
+  <form method="get" class="mb-6 p-4 border rounded-default">
+    {{ form.report }}
+    {% if form.errors %}
+      <div role="alert" class="mb-4">
+        <h2 class="font-semibold">Please correct the report options</h2>
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    <div class="flex flex-wrap gap-4 mb-4">
+      {% for field in form.visible_fields %}
+        <div class="min-w-0 max-w-full">
+          <label for="{{ field.id_for_label }}" class="block font-semibold mb-1">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="text-sm mt-1" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="submit" class="px-3 py-2 rounded-default bg-primary-600 text-white">View report</button>
+      <button type="submit" name="download" value="1" class="px-3 py-2 border rounded-default">Download Markdown</button>
+    </div>
+  </form>
+
+  {% if report %}
+    <h2 class="text-xl font-semibold mb-2">{{ report.heading }}: {{ report.selection }}</h2>
+    <p class="mb-2">{{ report.start|date:"F Y" }} to {{ report.end|date:"F Y" }} &middot; <strong>{{ report.total }} recorded clicks</strong> across available months.</p>
+    <p class="mb-4">Recorded clicks are not unique visitors, impressions or click-through rates. Publication totals combine Article and RSS clicks. Hidden content and expired adverts are included.</p>
+    {% if report.incomplete %}
+      <p class="mb-4 p-3 border rounded-default" role="status">Some months are unavailable or have unverified completion. N/A does not mean zero. Period totals include only available recorded activity; imported baselines are excluded.</p>
+    {% endif %}
+
+    <section aria-labelledby="monthly-heading" class="mb-6">
+      <h3 id="monthly-heading" class="text-lg font-semibold mb-3">Monthly recorded clicks</h3>
+      <p class="mb-3 text-sm">Bar lengths compare available monthly totals. Status and exact values are listed below.</p>
+      <div aria-hidden="true" class="mb-4">
+        {% for column in report.columns %}
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-sm">{{ column.label }}</span>
+            <svg class="flex-1 text-primary-600" width="100" height="16" viewBox="0 0 1000 16" preserveAspectRatio="none" focusable="false">
+              <rect x="0" y="0" height="16" width="{{ column.bar_width }}" fill="currentColor"></rect>
+            </svg>
+            <span class="text-sm">{{ column.clicks|default_if_none:"N/A" }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="overflow-x-auto" role="region" aria-label="Monthly totals" tabindex="0">
+        <table class="w-full">
+          <caption class="text-left mb-2">Data availability and monthly totals</caption>
+          <thead><tr class="border-b"><th scope="col" class="text-left p-2">Month</th><th scope="col" class="text-right p-2">Clicks</th><th scope="col" class="text-left p-2">Status</th></tr></thead>
+          <tbody>
+            {% for column in report.columns %}
+              <tr class="border-b"><th scope="row" class="text-left p-2">{{ column.label }}</th><td class="text-right p-2">{{ column.clicks|default_if_none:"N/A" }}</td><td class="p-2">{{ column.status }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="results-heading" class="mb-6">
+      <h3 id="results-heading" class="text-lg font-semibold mb-3">Results</h3>
+      <p class="mb-3 text-sm">Sorted by recorded clicks. The Markdown download includes every result, not just this page.</p>
+      <div class="overflow-x-auto" role="region" aria-label="Report results; scroll for all months" tabindex="0">
+        <table class="w-full">
+          <caption class="text-left mb-2">{{ report.selection }} &mdash; monthly comparison</caption>
+          <thead>
+            <tr class="border-b">
+              <th scope="col" class="text-left p-2">Name</th>
+              {% if report.kind == "adverts" %}<th scope="col" class="text-left p-2">Campaign dates</th>{% endif %}
+              {% for column in report.columns %}<th scope="col" class="text-right p-2">{{ column.label }}</th>{% endfor %}
+              <th scope="col" class="text-right p-2">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in page %}
+              <tr class="border-b">
+                <th scope="row" class="text-left p-2">{% if row.url %}<a href="{{ row.url }}" class="underline">{{ row.name }}</a>{% else %}{{ row.name }}{% endif %}</th>
+                {% if report.kind == "adverts" %}<td class="p-2">{{ row.campaign|default:"Unavailable" }}</td>{% endif %}
+                {% for cell in row.cells %}<td class="text-right p-2">{{ cell.clicks|default_if_none:"N/A" }}</td>{% endfor %}
+                <td class="text-right font-semibold p-2">{{ row.total }}</td>
+              </tr>
+            {% empty %}
+              <tr><td class="p-2">No matching adverts or publications.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if page.has_other_pages %}
+        <nav class="mt-4 flex flex-wrap gap-3" aria-label="Report result pages">
+          {% if page.has_previous %}<a class="underline" href="?{{ pagination_query }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}
+          <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+          {% if page.has_next %}<a class="underline" href="?{{ pagination_query }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}
+        </nav>
+      {% endif %}
+    </section>
+
+    {% if report.top_articles %}
+      <section aria-labelledby="articles-heading" class="mb-6">
+        <h3 id="articles-heading" class="text-lg font-semibold mb-3">Top 20 articles by recorded clicks</h3>
+        <p class="mb-3 text-sm">Clicks received in the selected months, regardless of the article's publication date.</p>
+        <div class="overflow-x-auto" role="region" aria-label="Top articles" tabindex="0">
+          <table class="w-full">
+            <caption class="text-left mb-2">Article and RSS clicks combined</caption>
+            <thead><tr class="border-b"><th scope="col" class="text-left p-2">Article</th><th scope="col" class="text-left p-2">Publication</th><th scope="col" class="text-right p-2">Clicks</th></tr></thead>
+            <tbody>
+              {% for row in report.top_articles %}
+                <tr class="border-b">
+                  <th scope="row" class="text-left p-2">{% if row.url %}<a href="{{ row.url }}" class="underline">{{ row.title }}</a>{% else %}{{ row.title }}{% endif %}</th>
+                  <td class="p-2">{{ row.site }}</td><td class="text-right p-2">{{ row.clicks }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endif %}
+    {% if report.include_baseline %}
+      <section aria-labelledby="baseline-heading">
+        <h3 id="baseline-heading" class="text-lg font-semibold mb-3">Imported historical totals</h3>
+        <p class="mb-3">These snapshots are not monthly activity and are excluded from all charts, rankings and activity totals above.</p>
+        <ul>
+          {% for row in report.baseline_rows %}
+            <li>{{ row.name }}: {{ row.clicks }} clicks (snapshot month {{ row.month|date:"F Y" }})</li>
+          {% empty %}
+            <li>No baseline snapshots in the selected period.</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
