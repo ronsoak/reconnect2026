@@ -1,7 +1,11 @@
 from datetime import date, timedelta
+from html import unescape
+import re
+from unittest.mock import patch
+from urllib.parse import parse_qs
 
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from website.models import Adverts, Articles, Logic, Sites
 
@@ -65,6 +69,14 @@ class PublicationsDirectoryTests(TestCase):
             **values,
         )
 
+    def pagination_href(self, response, direction):
+        match = re.search(
+            rf'class="pagination-{direction}" href="([^"]+)"',
+            response.content.decode(),
+        )
+        self.assertIsNotNone(match)
+        return unescape(match[1])
+
     def test_directory_lists_only_visible_sites_with_visible_articles(self):
         response = self.client.get("/publications/")
 
@@ -127,8 +139,64 @@ class PublicationsDirectoryTests(TestCase):
     def test_directory_defaults_to_random_order(self):
         response = self.client.get("/publications/")
         self.assertEqual(response.context["sort"], "random")
-        self.assertEqual(response.context["page_obj"].paginator.object_list.query.order_by, ("?",))
+        seed = parse_qs(response.context["extra_query"].lstrip("&"))["seed"][0]
+        self.assertRegex(seed, r"^[0-9a-f]{32}$")
         self.assertContains(response, '<option value="random" selected>Random order</option>', html=True)
+
+    @override_settings(PUBLICATIONS_PAGE_SIZE=2)
+    def test_random_directory_pagination_preserves_order_filters_and_fresh_visits(self):
+        expected = {self.alpha_site.pk}
+        self.alpha_site.categories.add(self.tabletop)
+        for index in range(5):
+            site = self.make_site(
+                f"Random site {index}", f"https://random-{index}.example.com",
+                self.video_games, [self.news],
+            )
+            self.make_article(site, f"Random article {index}")
+            expected.add(site.pk)
+
+        url = (
+            f"/publications/?sort=random&category={self.video_games.pk}"
+            f"&category={self.tabletop.pk}&tag={self.news.pk}"
+        )
+        with patch("website.views.secrets.token_hex", side_effect=["a" * 32, "b" * 32]) as token:
+            first = self.client.get(url)
+            first_ids = [site.pk for site in first.context["page_obj"]]
+            ordering = list(first.context["page_obj"].paginator.object_list.values_list("pk", flat=True))
+            seen = first_ids[:]
+            response = first
+            while response.context["page_obj"].has_next():
+                href = self.pagination_href(response, "next")
+                params = parse_qs(href.split("?", 1)[1])
+                self.assertEqual(params["seed"], ["a" * 32])
+                self.assertEqual(params["category"], [str(self.video_games.pk), str(self.tabletop.pk)])
+                self.assertEqual(params["tag"], [str(self.news.pk)])
+                self.assertEqual(params["sort"], ["random"])
+                response = self.client_class().get("/publications/" + href)
+                seen.extend(site.pk for site in response.context["page_obj"])
+                if response.context["page_obj"].number == 2:
+                    previous = self.client.get("/publications/" + self.pagination_href(response, "previous"))
+                    self.assertEqual([site.pk for site in previous.context["page_obj"]], first_ids)
+            self.assertEqual(seen, ordering)
+            self.assertEqual(set(seen), expected)
+            self.assertEqual(len(seen), len(expected))
+
+            fresh = self.client.get(url)
+            self.assertIn("seed=" + "b" * 32, fresh.context["extra_query"])
+            fresh_order = list(fresh.context["page_obj"].paginator.object_list.values_list("pk", flat=True))
+            self.assertNotEqual(ordering, fresh_order)
+            self.assertEqual(token.call_count, 2)
+
+    def test_random_tokens_are_validated_and_ignored_for_other_sorts(self):
+        for path in ("/publications/?sort=random", f"/publications/{self.alpha_site.pk}/?order=random"):
+            for seed in ("", "short", "g" * 32, "a" * 33):
+                with self.subTest(path=path, seed=seed):
+                    self.assertEqual(self.client.get(path + "&seed=" + seed).status_code, 400)
+        for path in ("/publications/?sort=alpha", f"/publications/{self.alpha_site.pk}/?order=newest"):
+            with self.subTest(path=path):
+                response = self.client.get(path + "&seed=invalid")
+                self.assertEqual(response.status_code, 200)
+                self.assertNotIn("seed=", response.context["extra_query"])
 
     def test_filter_controls_use_joined_pairs_and_a_styled_sort_select(self):
         response = self.client.get("/publications/")
@@ -164,6 +232,34 @@ class PublicationsDirectoryTests(TestCase):
 
 
 class PublicationArticlePageTests(PublicationsDirectoryTests):
+    @override_settings(PUBLICATION_ARTICLES_PAGE_SIZE=2, PUBLICATION_ARTICLES_LIMIT=5)
+    def test_random_article_pagination_preserves_the_capped_selection(self):
+        for index in range(5):
+            self.make_article(self.alpha_site, f"Random extra {index}")
+        hidden = self.make_article(self.alpha_site, "Hidden random article", hidden=True)
+        path = f"/publications/{self.alpha_site.pk}/"
+        with patch("website.views.secrets.token_hex", return_value="c" * 32) as token:
+            first = self.client.get(path + "?order=random")
+            expected = list(first.context["page_obj"].paginator.object_list.values_list("pk", flat=True))
+            first_ids = [article.pk for article in first.context["page_obj"]]
+            self.assertEqual([card.item.pk for card in first.context["cards"]], first_ids)
+            seen = first_ids[:]
+            response = first
+            while response.context["page_obj"].has_next():
+                response = self.client_class().get(path + self.pagination_href(response, "next"))
+                self.assertIn("seed=" + "c" * 32, response.context["extra_query"])
+                page_ids = [article.pk for article in response.context["page_obj"]]
+                self.assertEqual([card.item.pk for card in response.context["cards"]], page_ids)
+                seen.extend(page_ids)
+                if response.context["page_obj"].number == 2:
+                    previous = self.client.get(path + self.pagination_href(response, "previous"))
+                    self.assertEqual([article.pk for article in previous.context["page_obj"]], first_ids)
+            self.assertEqual(seen, expected)
+            self.assertEqual(len(seen), 5)
+            self.assertEqual(len(set(seen)), 5)
+            self.assertNotIn(hidden.pk, seen)
+            self.assertEqual(token.call_count, 1)
+
     def test_site_articles_page_shows_details_and_newest_articles(self):
         response = self.client.get(f"/publications/{self.alpha_site.pk}/")
 

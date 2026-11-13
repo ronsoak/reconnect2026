@@ -1,11 +1,15 @@
 import random
+import re
+import secrets
 import time
 from urllib.parse import urlencode
 
 from django.core import signing
+from django.core.exceptions import BadRequest
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Count, F, Q
+from django.db.models import CharField, Count, F, Q, Value
+from django.db.models.functions import Cast, Concat, MD5
 from django.http import HttpResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -42,6 +46,19 @@ SITE_ARTICLE_ORDERS = (
     ("popular", "Popular"),
     ("random", "Random"),
 )
+
+
+def stable_random_order(queryset, query_params):
+    """Keep a random ordering across requests using a small URL token, not stored IDs."""
+    seed = query_params.get("seed")
+    if seed is None:
+        seed = secrets.token_hex(16)
+    elif not re.fullmatch(r"[0-9a-f]{32}", seed):
+        raise BadRequest("Invalid random ordering token.")
+    query_params["seed"] = seed
+    return queryset.alias(
+        random_order=MD5(Concat(Value(seed), Value(":"), Cast("pk", CharField()))),
+    ).order_by("random_order", "pk")
 
 
 def current_filters(request):
@@ -314,6 +331,10 @@ def publications(request):
     sort = request.GET.get("sort", "random")
     if sort not in {"alpha", "newest", "reverse", "random"}:
         sort = "random"
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    if sort != "random":
+        query_params.pop("seed", None)
 
     sites = Sites.objects.filter(hidden=False).annotate(
         visible_article_count=Count(
@@ -332,13 +353,11 @@ def publications(request):
     elif sort == "reverse":
         sites = sites.order_by("-name", "-pk")
     elif sort == "random":
-        sites = sites.order_by("?")
+        sites = stable_random_order(sites, query_params)
     else:
         sites = sites.order_by("name", "pk")
 
     page_obj = Paginator(sites, settings.PUBLICATIONS_PAGE_SIZE).get_page(request.GET.get("page", 1))
-    query_params = request.GET.copy()
-    query_params.pop("page", None)
     context = {
         "categories": Logic.objects.filter(logic_type="CATEGORY").order_by("value"),
         "tags": Logic.objects.filter(logic_type="TAG").order_by("value"),
@@ -360,12 +379,16 @@ def site_articles(request, site_id):
     order = request.GET.get("order", "newest")
     if order not in SITE_ARTICLE_SORTS:
         order = "newest"
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    if order != "random":
+        query_params.pop("seed", None)
 
     articles = visible_articles().filter(site=site).select_related("site").prefetch_related("site__categories")
     if order == "popular":
         articles = articles.order_by("-rank", "-published", "run_id", "pk")
     elif order == "random":
-        articles = articles.order_by("?")
+        articles = stable_random_order(articles, query_params)
     else:
         articles = articles.order_by("-published", "run_id", "pk")
 
@@ -377,8 +400,6 @@ def site_articles(request, site_id):
     rng = random.Random()
     cards = build_article_cards(list(page_obj.object_list), rng)
 
-    query_params = request.GET.copy()
-    query_params.pop("page", None)
     return render(
         request,
         "site_articles.html",

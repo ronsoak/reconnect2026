@@ -69,6 +69,11 @@ Visit `/publications/` for the all-articles and category feeds, and to browse vi
 The directory defaults to random order; the sort control also offers alphabetical,
 reverse alphabetical and newest-added ordering.
 Publication pages list each site's visible articles and offer newest, popular, and random ordering.
+Random ordering on both pages carries a `seed` token in pagination links, keeping the
+order (and the publication article cap) consistent for an unchanged dataset. A new
+visit without a token starts a fresh shuffle; normal sorts and Reset do not retain
+the token. Invalid Random tokens return HTTP 400. This does not freeze the dataset:
+newly imported or hidden content can still change page boundaries.
 
 ### Feed parameters
 

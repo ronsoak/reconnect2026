@@ -4,6 +4,9 @@
 **Code baseline:** `78a1258` - animated the article count  
 **Purpose:** identify worthwhile improvements and removable bloat, without changing application behaviour.
 
+**Follow-up, 13 November 2026:** F02 is now implemented and covered by focused regression tests.
+The original audit results below remain a record of the reviewed baseline.
+
 ## Executive summary
 
 **Reconnect does not need a rewrite.** The Django/template approach, small JavaScript layer,
@@ -14,7 +17,7 @@ advert spacing, filtered widgets, import safeguards and historical analytics.
 The highest-value work is:
 
 1. Finish and rehearse production configuration.
-2. Make random ordering stable across a pagination journey.
+2. Make random ordering stable across a pagination journey. **Implemented in the follow-up.**
 3. Return keyboard focus when a filter dropdown closes.
 4. Fix the Clicks admin search and make ingestion refresh failures observable.
 5. Agree whether newsletter rankings should include RSS clicks.
@@ -36,7 +39,7 @@ The cleanup opportunities are mostly generated files, unused scaffolding and one
 | ID | Priority | Recommendation | Effort | Change risk |
 | --- | --- | --- | --- | --- |
 | F01 | P1 | Complete production settings, serving and operational verification | L | High if deployed without rehearsal |
-| F02 | P1 | Preserve one random ordering across pagination | M | Medium |
+| F02 | P1 | **Implemented:** preserve one random ordering across pagination | M | Medium |
 | F03 | P1 | Restore filter-trigger focus on Escape | S | Low |
 | F04 | P2 | Fix the Clicks admin search field | S | Low |
 | F05 | P2 | Make newsletter click-source policy explicit | S-M | Medium: editorial ranking changes |
@@ -133,10 +136,17 @@ survives a restart, completes a scheduled job and restores a backup successfully
 
 ### F02 [P1] Random pagination can repeat or omit publications/articles
 
-**Evidence:** [publication ordering](website/views.py#L335),
-[publication-article ordering](website/views.py#L368).
+**Status: implemented, 13 November 2026.** Both views now use a bounded URL token and
+deterministic database ordering, with a primary-key tie-breaker. Pagination preserves the token,
+filters and sort, including the capped publication-article selection. New visits without a token
+shuffle again; malformed Random tokens return HTTP 400. No session-stored ID lists or migrations
+were added. Content changes can still move page boundaries; this is not a frozen data snapshot.
 
-Both use database random ordering before pagination. Each request can generate a different
+**Evidence:** [shared ordering](website/views.py#L51),
+[publication ordering](website/views.py#L356),
+[publication-article ordering](website/views.py#L391).
+
+At the audit baseline, both used database random ordering before pagination. Each request could generate a different
 ordering, so page 2 is not necessarily the continuation of page 1. This is especially relevant now
 that Publications defaults to Random. A passing test that checks `order_by("?")` does not test
 cross-page continuity.
@@ -152,6 +162,10 @@ Avoid a large session-stored list of every article merely to implement this.
 duplicates or omissions; a fresh token can change the order. Explicit alphabetical/newest sorts
 and filter/reset behaviour remain correct.
 **Effort/risk:** M; a focused ordering/pagination change, not a feed rewrite.
+
+**Follow-up verification:** all 43 Publications/configuration tests passed, including traversal
+through rendered Next/Previous links, separate-client continuation, filter preservation, fresh
+shuffles, invalid tokens and the article limit. Django checks and whitespace checks passed.
 
 ### F03 [P1] Escape closes a filter menu without restoring keyboard focus
 
@@ -438,7 +452,8 @@ These are workflow suggestions, not additional dependencies or authorisation to 
 
 1. **Small correctness batch, still reviewed one change at a time:** F03, F04 and the obsolete
    test in F10. Re-run the affected tests and keyboard check.
-2. **Browsing correction:** F02, with explicit cross-page tests and a manual pagination check.
+2. **Browsing correction:** F02 is implemented; retain its cross-page regression tests and
+   manually check pagination with real content before deployment.
 3. **Policy decisions:** F05's click definition and F07's old-link visibility behaviour.
 4. **Operations:** F06 and F01; decide F08 as part of the production worker plan.
 5. **Cheap efficiency/documentation:** F09 and the remaining F10 reconciliation.
