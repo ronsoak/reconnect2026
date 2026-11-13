@@ -4,8 +4,10 @@
 **Code baseline:** `78a1258` - animated the article count  
 **Purpose:** identify worthwhile improvements and removable bloat, without changing application behaviour.
 
-**Follow-up, 13 November 2026:** F02 is now implemented and covered by focused regression tests.
-The original audit results below remain a record of the reviewed baseline.
+**Follow-up, 13 November 2026:** F02, F03, F04, F05, F06, F07, F09 and F10 are implemented.
+F01 (production preparation) and F08 (shared-cache policy) remain open; optional cleanup
+has not been performed. Original findings and audit results below describe the reviewed
+baseline, not the current status of the completed items.
 
 ## Executive summary
 
@@ -18,12 +20,13 @@ The highest-value work is:
 
 1. Finish and rehearse production configuration.
 2. Make random ordering stable across a pagination journey. **Implemented in the follow-up.**
-3. Return keyboard focus when a filter dropdown closes.
-4. Fix the Clicks admin search and make ingestion refresh failures observable.
-5. Agree whether newsletter rankings should include RSS clicks.
-6. Restore a green test suite and reconcile stale documentation.
+3. Return keyboard focus when a filter dropdown closes. **Implemented.**
+4. Fix the Clicks admin search and make ingestion refresh failures observable. **Implemented.**
+5. Agree whether newsletter rankings should include RSS clicks. **Confirmed and implemented.**
+6. Correct the stale About assertion and reconcile documentation. **Implemented.**
 
-There are **10 prioritised findings: 3 P1 and 7 P2**, plus three small cleanup candidates.
+The original audit identified **10 findings: 3 P1 and 7 P2**, plus three small cleanup candidates.
+Eight findings have since been actioned; the two operational items remain open.
 None justifies deleting a delivered feature or introducing a new application framework.
 The cleanup opportunities are mostly generated files, unused scaffolding and one duplicate index.
 
@@ -40,14 +43,14 @@ The cleanup opportunities are mostly generated files, unused scaffolding and one
 | --- | --- | --- | --- | --- |
 | F01 | P1 | Complete production settings, serving and operational verification | L | High if deployed without rehearsal |
 | F02 | P1 | **Implemented:** preserve one random ordering across pagination | M | Medium |
-| F03 | P1 | Restore filter-trigger focus on Escape | S | Low |
-| F04 | P2 | Fix the Clicks admin search field | S | Low |
-| F05 | P2 | Make newsletter click-source policy explicit | S-M | Medium: editorial ranking changes |
-| F06 | P2 | Surface ingestion's final count-refresh failure | S | Low |
-| F07 | P2 | Align ordinary article redirects with publication visibility | S | Low-medium: old links change behaviour |
+| F03 | P1 | **Implemented:** restore filter-trigger focus on Escape | S | Low |
+| F04 | P2 | **Implemented:** fix the Clicks admin search field | S | Low |
+| F05 | P2 | **Implemented:** combine website and RSS newsletter clicks | S-M | Medium: editorial ranking changes |
+| F06 | P2 | **Implemented:** surface ingestion's final count-refresh failure | S | Low |
+| F07 | P2 | **Implemented:** align article redirects with publication visibility | S | Low-medium: old links change behaviour |
 | F08 | P2 | Decide shared-cache policy before adding web workers | M | Medium |
-| F09 | P2 | Calculate the shared article count once per request | S | Low |
-| F10 | P2 | Correct stale tests and conflicting project documentation | S-M | Low |
+| F09 | P2 | **Implemented:** calculate the shared article count once per request | S | Low |
+| F10 | P2 | **Implemented:** correct stale tests and conflicting documentation | S-M | Low |
 
 ## What was reviewed and verified
 
@@ -63,7 +66,7 @@ The review covered the principal implemented paths, not every historical revisio
 | Editorial/admin | Newsletter selection, model/admin configuration and contact handling |
 | Deployment/maintenance | Settings, dependencies, tracked build output, schema consistency and documentation |
 
-### Validation results
+### Original audit validation (before fixes)
 
 | Check | Result |
 | --- | --- |
@@ -74,7 +77,7 @@ The review covered the principal implemented paths, not every historical revisio
 | `.venv/bin/python manage.py makemigrations --check --dry-run` | No changes detected |
 | `.venv/bin/python -m pip check` | No broken requirements |
 
-The Django failure is an obsolete About-page placeholder assertion, not a missing signup feature.
+The Django failure was an obsolete About-page placeholder assertion, not a missing signup feature.
 Mocked SMTP/Turnstile failure logs appeared during tests; these were not additional test failures.
 
 Additional runtime checks used **isolated synthetic SQLite databases**, not working data:
@@ -93,9 +96,29 @@ External HTTPS resources were blocked during these checks; fixtures used image-f
 articles. This is not a full cover-art, advert, font-loading, browser-engine or physical-device test.
 The temporary server and database were removed afterward.
 
+### Follow-up validation after implementation
+
+- **375 Django tests passed:** `.venv/bin/python manage.py test website --verbosity 1`.
+- **12 JavaScript tests passed:** `node --test website/tests/js/*.test.cjs`.
+- Django system checks passed; migration consistency reported **no changes detected**.
+- `git diff --check` passed.
+- An isolated browser fixture used the actual filter component, CSS and JavaScript.
+  At **390 and 1280 CSS pixels**, both Category and Focus returned focus to their
+  own visible trigger on Escape, closed their panel and reset `aria-expanded`.
+  Clicking an outside input closed each panel without stealing its focus.
+  The fixture returned HTTP 200; its attached server was stopped afterward.
+- No models, migrations, dependencies, production configuration or working data
+  were changed. No imports, purges or remote posting were run.
+
+The obsolete About assertion is fixed; the complete Django suite now passes.
+These results do not replace staging acceptance, physical-device checks or
+production verification. The local development guide [agents.md](agents.md) and
+product context [PRODUCT.md](PRODUCT.md) were updated but remain Git-ignored;
+they were not force-added and will not be included by an ordinary commit.
+
 ### Important limits
 
-- No application code, models, migrations or working data were changed.
+- The original read-only review changed no application code, models, migrations or working data.
 - No production import, purge, posting, email delivery or deployment was performed.
 - Railway services, schedules, HTTPS/proxy behaviour, backup restoration and production keys
   were not inspected. Repository settings are not proof of deployed settings.
@@ -143,8 +166,8 @@ shuffle again; malformed Random tokens return HTTP 400. No session-stored ID lis
 were added. Content changes can still move page boundaries; this is not a frozen data snapshot.
 
 **Evidence:** [shared ordering](website/views.py#L51),
-[publication ordering](website/views.py#L356),
-[publication-article ordering](website/views.py#L391).
+[publication ordering](website/views.py#L359),
+[publication-article ordering](website/views.py#L394).
 
 At the audit baseline, both used database random ordering before pagination. Each request could generate a different
 ordering, so page 2 is not necessarily the continuation of page 1. This is especially relevant now
@@ -169,10 +192,13 @@ shuffles, invalid tokens and the article limit. Django checks and whitespace che
 
 ### F03 [P1] Escape closes a filter menu without restoring keyboard focus
 
+**Status: implemented.** Escape restores the owning trigger before hiding the menu.
+Outside dismissal does not move focus. Focused JavaScript regressions cover both paths.
+
 **Evidence:** [menu hiding](static/js/filters.js#L6),
 [Escape handler](static/js/filters.js#L42).
 
-In the browser fixture, focusing a category checkbox and pressing Escape set the trigger's
+In the original browser fixture, focusing a category checkbox and pressing Escape set the trigger's
 `aria-expanded` to false, but left the focused element as an input with no visible client rectangle.
 
 **Impact:** keyboard users lose the visible focus location after dismissing the dropdown.
@@ -187,9 +213,12 @@ and finds focus on the correct trigger with the menu closed.
 
 ### F04 [P2] Searching the Clicks admin raises an exception
 
+**Status: implemented.** Search uses `type__value`. Regression requests exercise RSS,
+Article and Advert names, case-insensitive matches, blank searches and unmatched searches.
+
 **Evidence:** [ClicksAdmin.search_fields](website/admin.py#L132).
 
-The admin searches `type` directly, but that field is a foreign key.
+At the audit baseline the admin searched `type` directly, but that field is a foreign key.
 A runtime probe reproduced:
 
 > FieldError: Unsupported lookup 'icontains' for ForeignKey or join on the field not permitted.
@@ -205,11 +234,15 @@ blank and unmatched searches work.
 
 ### F05 [P2] Newsletter rankings and analytics use different click-source definitions
 
+**Status: implemented with owner approval.** Weekly/monthly recaps combine Article and RSS
+events in the selected period, excluding adverts. Preview and Markdown explain the metric.
+Regression coverage includes RSS-only and mixed-source rankings and out-of-period events.
+
 **Evidence:** [newsletter counts](website/newsletter.py#L94),
 [report click types](website/analytics_reports.py#L94),
 [newsletter tests](website/tests/test_newsletter.py#L97).
 
-The newsletter counts raw `Article` clicks only; analytics combines `Article` and `RSS`.
+At the audit baseline the newsletter counted raw `Article` clicks only; analytics combined `Article` and `RSS`.
 In an isolated fixture, an eligible article with an RSS click received `week_clicks=0`
 and did not reach the newsletter's clicked-article top section.
 
@@ -227,9 +260,13 @@ hidden content and recap exclusions out of the selection.
 
 ### F06 [P2] Ingestion can finish successfully after its count refresh fails
 
+**Status: implemented.** Refresh errors raise `CommandError`, retaining completed imports.
+The failure message explains full-count recovery; incremental updates must not be replayed blindly.
+A mocked-child regression verifies the failure and retained imported article without network activity.
+
 **Evidence:** [post-ingest count refresh](website/management/commands/ingest_all.py#L138).
 
-The wrapper catches exceptions from its final `count_articles --mode mini` call and prints them,
+At the audit baseline the wrapper caught exceptions from its final `count_articles --mode mini` call and printed them,
 without making the overall run fail.
 
 **Impact:** an operator or cron monitor may see a successful process with stale publication counts.
@@ -243,10 +280,13 @@ define and monitor this as a partial-success outcome. Test the wrapper's result,
 
 ### F07 [P2] Ordinary and RSS article redirects apply different publication visibility rules
 
-**Evidence:** [ordinary redirect](website/views.py#L202),
-[RSS redirect](website/views.py#L215), [shared visibility](website/feed.py#L118).
+**Status: implemented with owner approval.** Ordinary links now also check `site__hidden=False`.
+A regression verifies immediate 404, no new click and unchanged stale article flags.
 
-The ordinary redirect checks article flags but not `site__hidden=False`.
+**Evidence:** [ordinary redirect](website/views.py#L212),
+[RSS redirect](website/views.py#L233), [shared visibility](website/feed.py#L118).
+
+At the audit baseline the ordinary redirect checked article flags but not `site__hidden=False`.
 The shared public queryset and RSS redirect do check the publication itself.
 An old direct article link can therefore still redirect and record a click while its publication is
 hidden but its cached `site_hide` flag has not yet been synchronised.
@@ -283,11 +323,15 @@ Shared caching alone should not be described as a perfectly strict global rate l
 
 ### F09 [P2] Header and footer repeat the same article-count query
 
+**Status: implemented.** The helper memoizes on the current request while retaining supplied
+About-page totals and request-free template support. Tests verify one real count query across
+component includes, one helper count for header/footer, and fresh totals on subsequent requests.
+
 **Evidence:** [header tag](templates/components/header.html#L2),
 [footer tag](templates/components/footer.html#L2),
 [count helper](website/templatetags/footer_tags.py#L10).
 
-Where `article_count` is absent from context, each tag independently calls
+At the audit baseline, where `article_count` was absent from context, each tag independently called
 `visible_articles().count()`. About supplies the count, but ordinary feed requests do not.
 The new animation uses the existing total; it does not itself need repeated database queries.
 
@@ -303,12 +347,18 @@ unchanged hidden-content/filter rules. Keep comma formatting, static fallback an
 
 ### F10 [P2] Tests and project documents describe conflicting product states
 
+**Status: implemented.** The About test checks the delivered signup iframe. README,
+product/design context, the development checklist and directly related cron instructions now
+describe implemented behaviour without claiming production deployment. Completed checklist
+items have moved into the implemented summary. The development guide remains Git-ignored:
+back it up separately.
+
 **Evidence:** [failing About test](website/tests/test_about.py#L7),
 [README placeholders](readme.md#L271),
 [planned RSS/Bluesky statement](PRODUCT.md#L52),
 [old card/date and flow descriptions](DESIGN.md#L113).
 
-The full suite has one failure expecting an unimplemented newsletter placeholder, although the
+The audit-baseline suite had one failure expecting an unimplemented newsletter placeholder, although the
 signup embed exists. The README still says embeds have not been added. Product context still calls
 RSS and scheduled Bluesky planned capabilities. The design document describes older date display,
 column-first flow and styling that should not override the approved current components.
@@ -425,9 +475,11 @@ These are not demonstrated launch failures:
 
 **Implementation-integrity verdict: pass for coherence, not a blanket quality certification.**
 The delivered catalogue/grid/filter system is product-specific and internally purposeful.
-The major frontend finding is keyboard dismissal behaviour, not a need to change its visual identity.
+The major frontend finding at the audit baseline was keyboard dismissal behaviour,
+not a need to change its visual identity. F03 is now fixed and browser-verified.
 
-Indicative UI-only rubric, based on source and the limited browser smoke checks:
+Historical UI-only rubric, based on the original source and limited browser smoke checks
+(not re-scored after the fixes):
 
 | Dimension | Provisional score / 4 | Basis and limitation |
 | --- | ---: | --- |
@@ -438,28 +490,27 @@ Indicative UI-only rubric, based on source and the limited browser smoke checks:
 | Implementation integrity | 4 | Confirmed component responsibilities; detector examples were intentional styling, not evidence of generic replacement UI. |
 | **Total** | **14/20: Good within this limited rubric** | **Not a launch-readiness score or WCAG certification.** |
 
-The local source detector returned **64 candidates**: 47 colour, 13 font-size, 3 radius and
+At the audit baseline, the local source detector returned **64 candidates**: 47 colour, 13 font-size, 3 radius and
 1 side-accent result. These are **not 64 confirmed defects**. Representative checks found stale
 design-token expectations and intentional search/menu/widget/card styling. The side-accent example
 at [custom.css:1421](static/css/custom.css#L1421) is a contact status box, not an unwanted side tab.
-Reconcile the design reference before treating those warnings as a CSS rewrite list.
+The design reference has since been reconciled under F10. The historical candidate
+count is not a new detector run or a CSS rewrite list.
 
-For frontend follow-up: a focused `$impeccable harden` pass for F03, `$impeccable optimize` for
-F09 only if profiling warrants it, then `$impeccable polish`. Re-run `$impeccable audit` after fixes.
-These are workflow suggestions, not additional dependencies or authorisation to change the design.
+F03 and F09 have been corrected without a visual redesign. Any further optimisation
+should follow measured profiling; any broader polish or audit remains a separately
+approved task, not a prerequisite introduced by these fixes.
 
-## Suggested implementation order
+## Remaining acceptance and next decisions
 
-1. **Small correctness batch, still reviewed one change at a time:** F03, F04 and the obsolete
-   test in F10. Re-run the affected tests and keyboard check.
-2. **Browsing correction:** F02 is implemented; retain its cross-page regression tests and
-   manually check pagination with real content before deployment.
-3. **Policy decisions:** F05's click definition and F07's old-link visibility behaviour.
-4. **Operations:** F06 and F01; decide F08 as part of the production worker plan.
-5. **Cheap efficiency/documentation:** F09 and the remaining F10 reconciliation.
-6. **Optional cleanup:** B01/B02; consider B03 only with migration approval.
-7. **Staging acceptance:** full suite, narrow/mobile/tablet/desktop checks, real media and email,
-   cron verification, backup restoration and production smoke tests.
+1. **Owner acceptance of the completed changes:** check real-content pagination,
+   filter keyboard dismissal, Clicks admin search and combined website/RSS recap rankings.
+   Hidden-publication article links now return 404 immediately, as approved.
+2. **Production preparation:** complete F01 and decide F08 as part of the worker/cache plan.
+3. **Optional cleanup:** B01/B02 remain untouched; consider B03 only with migration approval.
+4. **Staging acceptance:** the full local suite passes, but real-device/media checks,
+   email delivery, cron verification, backup restoration and production smoke tests remain.
 
-**Recommended boundary:** do not combine this list into one cleanup PR. Keep the working application
-intact, agree each behavioural change, and use the smallest tests that demonstrate its intended result.
+**Recommended boundary:** the approved correctness batch is complete. Do not expand it into
+unapproved cleanup or deployment work. Keep the working application intact, agree each
+behavioural change, and use the smallest tests that demonstrate its intended result.

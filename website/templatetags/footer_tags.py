@@ -10,4 +10,9 @@ register = template.Library()
 def footer_article_count(context):
     if "article_count" in context:
         return context["article_count"]
-    return visible_articles().count()
+    request = context.get("request")
+    if request is None:
+        return visible_articles().count()
+    if not hasattr(request, "_reconnect_article_count"):
+        request._reconnect_article_count = visible_articles().count()
+    return request._reconnect_article_count

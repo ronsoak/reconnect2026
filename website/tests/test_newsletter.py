@@ -107,6 +107,30 @@ class NewsletterTests(TestCase):
         Clicks.objects.create(type=self.click_type, article=str(article.pk), date=MONDAY - timedelta(days=1))
         self.assertEqual(self.build()["top"], [])
 
+    def test_weekly_and_monthly_rankings_combine_rss_and_article_clicks(self):
+        mixed = self.article("Mixed interest", clicks=2)
+        web = self.article("Website interest", clicks=3)
+        rss_only = self.article("RSS interest")
+        rss_type = Logic.objects.create(logic_type="CLICK_TYPE", value="RSS")
+        advert_type = Logic.objects.create(logic_type="CLICK_TYPE", value="Advert")
+        for article in (mixed, mixed, rss_only):
+            Clicks.objects.create(type=rss_type, article=str(article.pk), date=MONDAY)
+        Clicks.objects.create(
+            type=rss_type, article=str(rss_only.pk), date=date(2026, 9, 30),
+        )
+        Clicks.objects.create(type=advert_type, article=str(rss_only.pk), date=MONDAY)
+        for period, start, end in (
+            ("week", MONDAY, MONDAY + timedelta(days=6)),
+            ("month", date(2026, 10, 1), date(2026, 10, 31)),
+        ):
+            with self.subTest(period=period):
+                data = build_newsletter(start, end, period=period)
+                self.assertEqual(
+                    [(article.pk, article.week_clicks) for article in data["top"]],
+                    [(mixed.pk, 4), (web.pk, 3), (rss_only.pk, 1)],
+                )
+                self.assertIn("website and RSS article click-throughs", render_markdown(data))
+
     def test_top_section_is_capped(self):
         for i in range(settings.NEWSLETTER_WEEKLY_TOP_COUNT + 2):
             self.article(f"Article {i}", clicks=1)
@@ -140,6 +164,7 @@ class NewsletterAdminPageTests(TestCase):
         self.client.force_login(self.admin)
         page = self.client.get("/backdoor/newsletter/?period=month&which=last")
         self.assertContains(page, "Download markdown")
+        self.assertContains(page, "website and RSS article click-throughs")
         download = self.client.get("/backdoor/newsletter/?download=1")
         self.assertIn("attachment", download["Content-Disposition"])
         self.assertIn(".md", download["Content-Disposition"])

@@ -90,9 +90,12 @@ def build_newsletter(start, end=None, top_count=None, *, period="week"):
     else:
         articles = list(articles)
 
-    # Clicks recorded this week for each article (Clicks.article holds the article id as text)
+    # Article and RSS click-throughs in the selected period, excluding adverts.
     counts = dict(
-        Clicks.objects.filter(type__value="Article", date__gte=start, date__lte=end)
+        Clicks.objects.filter(
+            type__logic_type="CLICK_TYPE", type__value__in=("Article", "RSS"),
+            date__gte=start, date__lte=end,
+        )
         .values_list("article")
         .annotate(total=Count("id"))
     )
@@ -132,6 +135,7 @@ def render_markdown(data):
     monthly = period == "month"
     title = f"{start:%B %Y}" if monthly else f"{start:%d %b} to {end:%d %b %Y}"
     lines = [f"# Reconnect Recap: {title}", ""]
+    lines += [f"Clicks combine website and RSS article click-throughs recorded during this {period}.", ""]
     lines.append(f"## Top {top_count} by clicks this {period}")
     lines.append("")
     if data["top"]:

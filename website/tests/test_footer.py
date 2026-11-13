@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.template import Context, Template
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 
 from website.models import Articles, Logic, Sites
 
@@ -26,6 +26,25 @@ class FooterTests(TestCase):
                 )
                 self.assertContains(response, f'data-header-count="{count}"')
                 self.assertContains(response, f"<strong>{formatted}</strong>", html=True)
+                articles.return_value.count.assert_called_once_with()
+
+    def test_count_is_reused_per_request_but_not_across_requests(self):
+        with mock.patch("website.templatetags.footer_tags.visible_articles") as articles:
+            articles.return_value.count.side_effect = [0, 1234]
+            first = self.client.get("/privacy/")
+            second = self.client.get("/privacy/")
+        self.assertContains(first, "<strong>0</strong>", html=True)
+        self.assertContains(second, "<strong>1,234</strong>", html=True)
+        self.assertEqual(articles.return_value.count.call_count, 2)
+
+    def test_included_components_share_one_real_count_query(self):
+        template = Template(
+            '{% include "components/footer.html" %}{% include "components/footer.html" %}'
+        )
+        request = RequestFactory().get("/")
+        with self.assertNumQueries(1):
+            output = template.render(Context({"request": request}))
+        self.assertEqual(output.count("<strong>0</strong>"), 2)
 
     def test_footer_appears_on_public_pages_with_links_and_credits(self):
         for path in ("/", "/newest/", "/popular/", "/search/", "/publications/", "/about/"):

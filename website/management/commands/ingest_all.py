@@ -140,7 +140,10 @@ class Command(BaseCommand):
             call_command("count_articles", "--mode", "mini")
             self.stdout.write("Article counts updated successfully.")
         except Exception as e:
-            self.stderr.write(f"Failed to update article counts: {e}")
+            raise CommandError(
+                f"Run {new_run}: article-count refresh failed: {e}. "
+                "Completed imports are retained. Run count_articles --mode full before retrying."
+            ) from e
 
 
         # If any batch had an exception, raise CommandError -> non-zero exit code

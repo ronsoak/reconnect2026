@@ -153,8 +153,8 @@ For each job below: **New → GitHub Repo → same repo**, set the Start Command
 
 | Service name | Start Command | Suggested schedule (UTC) | Notes |
 |---|---|---|---|
-| `cron-ingest` | `python manage.py ingest_all` | `0 */4 * * *` | Reads the RSS feeds. Batches mean each run only does part of the sites. Tune the frequency to match |
-| `cron-maintenance` | `python manage.py filter_articles && python manage.py hide_articles && python manage.py count_articles && python manage.py last_article` | `30 19 * * *` (daily) | Runs after the ingest. Confirm the order is right for you |
+| `cron-ingest` | `python manage.py ingest_all` | `0 */4 * * *` | Reads all configured batches; use `--batch N` only for an explicitly selected batch |
+| `cron-maintenance` | `python manage.py filter_articles && python manage.py hide_articles && python manage.py count_articles --mode full && python manage.py last_article` | `30 19 * * *` (daily) | Runs after the ingest. Confirm the order is right for you |
 | `cron-age` | `python manage.py age_articles` | Your choice | Lowers article ranks so popular articles don't stay on top. Check the script header for how often it should run |
 | `cron-hide-sites` | `python manage.py hide_sites` | `0 20 * * 0` (weekly) | Hides sites with no articles for a long time. Runs after `last_article` |
 | `cron-dormant-sites` | `python manage.py check_dormant_sites` | `0 17 1 * *` (monthly, 1st) | Reactivates hidden dormant sites with newer dated RSS entries. Run before the next ingest; no `--limit` |
@@ -168,6 +168,9 @@ Notes:
 - `purge_clicks` keeps about 90 days of clicks in full, so you have time to notice a failure.
 - Check the **Logging** model in the admin after the first run of each job to confirm they work.
 - Any run that finishes with an error shows as failed in the Railway dashboard. Look there first.
+- If `ingest_all` fails during the final count refresh, completed imports remain saved.
+  Resolve the error and run `python manage.py count_articles --mode full` before retrying;
+  incremental mini updates may have partially completed and must not be replayed blindly.
 
 Cron services use your build minutes and memory. If you want fewer services, you can chain related commands with `&&` in one service, as `cron-maintenance` does above.
 

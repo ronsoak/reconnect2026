@@ -12,6 +12,7 @@
   <span class="ml-2">{{ start|date:"j M" }} to {{ end|date:"j M Y" }}</span>
 </div>
 
+<p class="mb-6">Rankings combine website and RSS article click-throughs recorded during this {{ period }}.</p>
 {% include "admin/newsletter_table.html" with heading="Top by clicks this "|add:period rows=top %}
 {% include "admin/newsletter_table.html" with heading="Everything else this "|add:period rows=remaining %}
 {% endblock %}

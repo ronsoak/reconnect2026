@@ -40,6 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") menus.forEach(function (menu) { setOpen(menu, false); });
+    if (event.key !== "Escape") return;
+    menus.forEach(function (menu) {
+      var button = menu.querySelector(".filter-multiselect__button");
+      if (button.getAttribute("aria-expanded") === "true" && menu.contains(document.activeElement)) {
+        button.focus();
+        event.preventDefault();
+      }
+      setOpen(menu, false);
+    });
   });
 });

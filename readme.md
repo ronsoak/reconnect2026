@@ -272,10 +272,10 @@ clears it and filter dropdowns fit the remaining viewport.
 
 The About page is assembled in `templates/about.html` from five components:
 `about_intro.html`, `about_newsletter.html`, `about_using.html`, `about_contact.html` and `about_credits.html`
-in `templates/components/`. Edit those components to replace the draft copy.
-Marked placeholders reserve space for the Bluesky profile, Substack welcome letter
-and newsletter signup, and personal credits. No external embeds load until you add
-their official embed code. Counts are calculated from public articles and their
+in `templates/components/`. Review the wording with the owner before changing it.
+The Bluesky profile link, Substack welcome-letter embed, newsletter-signup iframe
+and credits are implemented. Substack resources load on About; they are not
+unfilled placeholders. Counts are calculated from public articles and their
 distinct publications, independently of feed filters and cached site article counts.
 
 ## Contact form
@@ -305,7 +305,8 @@ web workers the rate limit is per worker until Redis is added.
 
 The shared footer lives in `templates/components/footer.html`, with layout in
 `static/css/custom.css`. Its article count uses the same public-article query as
-About and ignores filters. `static/js/footer.js` adds a one-time entrance when the
+About and ignores filters. Header and footer reuse that total within one request;
+there is no long-lived count cache. `static/js/footer.js` adds a one-time entrance when the
 count enters view; the final number remains readable without JavaScript or with
 reduced motion enabled.
 
@@ -446,12 +447,25 @@ Each script has its own usage examples at the top of its file. Add `--dry-run` w
 | `aggregate_clicks` | Totals last month's clicks into the Analytics model (`--month 2026-09`, `--month current`, `--dry-run`). Run it before purging clicks |
 | `purge_clicks` | Deletes the month of Clicks that is four months old (keeps about 90 days). Refuses unless Analytics already matches. `--dry-run`, `--month`, `--force` |
 
+`ingest_all` reports a command failure if its final site-count refresh fails,
+without rolling back completed imports. After resolving the cause, run
+`python manage.py count_articles --mode full` to reconcile counts before retrying.
+Do not repeat a failed run's incremental mini count: it may already have updated some sites.
+
 For `import_articles`, the CSV `site` column (or the `--site` fallback) accepts a
 publication name or an HTTP(S) publication URL. URLs match `Sites.url` exactly,
 ignoring case; they do not use partial matching. Names retain case-insensitive
 exact matching followed by partial matching. Import publications first, then
 preview articles with `python manage.py import_articles articles.csv --dry-run`.
 Add `--stop-on-error` to stop at the first invalid row. A dry run writes nothing.
+
+### Newsletter click rankings
+
+Admin newsletter previews and Markdown downloads rank eligible articles using
+combined website **Article** and **RSS** click-throughs recorded in the selected
+week/month. Advert events and out-of-period clicks do not count. Publication-date,
+visibility, site `recap` and whole-word excluded-term rules remain unchanged.
+These are recorded clicks, not subscriber counts or unique readers.
 
 ### Post-import analytics baseline
 

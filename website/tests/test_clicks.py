@@ -2,6 +2,7 @@ import time
 from datetime import timedelta
 from unittest import mock
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
@@ -78,6 +79,14 @@ class ClickTrackingTests(TestCase):
         self.assertEqual(self.go(self.other).status_code, 404)
         self.assertEqual(self.client.get("/go/999999/").status_code, 404)
 
+    def test_hidden_publication_is_404_before_article_flags_are_synchronised(self):
+        Sites.objects.filter(pk=self.site.pk).update(hidden=True)
+        self.assertEqual(self.go(self.article).status_code, 404)
+        self.article.refresh_from_db()
+        self.assertFalse(self.article.site_hide)
+        self.assertEqual(self.article.clicks, 0)
+        self.assertFalse(Clicks.objects.exists())
+
     def test_cards_link_through_the_tracker_and_crawlers_are_kept_out(self):
         self.assertContains(self.client.get("/newest/"), f'href="/go/{self.article.pk}/"')
         self.assertContains(self.client.get("/robots.txt"), "Disallow: /go/")
@@ -152,3 +161,24 @@ class AdvertClickTests(TestCase):
 
     def test_advert_card_links_through_the_tracker(self):
         self.assertContains(self.client.get("/newest/"), f'href="/go/ad/{self.advert.pk}/"')
+
+
+class ClicksAdminSearchTests(TestCase):
+    def test_search_uses_click_type_names_and_handles_empty_or_unmatched_queries(self):
+        user = get_user_model().objects.create_superuser("click-admin", "admin@example.com", "pw")
+        self.client.force_login(user)
+        records = {}
+        for value in ("Article", "RSS", "Advert"):
+            kind = Logic.objects.create(logic_type="CLICK_TYPE", value=value)
+            records[value] = Clicks.objects.create(type=kind, article="1").pk
+        for query, expected in (
+            ("RSS", {records["RSS"]}),
+            ("article", {records["Article"]}),
+            ("Advert", {records["Advert"]}),
+            ("unknown", set()),
+            ("", set(records.values())),
+        ):
+            with self.subTest(query=query):
+                response = self.client.get("/backdoor/website/clicks/", {"q": query})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(set(response.context["cl"].queryset.values_list("pk", flat=True)), expected)

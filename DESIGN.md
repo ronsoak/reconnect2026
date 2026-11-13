@@ -2,14 +2,19 @@
 name: Reconnect
 description: "A calm catalogue for independent writing about games."
 colors:
-  paper-ground: "#f5f5f2"
+  paper-ground: "#f5f6f2"
   white-surface: "#ffffff"
-  mist-surface: "#e9eeeb"
-  charcoal-ink: "#24282e"
-  muted-slate: "#56616a"
-  quiet-divider: "#dfe2df"
-  ocean-blue: "#45627a"
-  deep-ocean-blue: "#304b62"
+  mist-surface: "#dbdbd9"
+  charcoal-ink: "#353032"
+  muted-slate: "#5c5759"
+  quiet-divider: "#d3d2cf"
+  charcoal-action: "#353032"
+  deep-charcoal: "#1f1b1d"
+  brand-green: "#00ef6c"
+  category-video-games: "#0013ff"
+  category-ttrpg: "#ffe422"
+  category-tabletop: "#8c2918"
+  category-tcg: "#ffa1d2"
   warm-advert-stock: "#eee9dc"
 typography:
   display:
@@ -46,9 +51,9 @@ typography:
     lineHeight: 1.2
   navigation:
     fontFamily: "DM Sans, sans-serif"
-    fontSize: "0.83rem"
+    fontSize: "0.9rem"
     fontWeight: 600
-    lineHeight: 1.5
+    lineHeight: 1.2
   label:
     fontFamily: "DM Sans, sans-serif"
     fontSize: "0.68rem"
@@ -58,7 +63,8 @@ typography:
 rounded:
   compact: "0.3rem"
   control: "0.45rem"
-  card: "0.75rem"
+  card: "0.3rem"
+  pill: "999px"
 spacing:
   compact: "0.4rem"
   control-gap: "0.55rem"
@@ -68,7 +74,7 @@ spacing:
   section: "1.4rem"
 components:
   button-primary:
-    backgroundColor: "{colors.ocean-blue}"
+    backgroundColor: "{colors.charcoal-action}"
     textColor: "{colors.white-surface}"
     typography: "{typography.control}"
     rounded: "{rounded.control}"
@@ -85,11 +91,11 @@ components:
     backgroundColor: "{colors.white-surface}"
     textColor: "{colors.charcoal-ink}"
     typography: "{typography.filter}"
-    rounded: "{rounded.control}"
-    padding: "0.36rem 0.78rem"
+    rounded: "{rounded.pill}"
+    padding: "0 1.1rem"
     height: "2.55rem"
   feed-tab-active:
-    backgroundColor: "{colors.ocean-blue}"
+    backgroundColor: "{colors.charcoal-action}"
     textColor: "{colors.white-surface}"
     typography: "{typography.navigation}"
     rounded: "{rounded.compact}"
@@ -104,47 +110,57 @@ components:
 
 # Design System: Reconnect
 
+Reconciled with the delivered stylesheet and components on 13 November 2026.
+[static/css/custom.css](static/css/custom.css) and the approved shared components
+are the implementation reference; older concept images do not override them.
+The current site is explicitly light-only. A deliberate dark theme remains future work.
+
 ## Overview
 
 **Creative North Star: "A Game Library for Independent Writing"**
 
 Reconnect presents independent games writing as a changing collection of
 publication covers. The interface is editorial rather than retail: cover art
-helps readers recognize a story, while its title, publication and date remain
-the information used to scan and choose what to read.
+helps readers recognize a story, while its title, publication and categories
+remain the information used to scan and choose what to read. Regular cards do
+not display publication dates.
 
-The visual language is calm and catalogue-like. Cool paper tones, restrained
-blue actions, clean rules and confident sans typography give varied sources a
+The visual language is calm and catalogue-like. Light paper tones, dark-grey
+actions, sparing brand green, clean rules and confident sans typography give varied sources a
 shared frame without making the site feel like a storefront or social network.
 
 **Key Characteristics:**
 - Cover-led discovery with clear article attribution.
-- Equal-width cards whose image area and height vary by size.
+- Grid-unit cards spanning one or two columns, with image area and height varying by size.
 - Quiet, bordered surfaces instead of elevated or decorative panels.
-- Column-first feed flow that keeps visual order aligned with keyboard order.
+- Source-order article markup with responsive grid packing; widget placement must
+  preserve ordinary article order and keyboard access.
 
 ## Colors
 
-The palette pairs cool paper and charcoal neutrals with a restrained ocean-blue
-accent; a warmer paper tone is reserved for advert cards.
+The palette pairs light paper and dark-grey neutrals with sparing green highlights;
+a warmer paper tone is reserved for advert cards.
 
 ### Primary
-- **Muted Ocean Blue** (`#45627a`): Primary actions, selected feed navigation,
-  focus rings and article-category labels.
-- **Deep Ocean Blue** (`#304b62`): The stronger interaction state for primary
+- **Dark Grey** (`#353032`): Primary text, actions, selected navigation and focus rings.
+- **Deep Charcoal** (`#1f1b1d`): The stronger interaction state for primary
   controls and article titles on hover or focus.
+- **Brand Green** (`#00ef6c`): Use sparingly, including the ticker and Highlight Reel.
+  Keep dark text on green, not green body text on light surfaces.
+- **Categories:** Video Games `#0013ff`, TTRPGs `#ffe422`, Tabletop `#8c2918`,
+  TCGs `#ffa1d2`. Do not invent a Geek Culture colour.
 
 ### Neutral
-- **Cool Paper** (`#f5f5f2`): The page ground and quiet navigation surfaces.
+- **Light Paper** (`#f5f6f2`): The page ground and quiet navigation surfaces.
 - **White Surface** (`#ffffff`): Search, filter and article-card surfaces.
-- **Mist Surface** (`#e9eeeb`): Missing-cover placeholders and disabled controls.
-- **Charcoal Ink** (`#24282e`): Primary text and the Reconnect wordmark.
-- **Muted Slate** (`#56616a`): Supporting text, dates and the page lede.
-- **Quiet Divider** (`#dfe2df`): Borders and separators.
+- **Alternate Grey** (`#dbdbd9`): Alternate surfaces.
+- **Charcoal Ink** (`#353032`): Primary text.
+- **Muted Text** (`#5c5759`): Supporting text and the page lede.
+- **Quiet Divider** (`#d3d2cf`): Borders and separators.
 - **Warm Advert Stock** (`#eee9dc`): Advert image and placeholder areas.
 
 **The Cover-First Rule.** Use cover art to signal an article's subject, but keep
-its title, publication and date legible.
+its title, publication and categories legible.
 
 ## Typography
 
@@ -164,14 +180,14 @@ quiet.
   near the existing 65–70ch content widths.
 - **Label** (700, `0.68rem`, `0.075em`, uppercase): Article categories and
   compact editorial labels.
-- **Metadata** (400, `0.78rem`): Publication names and dates; dates use
-  tabular numerals.
+- **Metadata** (400, `0.78rem`): Publication attribution, not a visible publication date.
 
 ## Layout
 
 The page uses a centered Bulma container around a full-width paper ground. The
-masthead keeps the brand, search and About link together on wide screens; at
-768px and below, the brand and About link sit above a full-width search field.
+masthead keeps the logo, Home/Publications/About navigation, tagline, public
+article count and search together. Search occupies a full-width row. At 768px and
+below, navigation collapses behind the menu toggle; without JavaScript links remain visible.
 Feed controls form a separate rail, with the filters and feed navigation
 stacking on smaller screens.
 
@@ -179,7 +195,9 @@ The feed is a CSS grid with two columns up to 768px, three from 769px and four
 from 1024px, on a fixed `17rem` row unit. A small card fills one cell, a medium
 card is one column wide and two rows tall, and a large card is two columns wide
 and two rows tall. Dense packing lets small cards fill the gaps beside the
-larger ones. Gaps are `0.65rem` on narrow screens, `0.9rem` by default and
+larger ones. Widget-containing grids use row flow plus a responsive JavaScript
+planner that moves only widgets and preserves ordinary card order. Keep the
+no-JavaScript fallback. Gaps are `0.65rem` on narrow screens, `0.9rem` by default and
 `1rem` on wide screens.
 
 Use generous space above page headings, tighter spacing inside controls and
@@ -197,45 +215,51 @@ placeholder layers. Avoid adding shadows beneath these bordered surfaces.
 
 ## Shapes
 
-Cards use a 12px radius. Search and filter controls use a smaller 7.2px radius,
-with the active feed tab at 4.8px. Use clean rectangular catalogue forms rather
-than pill-shaped panels. Cover art is clipped to the card's rounded top edge;
+Cards use a `0.3rem` radius. Search controls use `0.45rem`; navigation and filter
+buttons use pill-shaped outer edges. Joined pairs have flat inner edges.
+Cover art is clipped to the card's rounded top edge;
 the card content remains on a white surface.
 
 ## Components
 
 ### Buttons
-- **Shape:** Compact rounded rectangles (`0.45rem`).
-- **Primary:** Ocean blue with white text; use for Search, Apply and the dynamic
-  feed's refresh action.
-- **Hover / Focus:** Hover deepens to deep ocean blue. Keyboard focus uses a
-  visible 3px ocean-blue outline with offset.
+- **Shape:** Follow the component: search controls are compact rectangles;
+  navigation and paired filters use rounded outside edges.
+- **Primary:** Dark grey with white text for dark primary actions.
+- **Hover / Focus:** Keep component-specific feedback and visible dark focus
+  outlines with offset.
 - **Secondary:** White surface, charcoal text and a quiet divider border; use
-  for filter and reset controls.
+  for filter controls and both Apply/Reset. Category/Focus and Apply/Reset are
+  joined pairs, not four separate pills.
 
 ### Cards / Containers
-- **Corner Style:** 12px for feed cards.
+- **Corner Style:** `0.3rem` for feed cards.
 - **Background:** White, with a one-pixel quiet-divider border and no shadow.
 - **Internal Padding:** `0.9rem 1rem 1rem` on wide screens, reduced on narrow
   screens.
 - **Cover Art:** Use the publication image when valid. Missing or failed images
   use a stable local fallback from `static/images/article-fallbacks/` when one is
-  available; otherwise show a neutral placeholder. Text-only cards stay small.
+  available; otherwise keep a small text-only card. Preserve broken-image
+  handling and image eligibility; do not introduce a new placeholder requirement.
 - **Size:** Small is 1x1, medium is 1x2 and large is 2x2 grid cells. The cover
   art fills the space left by the text.
 
 ### Inputs / Fields
 - **Style:** White search field with charcoal text, quiet-divider border and
   `0.45rem` corners. The joined Search button shares the same control height.
-- **Focus:** Keep the visible ocean-blue focus outline and caret.
+- **Focus:** Keep the visible dark focus outline and caret.
 
 ### Navigation
 - **Feed Tabs:** A bordered paper-tone rail with Dynamic, Newest and Popular
-  links; the current feed uses an ocean-blue fill and white text.
-- **Header:** Keep About directly available and the Reconnect wordmark linked
-  to the home feed. Stack the search field below the brand on mobile.
+  links; the current feed uses a dark fill and white text.
+- **Header:** Keep the shared logo, search and Home/Publications/About links.
+  The header article count animates for 250ms with reduced-motion support;
+  header/footer counts use separators and share one request-local total.
 - **Filters:** Category and Focus controls open anchored menus without shifting
-  feed content. Keep Apply and Reset explicit.
+  feed content. Keep Apply and Reset explicit. Escape restores the owning trigger's
+  focus; outside dismissal must not steal focus from the clicked control.
+- **Publications:** Default to Random; preserve its URL token through pagination
+  while retaining explicit alphabetical/newest sorts and the styled native select.
 
 ### Refresh Control
 - Keep the refresh action fixed to the lower edge on the Dynamic feed only.
@@ -245,11 +269,11 @@ the card content remains on a white surface.
 
 ### Do:
 - **Do** use real publication cover art as the visual entry point; keep the
-  title, publication and date legible.
+  title, publication and categories legible.
 - **Do** size cards in whole grid cells: 1x1, 1x2 or 2x2.
-- **Do** use ocean blue for primary actions and the selected feed.
+- **Do** use the delivered brand/category tokens and preserve approved controls.
 - **Do** use a stable local fallback cover when available; otherwise use the
-  calm placeholder when a cover is missing or fails to load.
+  existing small text-only behaviour when no usable cover is available.
 
 ### Don't:
 - **Don't** turn the feed into a storefront or social network.

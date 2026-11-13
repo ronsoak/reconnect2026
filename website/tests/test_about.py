@@ -17,7 +17,7 @@ class AboutPageTests(TestCase):
         ):
             with self.subTest(template=template):
                 self.assertTemplateUsed(response, template)
-        self.assertContains(response, "Newsletter signup embed to be added.")
+        self.assertContains(response, 'src="https://reconnectrecap.substack.com/embed"', count=1)
         self.assertContains(response, 'href="/api/filters/"')
         self.assertContains(response, 'class="site-search"')
         self.assertNotContains(response, 'class="filter-bar"')

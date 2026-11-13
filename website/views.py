@@ -216,7 +216,10 @@ def go_article(request, pk):
     per article per browser every 24 hours. Repeat clicks still go through, they just aren't counted.
     Example: /go/123/
     """
-    article = get_object_or_404(Articles.objects.select_related("site"), pk=pk, hidden=False, site_hide=False)
+    article = get_object_or_404(
+        Articles.objects.select_related("site"),
+        pk=pk, hidden=False, site_hide=False, site__hidden=False,
+    )
 
     def record():
         # F() adds to the stored value, so simultaneous clicks are not lost

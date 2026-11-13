@@ -129,7 +129,7 @@ class ClicksAdmin(ModelAdmin):
     list_display=('type','article','site','date')
     list_filter=['type']
     show_facets = admin.ShowFacets.ALWAYS
-    search_fields = ['type']
+    search_fields = ['type__value']
     # Methods
     def get_ordering(self, request):
         return ['-date']
