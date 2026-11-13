@@ -60,6 +60,11 @@ class Command(BaseCommand):
         month = parse_month(options["month"], today) if options["month"] else limit
         if month > limit:
             raise CommandError(f"{month:%Y-%m} is too recent. The newest month that can be purged is {limit:%Y-%m}.")
+        if Analytics.objects.filter(month=month, is_baseline=True).exists():
+            raise CommandError(
+                f"{month:%Y-%m} contains a baseline snapshot, not aggregated Clicks. "
+                "It cannot be used to authorize purging."
+            )
 
         rows = Clicks.objects.filter(date__gte=month, date__lt=next_month(month))
         count = rows.count()

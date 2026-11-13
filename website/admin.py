@@ -139,8 +139,8 @@ class ClicksAdmin(ModelAdmin):
 # ===== ===== ===== ===== ===== ===== ===== =====
 @admin.register(Analytics)
 class AnalyticsAdmin(ModelAdmin):
-    list_display=('month','type','object_id','site','clicks')
-    list_filter=['type','month']
+    list_display=('month','type','object_id','site','clicks','is_baseline')
+    list_filter=['type','month','is_baseline']
     show_facets = admin.ShowFacets.ALWAYS
     search_fields = ['object_id']
     # Methods

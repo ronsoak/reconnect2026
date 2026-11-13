@@ -121,6 +121,13 @@ Run each of these once.
 3. [ ] `python manage.py batch_sites`: puts the sites into batches.
 4. [ ] `python manage.py ingest_all --days 365`: first load of articles. It can take a while, so run it in a Railway shell, not as a web request.
 5. [ ] `python manage.py import_articles`: only if you are bringing in articles from CSV.
+   After the final import and before accepting traffic, preview
+   `python manage.py aggregate_clicks --baseline --dry-run`, then run
+   `python manage.py aggregate_clicks --baseline` once. This saves all current
+   article/advert totals as a protected historical snapshot in the previous
+   calendar month, which must have no Analytics rows. Apply migrations first.
+   Do not add `--baseline` to the monthly cron command; see the baseline section
+   in [readme.md](readme.md) for safeguards and limitations.
 6. [ ] `python manage.py filter_articles`: hides articles that match your keywords.
 7. [ ] `python manage.py hide_articles`: applies each site's hide setting.
 8. [ ] `python manage.py count_articles`: updates the article counts on sites.

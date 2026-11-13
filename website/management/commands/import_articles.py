@@ -12,6 +12,8 @@
 #CSV column suggestions (case-insensitive names):
 #  title, url, image_url, published, created, run_id, boost, clicks, modifier,
 #  hidden, site_hide, manual_post, bluesky, site
+# The site column (or --site) accepts a publication name or an HTTP(S) URL.
+# URLs match Sites.url exactly (case-insensitive); names retain partial matching.
 # ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== 
 # Imports
 # ===== ===== ===== ===== 
@@ -143,6 +145,7 @@ class Command(BaseCommand):
             self.stdout.write(f"  Articles model: {Articles._meta.label}")
             self.stdout.write(f"  Sites model:    {Sites._meta.label}")
             self.stdout.write(f"  Site match field: {site_match_field}")
+            self.stdout.write("  HTTP(S) site URLs match Sites.url exactly (case-insensitive).")
             self.stdout.write("Exit (preview).")
             return
 
@@ -200,9 +203,11 @@ class Command(BaseCommand):
                 site_text = (row.get("site") or global_site_text or "").strip()
                 site_obj = None
                 if site_text:
-                    qs = Sites.objects.filter(**{f"{site_match_field}__iexact": site_text})
-                    if qs.count() == 0:
-                        qs = Sites.objects.filter(**{f"{site_match_field}__icontains": site_text})
+                    is_site_url = site_text.lower().startswith(("http://", "https://"))
+                    match_field = "url" if is_site_url else site_match_field
+                    qs = Sites.objects.filter(**{f"{match_field}__iexact": site_text})
+                    if not is_site_url and qs.count() == 0:
+                        qs = Sites.objects.filter(**{f"{match_field}__icontains": site_text})
                     cnt = qs.count()
                     if cnt == 1:
                         site_obj = qs.first()
@@ -214,7 +219,7 @@ class Command(BaseCommand):
                                 f"Row {idx}: site text '{site_text}' matched multiple Sites ({cnt}); use --first-match to pick the first, or disambiguate your site text"
                             )
                     else:
-                        raise ValueError(f"Row {idx}: no Site found matching '{site_text}' (field {site_match_field})")
+                        raise ValueError(f"Row {idx}: no Site found matching '{site_text}' (field {match_field})")
                 else:
                     raise ValueError(f"Row {idx}: no site provided in row and no --site supplied")
 

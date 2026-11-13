@@ -231,7 +231,8 @@ class Analytics(models.Model):
     """
     Permanent monthly click totals, one row per article or advert per month.
     Filled from the Clicks model by the aggregate_clicks script, which lets Clicks be purged.
-    A month with no clicks has no row.
+    Baseline rows instead capture imported totals, including zero, in the previous month.
+    A normal month with no clicks has no row.
     """
     # Fields
     type        = models.ForeignKey('Logic', on_delete=models.PROTECT, limit_choices_to={'logic_type': 'CLICK_TYPE'}, related_name='analytics_type', verbose_name="Click Type", help_text="Article or Advert")
@@ -239,6 +240,7 @@ class Analytics(models.Model):
     site        = models.ForeignKey(Sites, on_delete=models.PROTECT, null=True, blank=True, help_text="The article's site (blank for adverts)")
     month       = models.DateField(help_text="Always the first day of the month, e.g. 2026-09-01", verbose_name="Month")
     clicks      = models.PositiveIntegerField(default=0, help_text="Counted clicks in this month", verbose_name="Click Count")
+    is_baseline = models.BooleanField(default=False, help_text="Imported click snapshot, not clicks measured during this month.")
     # Metadata
     class Meta:
         db_table = "analytics"

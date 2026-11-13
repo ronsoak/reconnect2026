@@ -58,8 +58,9 @@ git stash drop
     filter artciles (after an ingest run?)
     Hide_sites (weekly / monthly)
 
-
-#Wipe Content 
+# ----- ----- ----- ----- ----- ----- 
+# Wipe Content 
+# ----- ----- ----- ----- ----- ----- 
 python manage.py shell
 from website.models import *
 Logic.objects.all().delete()
@@ -69,20 +70,73 @@ Logging.objects.all().delete()
 Clicks.objects.all().delete()
 Adverts.objects.all().delete()
 
-
+# ----- ----- ----- ----- ----- ----- 
 # Test Deployment 
+# ----- ----- ----- ----- ----- ----- 
 python manage.py seed_db
-python manage.py import_sites --file website/re_sep_m_test.csv --dry-run
-python manage.py import_sites --file website/re_sep_m_test.csv
+#
+python manage.py import_sites --file migration/re_import_01.csv --dry-run
+python manage.py import_sites --file migration/re_import_02.csv --dry-run
+python manage.py import_sites --file migration/re_import_03.csv --dry-run
+python manage.py import_sites --file migration/re_import_04.csv --dry-run
+python manage.py import_sites --file migration/re_import_05.csv --dry-run
+python manage.py import_sites --file migration/re_import_06.csv --dry-run
+python manage.py import_sites --file migration/re_import_07.csv --dry-run
+python manage.py import_sites --file migration/re_import_08.csv --dry-run
+#
+python manage.py import_sites --file migration/re_import_01.csv
+python manage.py import_sites --file migration/re_import_02.csv
+python manage.py import_sites --file migration/re_import_03.csv
+python manage.py import_sites --file migration/re_import_04.csv
+python manage.py import_sites --file migration/re_import_05.csv
+python manage.py import_sites --file migration/re_import_06.csv
+python manage.py import_sites --file migration/re_import_07.csv
+python manage.py import_sites --file migration/re_import_08.csv
+#
+python manage.py import_articles migration/re_import_articles.csv --dry-run
+python manage.py import_articles migration/re_import_articles.csv
+#
 python manage.py batch_sites
 python manage.py ingest_all
+#
+python manage.py backfill_images  
+#
+python manage.py filter_articles
+python manage.py count_articles --mode full
+python manage.py last_article
+python manage.py hide_sites
+python manage.py aggregate_clicks --baseline --dry-run
+python manage.py aggregate_clicks --baseline 
 
 
-##### ##### ##### #####
-# Rest API 
-##### ##### ##### #####
-1. Models: Hold the data
-2. Serializers: Convert the model into JSON Object for the front end
-3. Views: Handle the logic for fetching data from DB and returning it as a response
-4. URLs: Maps specific urls to the Views
-5. Webpage: uses javascript to control the query.
+# ----- ----- ----- ----- ----- ----- 
+# Deployment Steps 
+# ----- ----- ----- ----- ----- ----- 
+- Settings / Environment Variables
+- Super User 
+- Seed DB 
+- Sites 
+- Articles 
+- Batch 
+- Ingest All 
+- Backfill images - will I need to only run this once?
+- Filter 
+- Count Articles 
+- Last Article 
+- Hide Sites 
+- aggregate_clicks (analytics)
+- Adverts 
+Schedules:
+- - Batch [W]
+- - Import [D X4]
+- - Filter 
+- - Age Articles [D]
+- - Dormant Check [M]
+- - Analytics [M]
+- - Count Articles Full [W]
+- - Count Articles Mini [D]
+- - Hide Sites [W]
+- - Hide Articles [?]
+- - Post Bluesky [H]
+- - purge_clicks [M] (4 month delay)
+

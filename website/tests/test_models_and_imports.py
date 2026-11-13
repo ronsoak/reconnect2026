@@ -209,7 +209,7 @@ class ImportArticlesCommandTests(TestCase):
             bluesky=True,
         )
 
-    def run_import(self, row):
+    def run_import(self, row, **options):
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = Path(temp_dir) / "articles.csv"
             with file_path.open("w", newline="", encoding="utf-8") as csv_file:
@@ -223,8 +223,53 @@ class ImportArticlesCommandTests(TestCase):
                 str(file_path),
                 stdout=output,
                 stderr=StringIO(),
+                **options,
             )
             return output.getvalue()
+
+    def test_site_url_resolves_publication(self):
+        self.run_import(
+            {
+                "title": "URL-matched article",
+                "url": self.article.url,
+                "site": self.site.url,
+            }
+        )
+
+        self.article.refresh_from_db()
+        self.assertEqual(self.article.title, "URL-matched article")
+        self.assertEqual(self.article.site, self.site)
+
+    def test_site_url_dry_run_does_not_update_article(self):
+        output = self.run_import(
+            {
+                "title": "Dry-run title",
+                "url": self.article.url,
+                "site": self.site.url,
+            },
+            dry_run=True,
+        )
+
+        self.article.refresh_from_db()
+        self.assertEqual(self.article.title, "Original Title")
+        self.assertIn("Errors: 0", output)
+
+    def test_unmatched_site_url_does_not_use_partial_url_or_name(self):
+        self.site.name = "https://missing.example.com"
+        self.site.url = "https://missing.example.com/another-publication"
+        self.site.save()
+
+        with self.assertRaises(CommandError):
+            self.run_import(
+                {
+                    "title": "Wrong publication",
+                    "url": self.article.url,
+                    "site": "https://missing.example.com",
+                }
+            )
+
+        self.article.refresh_from_db()
+        self.assertEqual(self.article.title, "Original Title")
 
     def test_blank_metrics_and_flags_preserve_existing_values(self):
         self.run_import(

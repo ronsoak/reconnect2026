@@ -434,6 +434,40 @@ Each script has its own usage examples at the top of its file. Add `--dry-run` w
 | `aggregate_clicks` | Totals last month's clicks into the Analytics model (`--month 2026-09`, `--month current`, `--dry-run`). Run it before purging clicks |
 | `purge_clicks` | Deletes the month of Clicks that is four months old (keeps about 90 days). Refuses unless Analytics already matches. `--dry-run`, `--month`, `--force` |
 
+For `import_articles`, the CSV `site` column (or the `--site` fallback) accepts a
+publication name or an HTTP(S) publication URL. URLs match `Sites.url` exactly,
+ignoring case; they do not use partial matching. Names retain case-insensitive
+exact matching followed by partial matching. Import publications first, then
+preview articles with `python manage.py import_articles articles.csv --dry-run`.
+Add `--stop-on-error` to stop at the first invalid row. A dry run writes nothing.
+
+### Post-import analytics baseline
+
+After applying migrations and completing the final import, before accepting new
+clicks, capture all current article **and advert** click totals in the previous
+calendar month:
+
+```sh
+python manage.py aggregate_clicks --baseline --dry-run
+python manage.py aggregate_clicks --baseline
+```
+
+For example, running on 12 November 2026 saves the snapshot under 1 October 2026.
+It includes hidden articles, expired adverts, and zero-click objects. These rows
+are marked `is_baseline` (visible/filterable in admin): they represent historical
+imported totals, **not activity measured during that month**.
+
+The target month must have no Analytics rows, both Article and Advert click types
+must be seeded, and a baseline can only be saved once. Invalid negative,
+fractional, or non-finite totals abort without saving anything. `--baseline`
+cannot be combined with `--month`. Neither source totals nor raw Clicks are changed.
+Do not run imports or accept clicks while capturing the snapshot.
+
+Normal `aggregate_clicks` runs still count raw Clicks, not cumulative article
+totals. They refuse to overwrite a baseline month; other months work as before.
+`purge_clicks` also refuses a baseline month, even with `--force`, because a
+snapshot is not proof that its raw clicks have been aggregated.
+
 ### Dormant publication recovery
 
 Run `python manage.py last_article` before `hide_sites`. Sites hidden by

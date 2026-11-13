@@ -56,6 +56,18 @@ class PurgeClicksTests(TestCase):
         self.run_command("--force")
         self.assertEqual(Clicks.objects.count(), 0)
 
+    def test_baseline_never_authorizes_purging_even_with_force(self):
+        self.click(date(2026, 6, 10))
+        Analytics.objects.create(
+            type=self.kind, object_id=1, month=date(2026, 6, 1),
+            clicks=1, is_baseline=True,
+        )
+        for args in ((), ("--force",)):
+            with self.subTest(args=args), self.assertRaisesMessage(CommandError, "baseline snapshot"):
+                self.run_command(*args)
+        self.assertEqual(Clicks.objects.count(), 1)
+        self.assertEqual(Analytics.objects.count(), 1)
+
     def test_recent_months_are_refused(self):
         self.click(date(2026, 7, 10))
         self.aggregate(date(2026, 7, 1), 1)
