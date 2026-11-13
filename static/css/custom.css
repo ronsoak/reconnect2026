@@ -853,9 +853,8 @@ input:focus-visible {
   grid-row: span 2;
 }
 
-/* Newest Sites widget: brand green at half strength so it reads as a feature, not an article */
 .newest-additions {
-  --newest-bg: rgb(0 239 108 / 50%);
+  --newest-bg: var(--surface);
   --newest-line: rgb(53 48 50 / 22%);
   --newest-ink: var(--brand-dark);
   padding: 1.25rem;
@@ -864,29 +863,61 @@ input:focus-visible {
 }
 
 .newest-additions__title {
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   color: var(--newest-ink);
-  font: 800 1.35rem/1.2 "Manrope", sans-serif;
+  font: 800 1.5rem/1.2 "Manrope", sans-serif;
 }
 
 .newest-additions__list {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 0.65rem;
   min-height: 0;
   overflow-y: auto;
   margin: 0;
-  padding: 0;
+  padding: 0.15rem 0.25rem;
   list-style: none;
 }
 
-.newest-additions__list li + li {
-  border-top: 1px solid var(--newest-line);
+.newest-additions__site {
+  flex-shrink: 0;
 }
 
-.newest-additions__list a {
+.newest-additions__name {
+  margin: 0;
+  font: 700 1.15rem/1.25 "Manrope", sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.newest-additions__name a {
   display: block;
-  padding-block: 0.8rem;
-  color: var(--ink);
-  font: 700 1.05rem/1.25 "Manrope", sans-serif;
+  color: var(--newest-ink);
+}
+
+.newest-additions__type {
+  margin: 0.3rem 0 0;
+  color: var(--newest-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.newest-additions__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.35rem;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  color: var(--newest-ink);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  list-style: none;
+}
+
+.newest-additions__tags li {
+  min-width: 0;
   overflow-wrap: anywhere;
 }
 
@@ -923,7 +954,7 @@ input:focus-visible {
 
   .newest-additions__title {
     margin-bottom: 0.4rem;
-    font-size: 1.2rem;
+    font-size: 1.35rem;
   }
 
   .newest-additions__directory {
@@ -937,13 +968,6 @@ input:focus-visible {
     grid-column: 1 / -1;
   }
 
-  .newest-additions__list a {
-    padding-block: 0.55rem;
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }
 
 

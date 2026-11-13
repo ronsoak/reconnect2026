@@ -84,7 +84,7 @@ def dynamic_widgets(cards, category_ids=None, tag_ids=None):
     ticker = articles.select_related("site").prefetch_related("site__categories").in_bulk(ticker_ids)
     newest = list(Sites.objects.filter(
         pk__in=articles.order_by().values("site_id"),
-    ).order_by("-pk")[:5])
+    ).select_related("site_type").prefetch_related("tags").order_by("-pk")[:5])
     pool = list(highlight_pool(category_ids, tag_ids, today))
     highlights = random.sample(pool, min(3, len(pool)))
     context = {

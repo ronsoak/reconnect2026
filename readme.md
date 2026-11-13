@@ -340,12 +340,16 @@ group lifts above the footer so it never covers it.
 ## Newest Sites widget
 
 Dynamic, Newest and Popular include `templates/components/newest_additions.html`, titled
-"Newest Sites", on a brand-green background at 50% opacity with dark text.
+"Newest Sites", on a white background with dark text.
 On tablet and desktop it is a medium
 (one column by two rows) card; on the two-column phone grid it spans the full
 row at one row tall. It lists up to five public publications
 with public articles, newest site ID first, respecting Category and Focus
 filters. Links open each publication's article page.
+Each entry has a larger linked site name, followed by its site type (when set)
+and wrapping Focus tags. A compact 0.65rem gap separates entries instead of divider lines.
+Long names wrap rather than being truncated. The list scrolls within the existing
+card footprint when the five entries need more room, including on phones.
 
 The widget is additional to the article/advert quota. On each refresh its
 position is randomly chosen from 11 through 50 (or the end of a shorter feed),

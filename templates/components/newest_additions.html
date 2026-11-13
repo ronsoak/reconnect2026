@@ -2,7 +2,17 @@
   <h2 class="newest-additions__title" id="newest-additions-title">Newest Sites</h2>
   <ul class="newest-additions__list">
     {% for site in newest_additions %}
-      <li><a href="{% url 'site_articles' site.pk %}">{{ site.name }}</a></li>
+      <li class="newest-additions__site">
+        <h3 class="newest-additions__name"><a href="{% url 'site_articles' site.pk %}">{{ site.name }}</a></h3>
+        {% if site.site_type %}<p class="newest-additions__type">{{ site.site_type.value }}</p>{% endif %}
+        {% with tags=site.tags.all %}
+          {% if tags %}
+            <ul class="newest-additions__tags">
+              {% for tag in tags %}<li>{{ tag.value }}{% if not forloop.last %},{% endif %}</li>{% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+      </li>
     {% endfor %}
   </ul>
   <a class="newest-additions__directory" href="{% url 'publications' %}">All publications</a>

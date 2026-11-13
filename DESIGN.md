@@ -243,6 +243,10 @@ the card content remains on a white surface.
   handling and image eligibility; do not introduce a new placeholder requirement.
 - **Size:** Small is 1x1, medium is 1x2 and large is 2x2 grid cells. The cover
   art fills the space left by the text.
+- **Newest Sites:** Keep five linked names in a white widget, with
+  larger site-name headings, site type beneath and wrapping Focus tags below that.
+  Separate entries with a compact `0.65rem` gap, not rules. Missing metadata is omitted; long
+  entries scroll within the existing responsive card footprint.
 
 ### Inputs / Fields
 - **Style:** White search field with charcoal text, quiet-divider border and

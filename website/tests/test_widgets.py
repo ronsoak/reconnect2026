@@ -1,10 +1,12 @@
 from datetime import timedelta
 from unittest.mock import patch
 
+from django.template.loader import render_to_string
 from django.test import TestCase
 from django.utils import timezone
 
 from website.models import Articles, Clicks, Logic, Sites
+from website.widgets import dynamic_widgets
 
 
 class NewestAdditionsTests(TestCase):
@@ -41,6 +43,46 @@ class NewestAdditionsTests(TestCase):
         self.assertContains(response, 'id="newest-additions-title"', count=1)
         self.assertTemplateUsed(response, "components/newest_additions.html")
         self.assertContains(response, f'href="/publications/{self.sites[-1].pk}/"')
+
+    def test_site_type_and_tags_follow_name_with_missing_metadata_omitted(self):
+        site = self.sites[-1]
+        site.site_type = Logic.objects.create(logic_type="SITE_TYPE", value="Substack")
+        site.save(update_fields=["site_type"])
+        reviews = Logic.objects.create(logic_type="TAG", value="Reviews")
+        site.tags.add(reviews, self.tag)
+        html = render_to_string(
+            "components/newest_additions.html", dynamic_widgets([]),
+        )
+        self.assertInHTML(
+            f'<li class="newest-additions__site">'
+            f'<h3 class="newest-additions__name"><a href="/publications/{site.pk}/">'
+            f'{site.name}</a></h3>'
+            '<p class="newest-additions__type">Substack</p>'
+            '<ul class="newest-additions__tags"><li>Industry,</li><li>Reviews</li></ul>'
+            '</li>',
+            html,
+        )
+        without_metadata = self.sites[-2]
+        self.assertInHTML(
+            f'<li class="newest-additions__site">'
+            f'<h3 class="newest-additions__name">'
+            f'<a href="/publications/{without_metadata.pk}/">{without_metadata.name}</a>'
+            '</h3></li>',
+            html,
+        )
+
+    def test_widget_metadata_renders_without_per_site_queries(self):
+        site_type = Logic.objects.create(logic_type="SITE_TYPE", value="Substack")
+        Sites.objects.filter(pk__in=[site.pk for site in self.sites[-5:]]).update(
+            site_type=site_type,
+        )
+        for site in self.sites[-5:]:
+            site.tags.add(self.tag)
+        context = dynamic_widgets([])
+        with self.assertNumQueries(0):
+            html = render_to_string("components/newest_additions.html", context)
+        self.assertEqual(html.count('class="newest-additions__type"'), 5)
+        self.assertEqual(html.count('class="newest-additions__tags"'), 5)
 
     def test_hidden_empty_and_hidden_article_only_sites_excluded(self):
         Sites.objects.filter(pk=self.sites[-1].pk).update(hidden=True)
