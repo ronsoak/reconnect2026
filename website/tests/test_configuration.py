@@ -39,6 +39,7 @@ class EnvironmentValidationTests(SimpleTestCase):
         "TICKER_LOOKBACK_DAYS": 3650,
         "HIGHLIGHT_POOL_SIZE": 10000,
         "BLUESKY_LOOKBACK_DAYS": 3650,
+        "BLUESKY_SCHEDULE_GRACE_MINUTES": 1440,
     }
 
     def test_upper_boundaries_are_accepted(self):

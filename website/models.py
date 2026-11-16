@@ -2,6 +2,7 @@
 # Imports
 # ===== ===== ===== ===== 
 from django.core.exceptions import ValidationError      # Needed for clean validations i.e Category
+from django.core.validators import MaxLengthValidator   # Enforces TextField limits outside forms
 from django.db import models                            # Brings in models concept
 from django.db import transaction                       # Needed for save overide
 from django.db.models import F                          # Needed for math
@@ -363,3 +364,91 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.get_reason_display()} from {self.name}"
+
+
+# ===== ===== ===== ===== ===== ===== ===== =====
+# Bluesky scheduled posts and session
+# ===== ===== ===== ===== ===== ===== ===== =====
+class ScheduledPost(models.Model):
+    """A recurring custom Bluesky post, posted once on each selected day."""
+    WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+    # Fields
+    name      = models.CharField(max_length=100, help_text="Admin label only; never posted.", verbose_name="Name")
+    text      = models.TextField(
+                    max_length=300, validators=[MaxLengthValidator(300)],
+                    help_text="Exact post text, up to 300 characters. Write links in full, starting with https://, "
+                              "so they become clickable. #hashtags are made clickable too.",
+                    verbose_name="Post text")
+    active    = models.BooleanField(default=True, help_text="Untick to stop posting without losing the text or history.", verbose_name="Active")
+    post_time = models.TimeField(help_text="Local site time. Posts go out on the first scheduled run at or after this time.", verbose_name="Post time")
+    monday    = models.BooleanField(default=True, verbose_name="Mon")
+    tuesday   = models.BooleanField(default=True, verbose_name="Tue")
+    wednesday = models.BooleanField(default=True, verbose_name="Wed")
+    thursday  = models.BooleanField(default=True, verbose_name="Thu")
+    friday    = models.BooleanField(default=True, verbose_name="Fri")
+    saturday  = models.BooleanField(default=True, verbose_name="Sat")
+    sunday    = models.BooleanField(default=True, verbose_name="Sun")
+    created   = models.DateTimeField(auto_now_add=True)
+    updated   = models.DateTimeField(auto_now=True)
+    # Metadata
+    class Meta:
+        db_table = "scheduled_posts"
+        ordering = ["post_time", "name"]
+        verbose_name = "Scheduled post"
+        verbose_name_plural = "Scheduled posts"
+    # Methods
+    def runs_on(self, date):
+        return getattr(self, self.WEEKDAYS[date.weekday()])
+
+    def clean(self):
+        super().clean()
+        if not (self.text or "").strip():
+            raise ValidationError({"text": "Enter the text to post."})
+        if self.active and not any(getattr(self, day) for day in self.WEEKDAYS):
+            raise ValidationError("Select at least one day, or untick Active.")
+
+    def __str__(self):
+        return self.name
+
+
+class ScheduledPostRun(models.Model):
+    """One scheduled occurrence: reserves a record key so retries never double-post."""
+    # Fields
+    scheduled_post = models.ForeignKey(ScheduledPost, on_delete=models.CASCADE, related_name="runs", verbose_name="Scheduled post")
+    date           = models.DateField(help_text="Local date of the scheduled occurrence.", verbose_name="Date")
+    text           = models.TextField(max_length=300, help_text="Text reserved for this occurrence.", verbose_name="Text")
+    bluesky_rkey   = models.CharField(max_length=13, help_text="Reserved Bluesky record key for safe publishing retries.")
+    uri            = models.CharField(max_length=512, blank=True, default="", verbose_name="Bluesky URI")
+    posted_at      = models.DateTimeField(null=True, blank=True, verbose_name="Posted at")
+    error          = models.CharField(max_length=500, blank=True, default="", help_text="Most recent failure, cleared on success.", verbose_name="Last error")
+    created        = models.DateTimeField(auto_now_add=True)
+    # Metadata
+    class Meta:
+        db_table = "scheduled_post_runs"
+        ordering = ["-date", "-created"]
+        verbose_name = "Scheduled post history"
+        verbose_name_plural = "Scheduled post history"
+        constraints = [
+            models.UniqueConstraint(fields=["scheduled_post", "date"], name="unique_scheduled_post_date"),
+        ]
+    # Methods
+    def __str__(self):
+        return f"{self.scheduled_post} {self.date}"
+
+
+class BlueskySession(models.Model):
+    """Reusable Bluesky login. Tokens are encrypted with a key derived from SECRET_KEY."""
+    # Fields
+    identifier     = models.CharField(max_length=256, unique=True, help_text="BLUESKY_IDENTIFIER this session belongs to.")
+    did            = models.CharField(max_length=256, verbose_name="Account DID")
+    tokens         = models.TextField(help_text="Encrypted access and refresh tokens.")
+    access_expires = models.DateTimeField(null=True, blank=True, help_text="When the current access token expires.")
+    updated        = models.DateTimeField(auto_now=True)
+    # Metadata
+    class Meta:
+        db_table = "bluesky_session"
+        verbose_name = "Bluesky session"
+        verbose_name_plural = "Bluesky session"
+    # Methods
+    def __str__(self):
+        return self.identifier

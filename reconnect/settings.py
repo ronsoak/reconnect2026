@@ -198,6 +198,8 @@ TICKER_ARTICLE_COUNT = env_integer("TICKER_ARTICLE_COUNT", 10, maximum=100)
 TICKER_LOOKBACK_DAYS = env_integer("TICKER_LOOKBACK_DAYS", 7, minimum=0, maximum=3650)
 HIGHLIGHT_POOL_SIZE = env_integer("HIGHLIGHT_POOL_SIZE", 50, maximum=10000)
 BLUESKY_LOOKBACK_DAYS = env_integer("BLUESKY_LOOKBACK_DAYS", 7, minimum=0, maximum=3650)
+# A scheduled post missed by more than this many minutes is skipped for that day.
+BLUESKY_SCHEDULE_GRACE_MINUTES = env_integer("BLUESKY_SCHEDULE_GRACE_MINUTES", 120, minimum=15, maximum=1440)
 
 API_ANON_THROTTLE_RATE = config("API_ANON_THROTTLE_RATE", default="120/min")
 if not re.fullmatch(r"[1-9][0-9]*/(s|sec|second|m|min|minute|h|hour|d|day)", API_ANON_THROTTLE_RATE):

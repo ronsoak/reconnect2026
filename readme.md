@@ -180,6 +180,7 @@ Operational upper bounds are enforced at startup, not silently clamped:
 | Weekly/monthly newsletter top counts | 1,000 |
 | Ticker titles | 100 |
 | Random minimum age, ticker lookback and Bluesky lookback | 3,650 days |
+| Bluesky scheduled-post grace window | 1,440 minutes (minimum 15) |
 
 These are configuration guardrails, not performance guarantees. Dynamic rounding
 can still exceed its configured target slightly; widgets remain additional.
@@ -223,6 +224,7 @@ still take slots from the ordinary article quota.
 | `TICKER_LOOKBACK_DAYS` | 7 | Ticker dates from today minus this many days through today, inclusive |
 | `HIGHLIGHT_POOL_SIZE` | 50 | Top current-month Article/RSS click leaders from which the reel samples up to three |
 | `BLUESKY_LOOKBACK_DAYS` | 7 | Eligible publication dates from today minus this many days through today, inclusive |
+| `BLUESKY_SCHEDULE_GRACE_MINUTES` | 120 | How late a scheduled post may still go out; later occurrences are skipped for that day |
 
 Zero ticker/Bluesky lookback selects today only. Hidden-content, date, filtering,
 deduplication and per-site posting rules still apply. These settings do not change
@@ -444,7 +446,7 @@ Each script has its own usage examples at the top of its file. Add `--dry-run` w
 | `last_article` | Updates the days since each site's last article |
 | `hide_sites` | Hides sites with no recent articles and marks them dormant |
 | `check_dormant_sites` | Checks hidden dormant sites for newer RSS entries and reactivates them |
-| `post_bluesky` | Posts one eligible article to Bluesky, oldest first; supports `--dry-run` |
+| `post_bluesky` | Posts one due scheduled post, otherwise one eligible article, to Bluesky; `--dry-run`, `--only scheduled\|articles` |
 | `hide_articles` | Hides or unhides articles to match their site's setting |
 | `filter_articles` | Hides articles that match keywords in the Logic model |
 | `age_articles` | Lowers article rank so popular articles do not stay on top |
@@ -571,7 +573,7 @@ output. `--dry-run` checks feeds but writes nothing, including no logs.
 The `--limit` option selects the first eligible sites by ID, not a rotating batch;
 leave it unset for the monthly job.
 
-### Bluesky article posting
+### Bluesky posting
 
 Set these environment variables (or add them to your ignored local `.env`):
 
@@ -587,9 +589,46 @@ through `https://bsky.social`; custom/self-hosted PDS accounts are not supported
 ```sh
 # Safe preview: no credentials, network calls, uploads, or database writes.
 python manage.py post_bluesky --dry-run
-# Live: posts at most one article.
+# Live: makes at most one post (a due scheduled post, otherwise an article).
 python manage.py post_bluesky
+# Limit a run to one kind of post.
+python manage.py post_bluesky --only scheduled
+python manage.py post_bluesky --only articles
 ```
+
+#### Scheduled posts
+
+Recurring custom posts, such as a newsletter reminder or an advertising notice,
+are managed in admin under **Scheduled posts**: a name (admin only), the post
+text (up to 300 characters), an **Active** flag, a post time in the site's local
+time zone (`TIME_ZONE`) and a tick box for each weekday.
+
+- Write links in full, starting with `https://`, inside the text. Links and
+  `#hashtags` become clickable; trailing sentence punctuation is not part of a
+  link. Scheduled posts are plain text with no link card or image.
+- Each scheduled post goes out once on each ticked day, on the first run at or
+  after its post time, and takes priority over waiting articles. If several are
+  due, the earliest goes first and the others follow on later runs.
+- A post more than `BLUESKY_SCHEDULE_GRACE_MINUTES` (default 120) late is
+  skipped for that day rather than posted stale. A late-evening post can still
+  go out just after midnight within that window.
+- **Scheduled post history** shows each day's attempt, its Bluesky URI and the
+  last error. A record key is reserved per post per day, so retries never
+  double-post. If a failed attempt never reached Bluesky, the next retry uses
+  the latest edited text. Only unposted history rows can be deleted.
+- If a scheduled post fails, the run still tries an article, then exits non-zero.
+
+#### Session reuse
+
+The command does not sign in on every run. The Bluesky access and refresh tokens
+are stored in **Bluesky session** (encrypted with a key derived from
+`SECRET_KEY`) and reused until the access token is within five minutes of
+expiry, then renewed with the refresh token. The app password is only used when
+there is no stored session, or it cannot be refreshed or decrypted (for example
+after changing `SECRET_KEY`). A token Bluesky rejects mid-run is renewed once and
+the request retried. Delete the **Bluesky session** in admin to force a fresh
+sign-in, for example after revoking an app password. Requires the
+`cryptography` package from `requirements.txt`.
 
 Each run selects the oldest unposted public article with a publication date from
 today minus `BLUESKY_LOOKBACK_DAYS` (default seven) through today (inclusive), breaking ties by creation time
@@ -634,8 +673,8 @@ but does not validate handles or download/preview thumbnails.
 Schedule `post_bluesky` every 15 minutes (`*/15 * * * *`) only after checking one
 live post manually. Each run creates **at most one** new post; an empty queue
 does nothing. Articles expire from the queue after the lookback window, so one
-post every 15 minutes has a maximum capacity of 96 articles per day.
-Custom promotional/newsletter posts are not part of this command.
+post every 15 minutes has a maximum capacity of 96 posts per day, including
+scheduled posts.
 
 ## Deploying
 

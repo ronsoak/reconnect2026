@@ -1,8 +1,11 @@
-from datetime import timedelta
+import base64
+from datetime import datetime, time, timedelta
 from io import BytesIO, StringIO
+import json
 from unittest.mock import Mock, patch
 
 from django.core.management import call_command
+from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db import DatabaseError
 from django.test import TestCase, override_settings
@@ -11,11 +14,18 @@ from PIL import Image
 import requests
 
 from website.bluesky import (
-    BlueskyClient, BlueskyError, article_thumbnail, eligible_articles,
-    jpeg_thumbnail, new_record_key, post_text,
+    BlueskyClient, BlueskyError, article_thumbnail, due_scheduled_posts, eligible_articles,
+    jpeg_thumbnail, new_record_key, post_text, scheduled_post_facets,
 )
-from website.models import Articles, Logic, Sites
+from website.models import Articles, BlueskySession, Logic, ScheduledPost, ScheduledPostRun, Sites
 from website.safe_fetch import UnsafeURL
+
+
+def jwt(minutes):
+    """An unsigned test token that expires ``minutes`` from now."""
+    exp = int((timezone.now() + timedelta(minutes=minutes)).timestamp())
+    payload = base64.urlsafe_b64encode(json.dumps({"exp": exp}).encode()).decode().rstrip("=")
+    return f"header.{payload}.signature"
 
 
 def image_bytes():
@@ -227,7 +237,7 @@ class BlueskyClientTests(BlueskyFixtures, TestCase):
         self.session = self.session_patch.start().return_value
         self.addCleanup(self.session_patch.stop)
         self.session.request.return_value = self.response({
-            "did": "did:plc:account", "accessJwt": "test-token",
+            "did": "did:plc:account", "accessJwt": jwt(120), "refreshJwt": "test-refresh",
         })
         self.client = BlueskyClient("example.bsky.social", "test-password")
 
@@ -297,9 +307,210 @@ class BlueskyClientTests(BlueskyFixtures, TestCase):
         with self.assertRaisesMessage(BlueskyError, "HTTP 401"):
             self.client.existing_post(self.article)
 
+    def endpoints(self, start=0):
+        return [call.args[1].rsplit("/", 1)[-1] for call in self.session.request.call_args_list[start:]]
+
+    def test_session_is_stored_encrypted_and_reused_without_signing_in(self):
+        stored = BlueskySession.objects.get()
+        self.assertEqual(stored.did, "did:plc:account")
+        self.assertNotIn("test-refresh", stored.tokens)
+        self.assertNotIn(self.session.headers.__setitem__.call_args.args[1].split()[1], stored.tokens)
+        before = self.session.request.call_count
+        client = BlueskyClient("example.bsky.social", "test-password")
+        self.assertEqual(client.session_source, "reused")
+        self.assertEqual(self.session.request.call_count, before)
+
+    def test_expiring_access_token_is_refreshed_with_refresh_token(self):
+        BlueskySession.objects.all().delete()
+        self.session.request.return_value = self.response({
+            "did": "did:plc:account", "accessJwt": jwt(2), "refreshJwt": "old-refresh",
+        })
+        BlueskyClient("example.bsky.social", "test-password")
+        before = self.session.request.call_count
+        self.session.request.return_value = self.response({
+            "did": "did:plc:account", "accessJwt": jwt(120), "refreshJwt": "new-refresh",
+        })
+        client = BlueskyClient("example.bsky.social", "test-password")
+        self.assertEqual(client.session_source, "refreshed")
+        self.assertEqual(self.endpoints(before), ["com.atproto.server.refreshSession"])
+        call = self.session.request.call_args
+        self.assertEqual(call.kwargs["headers"]["Authorization"], "Bearer old-refresh")
+        self.assertNotIn("json", call.kwargs)
+
+    def test_failed_refresh_falls_back_to_password_sign_in(self):
+        BlueskySession.objects.update(access_expires=None)
+        with patch("website.bluesky.token_expiry", return_value=None):
+            before = self.session.request.call_count
+            self.session.request.side_effect = [
+                self.response({"error": "ExpiredToken"}, 400),
+                self.response({"did": "did:plc:account", "accessJwt": jwt(120), "refreshJwt": "fresh"}),
+            ]
+            warn = Mock()
+            client = BlueskyClient("example.bsky.social", "test-password", warn)
+        self.assertEqual(client.session_source, "created")
+        self.assertEqual(self.endpoints(before), [
+            "com.atproto.server.refreshSession", "com.atproto.server.createSession",
+        ])
+        warn.assert_called_once()
+
+    def test_undecryptable_session_signs_in_again(self):
+        BlueskySession.objects.update(tokens="not-encrypted")
+        before = self.session.request.call_count
+        client = BlueskyClient("example.bsky.social", "test-password", Mock())
+        self.assertEqual(client.session_source, "created")
+        self.assertEqual(self.endpoints(before), ["com.atproto.server.createSession"])
+
+    def test_rejected_access_token_renews_session_and_retries_once(self):
+        before = self.session.request.call_count
+        self.session.request.side_effect = [
+            self.response({"error": "InvalidToken"}, 401),
+            self.response({"did": "did:plc:account", "accessJwt": jwt(120), "refreshJwt": "next"}),
+            self.response({"error": "RecordNotFound"}, 400),
+        ]
+        self.assertIsNone(self.client.existing_post(self.article))
+        self.assertEqual(self.endpoints(before), [
+            "com.atproto.repo.getRecord", "com.atproto.server.refreshSession", "com.atproto.repo.getRecord",
+        ])
+
+    def test_scheduled_post_is_plain_text_with_link_and_tag_facets(self):
+        post = ScheduledPost.objects.create(name="News", text="Subscribe https://example.com/news. #reconnect", post_time=time(9))
+        run = ScheduledPostRun.objects.create(scheduled_post=post, date=timezone.localdate(), text=post.text, bluesky_rkey=new_record_key())
+        self.session.request.side_effect = [
+            self.response({"error": "RecordNotFound"}, 400),
+            self.response({"uri": self.client.uri_for(run.bluesky_rkey)}),
+        ]
+        self.assertEqual(self.client.publish_scheduled(run), self.client.uri_for(run.bluesky_rkey))
+        record = self.session.request.call_args.kwargs["json"]["record"]
+        self.assertEqual(record["text"], post.text)
+        self.assertNotIn("embed", record)
+        self.assertEqual(len(record["facets"]), 2)
+
+    def test_scheduled_record_key_with_different_text_fails(self):
+        post = ScheduledPost.objects.create(name="News", text="Subscribe", post_time=time(9))
+        run = ScheduledPostRun.objects.create(scheduled_post=post, date=timezone.localdate(), text="Subscribe", bluesky_rkey=new_record_key())
+        self.session.request.return_value = self.response({"value": {"text": "Something else"}})
+        with self.assertRaisesMessage(BlueskyError, "different text"):
+            self.client.publish_scheduled(run)
+
     def test_errors_do_not_echo_sensitive_response_content(self):
         self.session.request.return_value = self.response({"message": "test-password test-token"}, 400)
         with self.assertRaises(BlueskyError) as raised:
             self.client.existing_post(self.article)
         self.assertNotIn("test-password", str(raised.exception))
         self.assertNotIn("test-token", str(raised.exception))
+
+
+class ScheduledPostTests(BlueskyFixtures, TestCase):
+    def schedule(self, minutes_ago=1, **kwargs):
+        moment = timezone.localtime() - timedelta(minutes=minutes_ago)
+        kwargs.setdefault("name", "Newsletter")
+        kwargs.setdefault("text", "Subscribe: https://example.com/news #newsletter")
+        return ScheduledPost.objects.create(post_time=moment.time().replace(microsecond=0), **kwargs)
+
+    def test_facets_use_utf8_bytes_and_exclude_trailing_punctuation(self):
+        text, facets = scheduled_post_facets("🎮 Read https://example.com/a?b=1). #Games2026 #2026 x#no")
+        spans = [text.encode()[f["index"]["byteStart"]:f["index"]["byteEnd"]].decode() for f in facets]
+        self.assertEqual(spans, ["https://example.com/a?b=1", "#Games2026"])
+        self.assertEqual(facets[0]["features"][0]["uri"], "https://example.com/a?b=1")
+        with self.assertRaises(BlueskyError):
+            scheduled_post_facets("x" * 301)
+
+    def test_model_validation_limits_text_and_requires_a_day(self):
+        post = ScheduledPost(name="Too long", text="x" * 301, post_time=time(9))
+        with self.assertRaises(ValidationError) as raised:
+            post.full_clean()
+        self.assertIn("text", raised.exception.message_dict)
+        post.text = "Fine"
+        for day in ScheduledPost.WEEKDAYS:
+            setattr(post, day, False)
+        with self.assertRaises(ValidationError):
+            post.full_clean()
+        post.active = False
+        post.full_clean()
+
+    @override_settings(BLUESKY_SCHEDULE_GRACE_MINUTES=120)
+    def test_due_window_weekdays_and_midnight_carry_over(self):
+        now = timezone.make_aware(datetime(2026, 11, 16, 0, 30))  # Monday
+        late_sunday = ScheduledPost.objects.create(name="Late", text="a", post_time=time(23, 45))
+        ScheduledPost.objects.create(name="Expired", text="b", post_time=time(22, 0))
+        ScheduledPost.objects.create(name="Later", text="c", post_time=time(9, 0))
+        ScheduledPost.objects.create(name="Inactive", text="d", post_time=time(0, 15), active=False)
+        early = ScheduledPost.objects.create(name="Early", text="e", post_time=time(0, 15), monday=False)
+        self.assertEqual(due_scheduled_posts(now), [(late_sunday, now.date() - timedelta(days=1))])
+        early.monday = True
+        early.save()
+        self.assertEqual([post.name for post, _ in due_scheduled_posts(now)], ["Late", "Early"])
+        ScheduledPostRun.objects.create(
+            scheduled_post=late_sunday, date=now.date() - timedelta(days=1), text="a",
+            bluesky_rkey=new_record_key(), posted_at=now,
+        )
+        self.assertEqual([post.name for post, _ in due_scheduled_posts(now)], ["Early"])
+
+    def test_dry_run_previews_scheduled_post_without_writes(self):
+        self.schedule()
+        output = StringIO()
+        with patch("website.management.commands.post_bluesky.BlueskyClient") as client:
+            call_command("post_bluesky", dry_run=True, stdout=output)
+        client.assert_not_called()
+        preview = json.loads(output.getvalue())
+        self.assertEqual(preview["links"], ["https://example.com/news"])
+        self.assertEqual(preview["hashtags"], ["newsletter"])
+        self.assertTrue(preview["article_waiting"])
+        self.assertFalse(ScheduledPostRun.objects.exists())
+
+    @override_settings(BLUESKY_IDENTIFIER="example.bsky.social", BLUESKY_APP_PASSWORD="test-only")
+    def test_scheduled_post_takes_priority_and_posts_once_per_day(self):
+        post = self.schedule()
+        with patch("website.management.commands.post_bluesky.BlueskyClient") as client:
+            client.return_value.existing_scheduled_post.return_value = None
+            client.return_value.publish_scheduled.return_value = "at://example/post/s"
+            call_command("post_bluesky", stdout=StringIO())
+            client.return_value.publish.assert_not_called()
+            run = ScheduledPostRun.objects.get(scheduled_post=post)
+            self.assertIsNotNone(run.posted_at)
+            self.assertEqual(run.uri, "at://example/post/s")
+            client.return_value.publish.return_value = "at://example/post/a"
+            call_command("post_bluesky", stdout=StringIO())
+            client.return_value.publish_scheduled.assert_called_once()
+            client.return_value.publish.assert_called_once()
+        self.article.refresh_from_db()
+        self.assertTrue(self.article.bluesky)
+
+    @override_settings(BLUESKY_IDENTIFIER="example.bsky.social", BLUESKY_APP_PASSWORD="test-only")
+    def test_scheduled_failure_records_error_still_posts_article_and_retries_same_key(self):
+        post = self.schedule()
+        with patch("website.management.commands.post_bluesky.BlueskyClient") as client:
+            client.return_value.publish_scheduled.side_effect = BlueskyError("Failed")
+            client.return_value.publish.return_value = "at://example/post/a"
+            with self.assertRaisesMessage(CommandError, "Scheduled post 'Newsletter': Failed"):
+                call_command("post_bluesky", stdout=StringIO())
+            client.return_value.close.assert_called_once()
+        self.article.refresh_from_db()
+        self.assertTrue(self.article.bluesky)
+        run = ScheduledPostRun.objects.get(scheduled_post=post)
+        self.assertEqual(run.error, "Failed")
+        self.assertIsNone(run.posted_at)
+        with patch("website.management.commands.post_bluesky.BlueskyClient") as client:
+            client.return_value.publish_scheduled.return_value = "at://example/post/s"
+            call_command("post_bluesky", stdout=StringIO())
+            self.assertEqual(client.return_value.publish_scheduled.call_args.args[0].bluesky_rkey, run.bluesky_rkey)
+        run.refresh_from_db()
+        self.assertIsNotNone(run.posted_at)
+        self.assertEqual(run.error, "")
+
+    @override_settings(BLUESKY_IDENTIFIER="example.bsky.social", BLUESKY_APP_PASSWORD="test-only")
+    def test_edited_text_is_used_when_failed_attempt_never_reached_bluesky(self):
+        post = self.schedule()
+        with patch("website.management.commands.post_bluesky.BlueskyClient") as client:
+            client.return_value.publish_scheduled.side_effect = BlueskyError("Failed")
+            with self.assertRaises(CommandError):
+                call_command("post_bluesky", only="scheduled", stdout=StringIO())
+        post.text = "Corrected text"
+        post.save()
+        with patch("website.management.commands.post_bluesky.BlueskyClient") as client:
+            client.return_value.existing_scheduled_post.return_value = None
+            client.return_value.publish_scheduled.return_value = "at://example/post/s"
+            call_command("post_bluesky", only="scheduled", stdout=StringIO())
+            self.assertEqual(client.return_value.publish_scheduled.call_args.args[0].text, "Corrected text")
+        self.article.refresh_from_db()
+        self.assertFalse(self.article.bluesky)

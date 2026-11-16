@@ -15,6 +15,9 @@ from website.models import (
     Analytics,
     FrontPageNotice,
     ContactMessage,
+    ScheduledPost,
+    ScheduledPostRun,
+    BlueskySession,
 )
 from unfold.admin import ModelAdmin                                     # for the Admin theme
 from unfold.contrib.forms.widgets import ArrayWidget, WysiwygWidget     # for the Admin theme
@@ -175,4 +178,64 @@ class ContactMessageAdmin(ModelAdmin):
 
     # Messages only arrive through the public form.
     def has_add_permission(self, request):
+        return False
+
+
+# ===== ===== ===== ===== ===== ===== ===== =====
+# Bluesky scheduled posts (posted by the post_bluesky command)
+# ===== ===== ===== ===== ===== ===== ===== =====
+@admin.register(ScheduledPost)
+class ScheduledPostAdmin(ModelAdmin):
+    list_display = ("name", "active", "post_time", "days_display", "last_posted")
+    list_editable = ("active",)
+    list_filter = ["active"]
+    search_fields = ["name", "text"]
+    fieldsets = (
+        (None, {"fields": ("name", "text", "active")}),
+        ("Schedule", {
+            "fields": ("post_time", ScheduledPost.WEEKDAYS),
+            "description": "Posts go out once on each ticked day, on the first post_bluesky run at or after the post time "
+                           "(local site time), ahead of any waiting article.",
+        }),
+    )
+
+    @admin.display(description="Days")
+    def days_display(self, obj):
+        days = [obj._meta.get_field(day).verbose_name for day in ScheduledPost.WEEKDAYS if getattr(obj, day)]
+        return "Every day" if len(days) == 7 else ", ".join(days) or "None"
+
+    @admin.display(description="Last posted")
+    def last_posted(self, obj):
+        run = obj.runs.filter(posted_at__isnull=False).order_by("-posted_at").first()
+        return run.posted_at if run else "Never"
+
+
+@admin.register(ScheduledPostRun)
+class ScheduledPostRunAdmin(ModelAdmin):
+    list_display = ("scheduled_post", "date", "posted_at", "error")
+    list_filter = ["scheduled_post"]
+    fields = ("scheduled_post", "date", "text", "posted_at", "uri", "error", "bluesky_rkey")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    # Deleting a posted occurrence would allow it to post again the same day.
+    def has_delete_permission(self, request, obj=None):
+        return obj is None or obj.posted_at is None
+
+
+@admin.register(BlueskySession)
+class BlueskySessionAdmin(ModelAdmin):
+    list_display = ("identifier", "did", "access_expires", "updated")
+    fields = ("identifier", "did", "access_expires", "updated")
+    readonly_fields = fields
+
+    # Delete the session to force the next run to sign in with the app password.
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
         return False

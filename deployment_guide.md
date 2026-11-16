@@ -267,7 +267,7 @@ has been exercised. Earlier passing tests do not certify new production changes.
    Create a sending-only API key and choose a verified `DEFAULT_FROM_EMAIL`.
 7. In Cloudflare Turnstile, create/configure the widget. Add the Railway hostname
    and final hostname when they are known; use real production keys for live tests.
-8. Prepare a Bluesky app password only if enabling article auto-posting at launch.
+8. Prepare a Bluesky app password only if enabling Bluesky posting at launch.
    Never use the main account password.
 
 Do not run a real import into the working local database merely to test these
@@ -776,7 +776,7 @@ For each service:
 | `cron-age` | `python manage.py age_articles` | `0 17 * * *` |
 | `cron-hide-sites` | `/bin/sh -c 'python manage.py last_article && python manage.py hide_sites'` | `0 18 * * 0` |
 | `cron-dormant-sites` | `python manage.py check_dormant_sites` | `0 19 1 * *` |
-| `cron-bluesky` | `python manage.py post_bluesky` | `15 * * * *` |
+| `cron-bluesky` | `python manage.py post_bluesky` | `*/15 * * * *` |
 | `cron-aggregate` | `python manage.py aggregate_clicks` | `0 18 2 * *` |
 | `cron-purge` | `python manage.py purge_clicks` | `0 18 3 * *` |
 
@@ -794,9 +794,13 @@ Operational checks:
   it does not need its own weekly job unless you want recurring reshuffling.
 - Give **only** `cron-bluesky` the `BLUESKY_IDENTIFIER` and
   `BLUESKY_APP_PASSWORD` credentials. Preview `post_bluesky --dry-run`, then
-  approve and verify one live post before enabling its schedule. The proposed
-  hourly cadence is adjustable; each run posts at most one eligible article.
-  Newsletter/promotion posts are a separate, unimplemented feature.
+  approve and verify one live post before enabling its schedule. Each
+  15-minute run makes at most one post: a due admin **Scheduled post** first,
+  otherwise the oldest eligible article. Scheduled post times use the site's
+  local time zone, not Railway's UTC cron time.
+- `cron-bluesky` also needs the same `SECRET_KEY` as `web`: the reusable Bluesky
+  login is stored encrypted with a key derived from it. Changing `SECRET_KEY`
+  is safe; the next run simply signs in again with the app password.
 - Share non-default editorial settings, such as `BLUESKY_LOOKBACK_DAYS`, with
   the affected service; web-service variables are not automatically inherited.
 - Aggregation records the previous calendar month. If that month contains your
