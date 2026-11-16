@@ -279,7 +279,9 @@ About as outlined round buttons, highlighting the current section. At 768px and
 below `static/js/menu.js` collapses them behind a hamburger toggle (Escape or an
 outside click closes it); without JavaScript the links stay visible.
 `static/js/header.js` measures its responsive height so anchor/focus scrolling
-clears it and filter dropdowns fit the remaining viewport.
+clears it and filter dropdowns fit the remaining viewport. Dropdowns otherwise
+show every option; when a short window makes one scroll, a fade at the bottom
+edge shows there are more options.
 
 The About page is assembled in `templates/about.html` from five components:
 `about_intro.html`, `about_newsletter.html`, `about_using.html`, `about_contact.html` and `about_credits.html`

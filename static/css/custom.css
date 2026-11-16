@@ -508,14 +508,21 @@ input:focus-visible {
   z-index: 30;
   min-width: 15rem;
   max-width: min(20rem, calc(100vw - 2rem));
-  max-height: min(20rem, calc(100dvh - var(--site-header-height, 0px) - 1rem));
+  /* Grows to fit every option; scrolls only when the window is too short. */
+  max-height: calc(100dvh - var(--site-header-height, 0px) - 1rem);
   overflow-y: auto;
+  overscroll-behavior: contain;
   margin: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: none;
   color: var(--ink);
-  background: var(--surface);
+  /* Bottom fade that signals more options when the panel scrolls. The "local"
+     cover scrolls with the content and hides the fade at the end of the list. */
+  background:
+    linear-gradient(transparent, var(--surface) 70%) 0 100% / 100% 2.5rem no-repeat local,
+    radial-gradient(farthest-side at 50% 100%, var(--shadow), transparent) 0 100% / 100% 0.85rem no-repeat scroll,
+    var(--surface);
 }
 
 .filter-multiselect__menu[hidden] {
