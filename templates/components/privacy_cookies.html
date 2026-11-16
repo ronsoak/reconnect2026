@@ -5,6 +5,7 @@
     <li><strong>reconnect_clicks:</strong> helps prevent repeat article, RSS article, and advert clicks from being counted within 24 hours. This signed, readable-but-tamper-protected cookie contains up to 100 clicked-item identifiers and their click times, not a unique visitor ID. It lasts up to 24 hours after a counted click and is sent back to Reconnect with requests.</li>
     <li><strong>Django session cookies:</strong> when a session is used, such as an administrator signing in, Django uses a session cookie to maintain that session. Ordinary feed browsing does not require an account or create a session just for click counting.</li>
     <li><strong>CSRF cookies:</strong> Django may set a CSRF cookie on pages with protected forms, such as the administrator login, to help prevent forged form submissions.</li>
+    <li><strong>color-scheme (browser storage, not a cookie):</strong> if you choose Light or Dark in the footer, your browser's local storage keeps that choice so the next page uses it. It is never sent to Reconnect. Choosing Auto removes it.</li>
   </ul>
   <p>You can delete or block cookies through your browser settings. Blocking cookies may stop filter choices being remembered, prevent repeat-click protection working, or interfere with sign-in and protected forms. Clearing the repeat-click cookie can cause a later click to be counted again.</p>
 </section>

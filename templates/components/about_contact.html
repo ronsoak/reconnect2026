@@ -76,7 +76,9 @@
     </div>
 
     {% if turnstile_site_key %}
-      <div class="cf-turnstile contact-form__challenge" data-sitekey="{{ turnstile_site_key }}" data-size="flexible" data-theme="light"></div>
+      <div class="cf-turnstile contact-form__challenge" data-sitekey="{{ turnstile_site_key }}" data-size="flexible" data-theme="auto"></div>
+      {# Match a saved Light/Dark choice; Turnstile reads this when it renders. #}
+      <script>try{var t=document.documentElement.dataset.theme;if(t)document.currentScript.previousElementSibling.dataset.theme=t}catch(e){}</script>
     {% endif %}
 
     <div class="field">

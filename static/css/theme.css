@@ -1,0 +1,161 @@
+/*
+  Reconnect colour themes.
+
+  Edit colours in section 1 only. Every colour has a light and a dark value;
+  custom.css uses the plain names (for example var(--page)) and never needs to
+  change when the palette does.
+
+  The theme follows the visitor's device setting (Auto) unless they pick Light
+  or Dark in the footer. theme.js stores that choice and sets data-theme on
+  <html>; the inline script in base.html applies it before the page paints.
+
+  The dark values below are placeholders, chosen only to be readable. Replace
+  them once the dark palette is agreed.
+*/
+
+/* 1. Palette: edit these values. */
+:root {
+  /* Brand colours stay the same in both themes. */
+  --brand-green: #00ef6c;   /* Hero colour: use sparingly, only as a fill behind dark text or on dark areas */
+  --brand-dark: #353032;    /* Text on brand green, selection text */
+
+  /* Page and panels */
+  --page-light: #f5f6f2;
+  --page-dark: #1a1718;
+  --surface-light: #ffffff;           /* Cards, inputs, dropdowns */
+  --surface-dark: #242021;
+  --surface-muted-light: #dbdbd9;     /* Alternate background, hover fills */
+  --surface-muted-dark: #312c2e;
+  --advert-light: #eee9dc;            /* Advert card background */
+  --advert-dark: #39342a;
+
+  /* Text */
+  --ink-light: #353032;
+  --ink-dark: #f0efeb;
+  --muted-light: #5c5759;             /* Secondary text */
+  --muted-dark: #b5afb1;
+
+  /* Lines and borders */
+  --line-light: #d3d2cf;
+  --line-dark: #403a3c;
+  --line-strong-light: #b9b7b8;       /* Card border on hover */
+  --line-strong-dark: #5c5658;
+  --line-soft-light: rgb(53 48 50 / 22%);  /* Dividers inside widgets */
+  --line-soft-dark: rgb(240 239 235 / 18%);
+  --field-border-light: #8f8b8c;      /* Search box outline */
+  --field-border-dark: #7a7476;
+
+  /* Buttons and active states */
+  --accent-light: #353032;            /* Button and selected-tab fill */
+  --accent-dark: #f0efeb;
+  --accent-deep-light: #1f1b1d;       /* Hover and focus fill */
+  --accent-deep-dark: #ffffff;
+  --on-accent-light: #ffffff;         /* Text on accent fills */
+  --on-accent-dark: #1a1718;
+
+  /* Messages */
+  --danger-light: #a23b2c;
+  --danger-dark: #ef8a78;
+  --danger-surface-light: #f7e6e2;
+  --danger-surface-dark: #3d2420;
+
+  /* Browser details */
+  --scrollbar-light: #a9a6a7;
+  --scrollbar-dark: #6b6567;
+  --shadow-light: rgb(36 40 46 / 14%);
+  --shadow-dark: rgb(0 0 0 / 45%);
+
+  /* Footer (dark in both themes) */
+  --footer-bg-light: #353032;
+  --footer-bg-dark: #0f0d0e;
+  --footer-ink-light: #d3d0d1;
+  --footer-ink-dark: #c9c5c6;
+  --footer-strong-light: #ffffff;
+  --footer-strong-dark: #ffffff;
+
+  /* Category dots */
+  --category-neutral-light: #a9a6a7;
+  --category-neutral-dark: #8a8486;
+  --category-video-games-light: #0013ff;
+  --category-video-games-dark: #7a85ff;
+  --category-ttrpg-light: #ffe422;
+  --category-ttrpg-dark: #ffe422;
+  --category-tabletop-light: #8c2918;
+  --category-tabletop-dark: #d0644f;
+  --category-tcg-light: #ffa1d2;
+  --category-tcg-dark: #ffa1d2;
+}
+
+/* 2. Theme selection: no edits needed below this line. */
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Browsers without light-dark() keep the light palette. */
+:root {
+  --page: var(--page-light);
+  --surface: var(--surface-light);
+  --surface-muted: var(--surface-muted-light);
+  --advert: var(--advert-light);
+  --ink: var(--ink-light);
+  --muted: var(--muted-light);
+  --line: var(--line-light);
+  --line-strong: var(--line-strong-light);
+  --line-soft: var(--line-soft-light);
+  --field-border: var(--field-border-light);
+  --accent: var(--accent-light);
+  --accent-deep: var(--accent-deep-light);
+  --on-accent: var(--on-accent-light);
+  --danger: var(--danger-light);
+  --danger-surface: var(--danger-surface-light);
+  --scrollbar: var(--scrollbar-light);
+  --shadow: var(--shadow-light);
+  --footer-bg: var(--footer-bg-light);
+  --footer-ink: var(--footer-ink-light);
+  --footer-strong: var(--footer-strong-light);
+  --category-neutral: var(--category-neutral-light);
+  --category-video-games: var(--category-video-games-light);
+  --category-ttrpg: var(--category-ttrpg-light);
+  --category-tabletop: var(--category-tabletop-light);
+  --category-tcg: var(--category-tcg-light);
+}
+
+/* light-dark() picks a value from each element's color-scheme, so the same
+   names follow Auto, Light and Dark without duplicating rules. */
+@supports (color: light-dark(white, black)) {
+  :root {
+    --page: light-dark(var(--page-light), var(--page-dark));
+    --surface: light-dark(var(--surface-light), var(--surface-dark));
+    --surface-muted: light-dark(var(--surface-muted-light), var(--surface-muted-dark));
+    --advert: light-dark(var(--advert-light), var(--advert-dark));
+    --ink: light-dark(var(--ink-light), var(--ink-dark));
+    --muted: light-dark(var(--muted-light), var(--muted-dark));
+    --line: light-dark(var(--line-light), var(--line-dark));
+    --line-strong: light-dark(var(--line-strong-light), var(--line-strong-dark));
+    --line-soft: light-dark(var(--line-soft-light), var(--line-soft-dark));
+    --field-border: light-dark(var(--field-border-light), var(--field-border-dark));
+    --accent: light-dark(var(--accent-light), var(--accent-dark));
+    --accent-deep: light-dark(var(--accent-deep-light), var(--accent-deep-dark));
+    --on-accent: light-dark(var(--on-accent-light), var(--on-accent-dark));
+    --danger: light-dark(var(--danger-light), var(--danger-dark));
+    --danger-surface: light-dark(var(--danger-surface-light), var(--danger-surface-dark));
+    --scrollbar: light-dark(var(--scrollbar-light), var(--scrollbar-dark));
+    --shadow: light-dark(var(--shadow-light), var(--shadow-dark));
+    --footer-bg: light-dark(var(--footer-bg-light), var(--footer-bg-dark));
+    --footer-ink: light-dark(var(--footer-ink-light), var(--footer-ink-dark));
+    --footer-strong: light-dark(var(--footer-strong-light), var(--footer-strong-dark));
+    --category-neutral: light-dark(var(--category-neutral-light), var(--category-neutral-dark));
+    --category-video-games: light-dark(var(--category-video-games-light), var(--category-video-games-dark));
+    --category-ttrpg: light-dark(var(--category-ttrpg-light), var(--category-ttrpg-dark));
+    --category-tabletop: light-dark(var(--category-tabletop-light), var(--category-tabletop-dark));
+    --category-tcg: light-dark(var(--category-tcg-light), var(--category-tcg-dark));
+  }
+}

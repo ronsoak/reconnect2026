@@ -56,6 +56,16 @@ class FooterTests(TestCase):
                 self.assertContains(response, "<strong>0</strong>")
                 self.assertContains(response, 'src="/static/js/footer.js"')
 
+    def test_theme_assets_load_with_saved_choice_applied_before_styles(self):
+        html = self.client.get("/").content.decode()
+        self.assertIn('<meta name="color-scheme" content="light dark">', html)
+        self.assertIn('href="/static/css/theme.css"', html)
+        self.assertIn('src="/static/js/theme.js"', html)
+        self.assertIn('<fieldset class="theme-switch" data-theme-switch hidden>', html)
+        # The pre-paint script must run before any stylesheet is requested.
+        self.assertLess(html.index('localStorage.getItem("color-scheme")'), html.index('rel="stylesheet"'))
+        self.assertLess(html.index("css/theme.css"), html.index("css/custom.css"))
+
     def test_count_ignores_filters_and_excludes_hidden_content(self):
         category = Logic.objects.create(logic_type="CATEGORY", value="Games")
         site = Sites.objects.create(

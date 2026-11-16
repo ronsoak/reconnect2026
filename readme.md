@@ -46,6 +46,7 @@ python manage.py test website
 | `website/management/commands/` | Scripts listed below |
 | `templates/base.html` | Base layout every page extends |
 | `templates/components/` | Reusable pieces: header, search bar, menu, filters, footer |
+| `static/css/theme.css` | Light and dark colour values (edit colours here) |
 | `static/css/custom.css` | Styling Bulma cannot do |
 
 ## Public API
@@ -245,9 +246,16 @@ options when present, stays pinned to the top while scrolling. Its markup is in
 `templates/components/header.html` and layout is in `static/css/custom.css`.
 The logo is `static/images/branding/reconnect_full_title.svg`; its width scales
 with the screen via `.site-brand__logo`.
-Site colours are CSS variables at the top of `static/css/custom.css`, matching
-the brand palette in agents.md. Highlight Reel and ticker backgrounds use the
-full-strength brand green (#00ef6c), with dark headings and ticker text.
+Site colours live in `static/css/theme.css`. Each colour has a `-light` and a
+`-dark` value in the first section; edit only those values and custom.css picks
+them up through plain names such as `var(--page)`. Browsers without CSS
+`light-dark()` support keep the light palette. The site follows the device's
+light/dark setting (Auto) until the visitor chooses Light or Dark in the footer;
+`static/js/theme.js` saves that choice in `localStorage` (no cookie, nothing sent
+to the server), and a small inline script in `templates/base.html` applies it
+before the page paints. Highlight Reel and ticker backgrounds use the
+full-strength brand green (#00ef6c) with dark text and keep the light palette in
+both themes (`color-scheme: light`). The footer is dark in both themes.
 The feed options bar joins Category/Focus and
 Apply/Reset into two pairs, with rounded outer ends and square inner corners.
 On phones both pairs expand to fill their row, while dropdown panels fit below it.
@@ -257,7 +265,8 @@ Category labels render through
 `templates/components/category_pill.html` as a coloured dot followed by the
 category name. It adds a `category-pill--<slug>` class (e.g.
 `category-pill--video-games`) that sets the dot colour; add a matching rule in
-custom.css when a new category is created, otherwise the dot is neutral grey.
+custom.css (and light/dark colour values in theme.css) when a new category is
+created, otherwise the dot is neutral grey.
 The header's second row shows the subtitle and the public article count (the
 same count as the footer). Both counts use thousands separators, e.g. 59,056.
 On each page load, the header number counts up over 250ms with an ease-out finish;

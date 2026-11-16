@@ -113,7 +113,11 @@ components:
 Reconciled with the delivered stylesheet and components on 13 November 2026.
 [static/css/custom.css](static/css/custom.css) and the approved shared components
 are the implementation reference; older concept images do not override them.
-The current site is explicitly light-only. A deliberate dark theme remains future work.
+Colours are defined once, as light/dark pairs, in [static/css/theme.css](static/css/theme.css).
+The site follows the device setting (Auto) unless the visitor picks Light or Dark
+in the footer. The light palette below is approved; the dark values are
+readable placeholders awaiting a chosen dark palette. The brand-green Highlight
+Reel and ticker, and the dark footer, look the same in both themes.
 
 ## Overview
 
