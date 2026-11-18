@@ -344,6 +344,9 @@ Images fill the whole card, with categories, title and publication overlaid in
 white on a dark bottom scrim. This shared treatment also applies to Highlight
 Reel cards in both themes. Existing card sizes, image fallbacks and broken-image
 handling are preserved; advert cards keep their separate presentation.
+With a mouse, article cards tilt slightly on hover and return smoothly on exit
+(160ms). Touch devices and reduced-motion preferences keep cards stationary;
+the existing title underline and keyboard focus ring remain.
 
 ## Floating feed buttons
 
