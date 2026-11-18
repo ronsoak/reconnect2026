@@ -156,7 +156,7 @@ a warmer paper tone is reserved for advert cards.
 
 ### Neutral
 - **Light Paper** (`#f5f6f2`): The page ground and quiet navigation surfaces.
-- **White Surface** (`#ffffff`): Search, filter and article-card surfaces.
+- **White Surface** (`#ffffff`): Search and filter surfaces.
 - **Alternate Grey** (`#dbdbd9`): Alternate surfaces.
 - **Charcoal Ink** (`#353032`): Primary text.
 - **Muted Text** (`#5c5759`): Supporting text and the page lede.
@@ -221,8 +221,8 @@ placeholder layers. Avoid adding shadows beneath these bordered surfaces.
 
 Cards use a `0.3rem` radius. Search controls use `0.45rem`; navigation and filter
 buttons use pill-shaped outer edges. Joined pairs have flat inner edges.
-Cover art is clipped to the card's rounded top edge;
-the card content remains on a white surface.
+Article cover art fills the card and is clipped to its rounded edges;
+white text overlays a dark bottom scrim, matching the Highlight Reel.
 
 ## Components
 
@@ -238,7 +238,9 @@ the card content remains on a white surface.
 
 ### Cards / Containers
 - **Corner Style:** `0.3rem` for feed cards.
-- **Background:** White, with a one-pixel quiet-divider border and no shadow.
+- **Background:** Article cards use full-cover images with a dark bottom scrim
+  behind white text, in both themes. Keep the one-pixel quiet-divider border
+  and no shadow. Adverts retain their separate presentation.
 - **Internal Padding:** `0.9rem 1rem 1rem` on wide screens, reduced on narrow
   screens.
 - **Cover Art:** Use the publication image when valid. Missing or failed images

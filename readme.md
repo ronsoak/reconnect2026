@@ -340,6 +340,10 @@ This page is not a consent banner or a guarantee of legal compliance.
 Public article cards show the publication name but no publication date, including
 Dynamic, Newest, Popular, search, publication feeds and Highlight Reel. Stored
 dates remain available for sorting, RSS, the API and newsletter exports.
+Images fill the whole card, with categories, title and publication overlaid in
+white on a dark bottom scrim. This shared treatment also applies to Highlight
+Reel cards in both themes. Existing card sizes, image fallbacks and broken-image
+handling are preserved; advert cards keep their separate presentation.
 
 ## Floating feed buttons
 
@@ -412,7 +416,7 @@ without JavaScript on narrow layouts.
 Horizontal divider lines frame a full-strength brand-green background with a dark
 heading and inset padding. Highlight images cover the full
 card, with white text over a dark bottom scrim (at least 82% black behind text)
-for readable contrast even on bright artwork. Regular feed cards are unchanged.
+for readable contrast even on bright artwork, matching regular article cards.
 Missing/broken images retain the existing local fallback and text-card behavior.
 
 Widgets are additional to the ordinary card quota. Their source positions are

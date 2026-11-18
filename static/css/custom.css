@@ -1107,13 +1107,12 @@ input:focus-visible {
   --category-dot: var(--category-tcg);
 }
 
-/* The Highlight Reel sets its text on a dark overlay. A thin light ring keeps
-   dark dots visible there. */
-.highlight-reel .category-pill {
+/* A thin light ring keeps dark category dots visible on image overlays. */
+.feed-card--overlay .category-pill {
   color: inherit;
 }
 
-.highlight-reel .category-pill__dot {
+.feed-card--overlay .category-pill__dot {
   box-shadow: 0 0 0 1.5px rgb(255 255 255 / 85%);
 }
 
@@ -1162,22 +1161,22 @@ input:focus-visible {
   flex: 1 1 auto;
 }
 
-.highlight-reel .feed-card {
+.feed-card--overlay {
   background: var(--ink);
 }
 
-.highlight-reel .feed-card__link {
+.feed-card--overlay .feed-card__link {
   position: relative;
   justify-content: flex-end;
 }
 
-.highlight-reel .feed-card__image {
+.feed-card--overlay .feed-card__image {
   position: absolute;
   inset: 0;
   min-height: 0;
 }
 
-.highlight-reel .feed-card__content {
+.feed-card--overlay .feed-card__content {
   position: relative;
   z-index: 1;
   flex: 0 0 auto;
@@ -1185,7 +1184,7 @@ input:focus-visible {
   background: linear-gradient(rgb(0 0 0 / 82%), rgb(0 0 0 / 94%));
 }
 
-.highlight-reel .feed-card__content::before {
+.feed-card--overlay .feed-card__content::before {
   content: "";
   position: absolute;
   inset: -4rem 0 100%;
@@ -1193,42 +1192,42 @@ input:focus-visible {
   pointer-events: none;
 }
 
-.highlight-reel .feed-card__category,
-.highlight-reel .feed-card__title,
-.highlight-reel .feed-card__source,
-.highlight-reel .feed-card__source span {
+.feed-card--overlay .feed-card__category,
+.feed-card--overlay .feed-card__title,
+.feed-card--overlay .feed-card__source,
+.feed-card--overlay .feed-card__source span {
   color: #fff;
 }
 
-.highlight-reel .feed-card:hover .feed-card__title,
-.highlight-reel .feed-card__link:focus-visible .feed-card__title {
+.feed-card--overlay:hover .feed-card__title,
+.feed-card--overlay .feed-card__link:focus-visible .feed-card__title {
   color: #fff;
   text-decoration: underline;
 }
 
-.highlight-reel .feed-card__link:focus-visible {
-  outline: 3px solid var(--accent);
+.feed-card--overlay .feed-card__link:focus-visible {
+  outline: 3px solid var(--brand-green);
 }
 
 @media (forced-colors: active) {
-  .highlight-reel .feed-card__content {
+  .feed-card--overlay .feed-card__content {
     background: Canvas;
   }
 
-  .highlight-reel .feed-card__content::before {
+  .feed-card--overlay .feed-card__content::before {
     display: none;
   }
 
-  .highlight-reel .feed-card__category,
-  .highlight-reel .feed-card__title,
-  .highlight-reel .feed-card__source,
-  .highlight-reel .feed-card__source span,
-  .highlight-reel .feed-card:hover .feed-card__title,
-  .highlight-reel .feed-card__link:focus-visible .feed-card__title {
+  .feed-card--overlay .feed-card__category,
+  .feed-card--overlay .feed-card__title,
+  .feed-card--overlay .feed-card__source,
+  .feed-card--overlay .feed-card__source span,
+  .feed-card--overlay:hover .feed-card__title,
+  .feed-card--overlay .feed-card__link:focus-visible .feed-card__title {
     color: CanvasText;
   }
 
-  .highlight-reel .feed-card__link:focus-visible {
+  .feed-card--overlay .feed-card__link:focus-visible {
     outline-color: Highlight;
   }
 }
